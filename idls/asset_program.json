@@ -1,0 +1,346 @@
+{
+  "version": "0.1.0",
+  "name": "asset_program",
+  "instructions": [
+    {
+      "name": "Create",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Asset account (pda of `['asset', mold pubkey]`)"
+          ]
+        },
+        {
+          "name": "mold",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Address to derive the PDA from"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The authority of the asset"
+          ]
+        },
+        {
+          "name": "holder",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The holder of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "metadata",
+          "type": {
+            "defined": "Metadata"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 0
+      }
+    },
+    {
+      "name": "Initialize",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Asset account (pda of `['asset', mold pubkey]`)"
+          ]
+        },
+        {
+          "name": "mold",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Address to derive the PDA from"
+          ]
+        },
+        {
+          "name": "buffer",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "Extension data buffer (pda of `['buffer', mold pubkey]`)"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "extension",
+          "type": {
+            "defined": "Extension"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 1
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "Creators",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "creators",
+            "type": {
+              "array": [
+                {
+                  "defined": "Creator"
+                },
+                5
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Creator",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "address",
+            "type": "publicKey"
+          },
+          {
+            "name": "data",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Metadata",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "symbol",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Extension",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "extensionType",
+            "type": {
+              "defined": "ExtensionType"
+            }
+          },
+          {
+            "name": "data",
+            "type": {
+              "option": "bytes"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Buffer",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "overwrite",
+            "type": "bool"
+          },
+          {
+            "name": "data",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Delegate",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "role",
+            "type": {
+              "defined": "DelegateRole"
+            }
+          },
+          {
+            "name": "address",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExtensionType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "None"
+          },
+          {
+            "name": "Attributes"
+          },
+          {
+            "name": "Creators"
+          },
+          {
+            "name": "Image"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Discriminator",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Uninitialized"
+          },
+          {
+            "name": "Asset"
+          }
+        ]
+      }
+    },
+    {
+      "name": "State",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Unlocked"
+          },
+          {
+            "name": "Locked"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DelegateRole",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "None"
+          },
+          {
+            "name": "Authority"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 0,
+      "name": "InvalidSystemProgram",
+      "msg": "Invalid System Program"
+    },
+    {
+      "code": 1,
+      "name": "DeserializationError",
+      "msg": "Error deserializing account"
+    },
+    {
+      "code": 2,
+      "name": "SerializationError",
+      "msg": "Error serializing account"
+    },
+    {
+      "code": 3,
+      "name": "AlreadyInitialized",
+      "msg": "Asset already initialized"
+    },
+    {
+      "code": 4,
+      "name": "MissingSigner",
+      "msg": "Missing signer"
+    },
+    {
+      "code": 5,
+      "name": "MissingExtensionData",
+      "msg": "Missing extension data"
+    },
+    {
+      "code": 6,
+      "name": "InvalidAccountLength",
+      "msg": "Invalid account length"
+    }
+  ],
+  "metadata": {
+    "origin": "shank",
+    "address": "AssetGtQBTSgm5s91d1RAQod5JmaZiJDxqsgtqrZud73",
+    "binaryVersion": "0.3.0",
+    "libVersion": "0.3.0"
+  }
+}

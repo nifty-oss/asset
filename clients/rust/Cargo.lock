@@ -1863,6 +1863,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "kaigan"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6ade400c53c86236d5b03b681e6c4e3d1d8da674e78a3916480886614674f017"
+dependencies = [
+ "borsh 0.10.3",
+ "serde",
+]
+
+[[package]]
 name = "keccak"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2078,22 +2088,6 @@ dependencies = [
  "proc-macro2 1.0.69",
  "quote 1.0.33",
  "syn 1.0.109",
-]
-
-[[package]]
-name = "mpl-project-name"
-version = "0.1.0"
-dependencies = [
- "assert_matches",
- "borsh 0.10.3",
- "num-derive 0.3.3",
- "num-traits",
- "serde",
- "serde_with 3.4.0",
- "solana-program",
- "solana-program-test",
- "solana-sdk",
- "thiserror",
 ]
 
 [[package]]
@@ -5022,6 +5016,23 @@ name = "tower-service"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6bc1c9ce2b5135ac7f93c72918fc37feb872bdc6a5533a8b85eb4b86bfdae52"
+
+[[package]]
+name = "tpl-asset"
+version = "0.1.0"
+dependencies = [
+ "assert_matches",
+ "borsh 0.10.3",
+ "kaigan",
+ "num-derive 0.3.3",
+ "num-traits",
+ "serde",
+ "serde_with 3.4.0",
+ "solana-program",
+ "solana-program-test",
+ "solana-sdk",
+ "thiserror",
+]
 
 [[package]]
 name = "tracing"

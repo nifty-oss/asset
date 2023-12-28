@@ -5,8 +5,6 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-pub(crate) mod my_account;
-pub(crate) mod my_pda_account;
+pub(crate) mod r#asset;
 
-pub use self::my_account::*;
-pub use self::my_pda_account::*;
+pub use self::r#asset::*;

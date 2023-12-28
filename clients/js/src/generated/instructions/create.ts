@@ -7,7 +7,6 @@
  */
 
 import {
-  ACCOUNT_HEADER_SIZE,
   Context,
   Pda,
   PublicKey,
@@ -18,24 +17,28 @@ import {
 import {
   Serializer,
   mapSerializer,
+  string,
   struct,
-  u16,
-  u32,
   u8,
 } from '@metaplex-foundation/umi/serializers';
-import { getMyAccountSize } from '../accounts';
+import { findAssetPda } from '../accounts';
 import {
   ResolvedAccount,
   ResolvedAccountsWithIndices,
+  expectPublicKey,
   getAccountMetasAndSigners,
 } from '../shared';
 
 // Accounts.
 export type CreateInstructionAccounts = {
-  /** The address of the new account */
-  address: Signer;
-  /** The authority of the new account */
-  authority?: PublicKey | Pda;
+  /** Asset account (pda of `['asset', mold pubkey]`) */
+  asset?: PublicKey | Pda;
+  /** Address to derive the PDA from */
+  mold: Signer;
+  /** The authority of the asset */
+  authority?: Signer;
+  /** The holder of the asset */
+  holder: PublicKey | Pda;
   /** The account paying for the storage fees */
   payer?: Signer;
   /** The system program */
@@ -45,11 +48,11 @@ export type CreateInstructionAccounts = {
 // Data.
 export type CreateInstructionData = {
   discriminator: number;
-  arg1: number;
-  arg2: number;
+  name: string;
+  symbol: string;
 };
 
-export type CreateInstructionDataArgs = { arg1: number; arg2: number };
+export type CreateInstructionDataArgs = { name: string; symbol: string };
 
 export function getCreateInstructionDataSerializer(): Serializer<
   CreateInstructionDataArgs,
@@ -59,8 +62,8 @@ export function getCreateInstructionDataSerializer(): Serializer<
     struct<CreateInstructionData>(
       [
         ['discriminator', u8()],
-        ['arg1', u16()],
-        ['arg2', u32()],
+        ['name', string()],
+        ['symbol', string()],
       ],
       { description: 'CreateInstructionData' }
     ),
@@ -73,33 +76,56 @@ export type CreateInstructionArgs = CreateInstructionDataArgs;
 
 // Instruction.
 export function create(
-  context: Pick<Context, 'identity' | 'payer' | 'programs'>,
+  context: Pick<Context, 'eddsa' | 'identity' | 'payer' | 'programs'>,
   input: CreateInstructionAccounts & CreateInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
-    'mplProjectName',
-    'MyProgram1111111111111111111111111111111111'
+    'asset',
+    'AssetGtQBTSgm5s91d1RAQod5JmaZiJDxqsgtqrZud73'
   );
 
   // Accounts.
-  const resolvedAccounts: ResolvedAccountsWithIndices = {
-    address: { index: 0, isWritable: true, value: input.address ?? null },
-    authority: { index: 1, isWritable: false, value: input.authority ?? null },
-    payer: { index: 2, isWritable: true, value: input.payer ?? null },
-    systemProgram: {
+  const resolvedAccounts = {
+    asset: {
+      index: 0,
+      isWritable: true as boolean,
+      value: input.asset ?? null,
+    },
+    mold: { index: 1, isWritable: false as boolean, value: input.mold ?? null },
+    authority: {
+      index: 2,
+      isWritable: false as boolean,
+      value: input.authority ?? null,
+    },
+    holder: {
       index: 3,
-      isWritable: false,
+      isWritable: false as boolean,
+      value: input.holder ?? null,
+    },
+    payer: {
+      index: 4,
+      isWritable: true as boolean,
+      value: input.payer ?? null,
+    },
+    systemProgram: {
+      index: 5,
+      isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
-  };
+  } satisfies ResolvedAccountsWithIndices;
 
   // Arguments.
   const resolvedArgs: CreateInstructionArgs = { ...input };
 
   // Default values.
+  if (!resolvedAccounts.asset.value) {
+    resolvedAccounts.asset.value = findAssetPda(context, {
+      mold: expectPublicKey(resolvedAccounts.mold.value),
+    });
+  }
   if (!resolvedAccounts.authority.value) {
-    resolvedAccounts.authority.value = context.identity.publicKey;
+    resolvedAccounts.authority.value = context.identity;
   }
   if (!resolvedAccounts.payer.value) {
     resolvedAccounts.payer.value = context.payer;
@@ -130,7 +156,7 @@ export function create(
   );
 
   // Bytes Created On Chain.
-  const bytesCreatedOnChain = getMyAccountSize() + ACCOUNT_HEADER_SIZE;
+  const bytesCreatedOnChain = 0;
 
   return transactionBuilder([
     { instruction: { keys, programId, data }, signers, bytesCreatedOnChain },

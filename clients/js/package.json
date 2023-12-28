@@ -1,7 +1,7 @@
 {
-  "name": "@metaplex-foundation/mpl-project-name",
+  "name": "@titan-oss/asset",
   "version": "0.1.0",
-  "description": "My project description",
+  "description": "A standard for non-fungible assets.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
@@ -20,9 +20,8 @@
     "access": "public",
     "registry": "https://registry.npmjs.org"
   },
-  "homepage": "https://metaplex.com",
-  "repository": "https://github.com/metaplex-foundation/mpl-project-name.git",
-  "author": "Metaplex Maintainers <contact@metaplex.com>",
+  "homepage": "https://titan-oss.github.io/asset/",
+  "repository": "https://github.com/titan-oss/asset.git",
   "license": "Apache-2.0",
   "dependencies": {
     "@metaplex-foundation/mpl-toolbox": "^0.8.0"
@@ -48,7 +47,7 @@
     "typedoc": "^0.23.16",
     "typedoc-plugin-expand-object-like-types": "^0.1.1",
     "typedoc-plugin-missing-exports": "^1.0.0",
-    "typescript": "^4.6.2",
+    "typescript": "^4.9.4",
     "vercel": "^28.16.0"
   },
   "ava": {

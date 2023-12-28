@@ -1,0 +1,20 @@
+[package]
+name = "asset-program"
+version = "0.1.0"
+edition = "2021"
+readme = "./README.md"
+license-file = "../../LICENSE"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+borsh = "^0.10"
+bytemuck = "1.14"
+shank = "0.3.0"
+num-derive = "^0.3"
+num-traits = "^0.2"
+podded = "0.2.0"
+solana-program = "~1.16"
+thiserror = "^1.0"
