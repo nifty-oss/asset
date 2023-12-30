@@ -2,7 +2,7 @@ import {
   Context,
   OptionOrNullable,
   TransactionBuilder,
-  some
+  some,
 } from '@metaplex-foundation/umi';
 import {
   Attributes,
@@ -42,11 +42,13 @@ export function initialize(
 
   switch (input.extension.type) {
     case ExtensionType.Attributes:
-      const bytes = getAttributesSerializer().serialize({
-        traits: input.extension.traits,
-      });
-      data = some(bytes);
-      length = bytes.length;
+      {
+        const bytes = getAttributesSerializer().serialize({
+          traits: input.extension.traits,
+        });
+        data = some(bytes);
+        length = bytes.length;
+      }
       break;
     case ExtensionType.Image:
       if (input.extension.data.length === 0) {
@@ -59,6 +61,8 @@ export function initialize(
         length = bytes.length;
       }
       break;
+    default:
+      throw new Error('Invalid extension type');
   }
 
   return baseInitialize(context, {
