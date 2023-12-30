@@ -6,7 +6,5 @@
 //!
 
 pub(crate) mod r#create;
-pub(crate) mod r#write;
 
 pub use self::r#create::*;
-pub use self::r#write::*;

@@ -154,6 +154,7 @@ kinobi.update(
       accounts: {
         asset: { defaultsTo: k.pdaDefault("asset") },
       },
+      internal: true,
     },
   })
 );

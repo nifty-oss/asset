@@ -2,8 +2,7 @@ import {
   Context,
   OptionOrNullable,
   TransactionBuilder,
-  isSome,
-  some,
+  some
 } from '@metaplex-foundation/umi';
 import {
   Attributes,
@@ -19,16 +18,19 @@ import {
 
 type Extension =
   | ({ type: ExtensionType.Attributes } & Attributes)
-  | ({ type: ExtensionType.Image } & Image);
+  | ({ type: ExtensionType.Image } & { length?: number } & Image);
 
 export const attributes = (input: Attributes): Extension => ({
   type: ExtensionType.Attributes,
   ...input,
 });
 
-export const image = (input: Image): Extension => ({
+export const image = (
+  input: { data: Array<number> } | { length: number }
+): Extension => ({
   type: ExtensionType.Image,
-  ...input,
+  length: 'length' in input ? input.length : 0,
+  data: 'data' in input ? input.data : [],
 });
 
 export function initialize(
@@ -36,21 +38,28 @@ export function initialize(
   input: InitializeInstructionAccounts & { extension: Extension }
 ): TransactionBuilder {
   let data: OptionOrNullable<Uint8Array> = null;
+  let length = 0;
 
   switch (input.extension.type) {
     case ExtensionType.Attributes:
-      data = some(
-        getAttributesSerializer().serialize({ traits: input.extension.traits })
-      );
+      const bytes = getAttributesSerializer().serialize({
+        traits: input.extension.traits,
+      });
+      data = some(bytes);
+      length = bytes.length;
       break;
     case ExtensionType.Image:
-      data = some(
-        getImageSerializer().serialize({ data: input.extension.data })
-      );
+      if (input.extension.data.length === 0) {
+        length = input.extension.length ?? 0;
+      } else {
+        const bytes = getImageSerializer().serialize({
+          data: input.extension.data,
+        });
+        data = some(bytes);
+        length = bytes.length;
+      }
       break;
   }
-
-  const length = isSome(data) ? data.value.length : 0;
 
   return baseInitialize(context, {
     ...input,

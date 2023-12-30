@@ -1,12 +1,7 @@
 import { generateSigner, publicKey } from '@metaplex-foundation/umi';
 import { httpDownloader } from '@metaplex-foundation/umi-downloader-http';
 import test from 'ava';
-import {
-  attributes,
-  findAssetPda,
-  image,
-  initialize
-} from '../src';
+import { attributes, findAssetPda, image, initialize, write } from '../src';
 import { createUmi } from './_setup';
 
 test('it can initialize a new account with an extension', async (t) => {
@@ -75,10 +70,16 @@ test('it can initialize a new account with multiple extensions', async (t) => {
     ])
   )[0].buffer;
 
-  // When we try to initialize the same extension again.
+  // And we initialize an image extension.
   await initialize(umi, {
     canvas,
-    extension: image({ data: Array.from(imageData) }),
+    extension: image({ length: imageData.length }),
+  }).sendAndConfirm(umi);
+
+  // When we write the extension data.
+  await write(umi, {
+    canvas,
+    data: new Uint8Array(imageData),
   }).sendAndConfirm(umi);
 
   // Then an account was created.

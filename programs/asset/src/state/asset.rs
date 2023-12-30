@@ -102,6 +102,10 @@ impl Asset {
         Ok(Extension::LEN + offset)
     }
 
+    /// Returns the extension data of a given type.
+    ///
+    /// This function will return the first extension of the given type. If the
+    /// extension is not found, `None` is returned.
     pub fn get<'a, T: ExtensionData<'a>>(data: &'a [u8]) -> Option<T> {
         let mut cursor = Asset::LEN;
 
@@ -119,6 +123,7 @@ impl Asset {
         None
     }
 
+    /// Indicates whether the account contains an extension of a given type.
     pub fn contains(extension_type: ExtensionType, data: &[u8]) -> bool {
         let mut cursor = Asset::LEN;
 
@@ -136,6 +141,10 @@ impl Asset {
         false
     }
 
+    /// Returns the extensions of the account.
+    ///
+    /// This function will return a list of `ExtensionType` that are present
+    /// on the account.
     pub fn get_extensions(data: &[u8]) -> Vec<ExtensionType> {
         let mut cursor = Asset::LEN;
         let mut extensions = Vec::new();
@@ -151,6 +160,11 @@ impl Asset {
         extensions
     }
 
+    /// Returns the first extension of the account.
+    ///
+    /// This function will return a tuple containing the extension type and the
+    /// offset of the extension data. If the account does not contain any extension,
+    /// `None` is returned.
     pub fn first_extension(data: &[u8]) -> Option<(&Extension, usize)> {
         if Asset::LEN < data.len() {
             return Some((Extension::load(&data[Asset::LEN..]), Asset::LEN));
@@ -159,13 +173,18 @@ impl Asset {
         None
     }
 
+    /// Returns the last extension of the account.
+    ///
+    /// This function will return a tuple containing the extension type and the
+    /// offset of the extension data. If the account does not contain any extension,
+    /// `None` is returned.
     pub fn last_extension(data: &[u8]) -> Option<(&Extension, usize)> {
         let mut cursor = Asset::LEN;
         let mut last = None;
 
         while cursor < data.len() {
             let extension = Extension::load(&data[cursor..]);
-            last = Some((extension, cursor));
+            last = Some((extension, cursor.saturating_add(Extension::LEN)));
             cursor = cursor
                 .saturating_add(Extension::LEN)
                 .saturating_add(extension.length() as usize);

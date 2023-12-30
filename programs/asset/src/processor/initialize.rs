@@ -66,7 +66,7 @@ pub fn process_initialize(
                 extension.length() as usize + offset <= data.len(),
                 AssetError::IncompleteExtensionData,
                 format!(
-                    "incomplete '{:?}' extension data",
+                    "incomplete [{:?}] extension data",
                     extension.extension_type()
                 )
             );
@@ -101,7 +101,7 @@ pub fn process_initialize(
     let length = if let Some(data) = &args.data {
         if args.length as usize == data.len() {
             msg!(
-                "Initializing extension '{:?}' with instruction data",
+                "Initializing extension [{:?}] with instruction data",
                 args.extension_type
             );
         }
@@ -109,14 +109,19 @@ pub fn process_initialize(
 
         args.length - data.len() as u32
     } else {
+        save_extension_data(&ctx, &args, &[])?;
         args.length
     };
 
-    msg!(
-        "Initializing extension '{:?}' (waiting for {} bytes)",
-        args.extension_type,
-        length
-    );
+    if length > 0 {
+        msg!(
+            "Initializing extension [{:?}] (waiting for {} bytes)",
+            args.extension_type,
+            length
+        );
+    } else {
+        msg!("Extension [{:?}] initialized", args.extension_type);
+    }
 
     Ok(())
 }
@@ -134,9 +139,10 @@ fn save_extension_data(
         data.len(),
     )?;
 
-    let account_data = &mut (*ctx.accounts.asset.data).borrow_mut();
-
-    sol_memcpy(&mut account_data[offset..], data, data.len());
+    if !data.is_empty() {
+        let account_data = &mut (*ctx.accounts.asset.data).borrow_mut();
+        sol_memcpy(&mut account_data[offset..], data, data.len());
+    }
 
     Ok(())
 }

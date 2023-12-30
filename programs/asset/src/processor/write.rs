@@ -57,18 +57,22 @@ pub(crate) fn process_write(
         "asset"
     );
 
+    // determine the account offset
+
     let (extension, offset) =
         Asset::last_extension(&asset_data).ok_or(AssetError::ExtensionNotFound)?;
+    let current = extension.extension_type();
+    let expected = offset.saturating_add(extension.length() as usize);
     // the length of the account cannot be larger than the current extension length,
     // otherwise we would be writting data to an extension that does not exist
-    if offset.saturating_add(extension.length() as usize) < asset_data.len() {
+    if expected < asset_data.len() {
         return err!(AssetError::InvalidAccountLength);
     }
 
     drop(asset_data);
 
     let offset = if data.overwrite {
-        msg!("Overwriting extension data");
+        msg!("Overwriting [{:?}] extension data", current);
         resize(
             ctx.accounts.asset,
             ctx.accounts.payer,
@@ -77,7 +81,7 @@ pub(crate) fn process_write(
         // when overwriting, we start from the beginning of the offset
         offset
     } else {
-        msg!("Extending extension data");
+        msg!("Appending [{:?}] extension data", current);
         let offset = ctx.accounts.asset.data_len();
         resize(
             ctx.accounts.asset,
@@ -89,11 +93,22 @@ pub(crate) fn process_write(
     };
 
     // copy the data to the buffer
+
     sol_memcpy(
         &mut ctx.accounts.asset.try_borrow_mut_data().unwrap()[offset..],
         &data.bytes,
         data.bytes.len(),
     );
+
+    if expected > ctx.accounts.asset.data_len() {
+        msg!(
+            "Writing extension [{:?}] (waiting for {} bytes)",
+            current,
+            expected.saturating_sub(ctx.accounts.asset.data_len())
+        );
+    } else {
+        msg!("Extension [{:?}] initialized", current);
+    }
 
     Ok(())
 }
