@@ -50,6 +50,7 @@ export type AssetAccountData = {
   delegate: PublicKey;
   name: string;
   symbol: string;
+  padding: number;
 };
 
 export type AssetAccountDataArgs = {
@@ -62,6 +63,7 @@ export type AssetAccountDataArgs = {
   delegate: PublicKey;
   name: string;
   symbol: string;
+  padding: number;
 };
 
 export function getAssetAccountDataSerializer(): Serializer<
@@ -81,6 +83,7 @@ export function getAssetAccountDataSerializer(): Serializer<
         ['delegate', publicKeySerializer()],
         ['name', string({ size: 32 })],
         ['symbol', string({ size: 10 })],
+        ['padding', u8()],
       ],
       { description: 'AssetAccountData' }
     ),
@@ -163,6 +166,7 @@ export function getAssetGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
       delegate: PublicKey;
       name: string;
       symbol: string;
+      padding: number;
     }>({
       discriminator: [0, getDiscriminatorSerializer()],
       state: [1, getStateSerializer()],
@@ -174,6 +178,7 @@ export function getAssetGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
       delegate: [100, publicKeySerializer()],
       name: [132, string({ size: 32 })],
       symbol: [164, string({ size: 10 })],
+      padding: [174, u8()],
     })
     .deserializeUsing<Asset>((account) => deserializeAsset(account))
     .whereField('discriminator', Discriminator.Asset);

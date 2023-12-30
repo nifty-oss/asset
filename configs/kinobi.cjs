@@ -72,6 +72,10 @@ kinobi.update(
                     name: "symbol",
                     child: k.stringTypeNode({ size: k.fixedSize(10) }),
                   }),
+                  k.structFieldTypeNode({
+                    name: "padding",
+                    child: k.numberTypeNode("u8"),
+                  }),
                 ]),
               }),
             }),

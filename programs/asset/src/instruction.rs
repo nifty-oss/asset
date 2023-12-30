@@ -62,18 +62,6 @@ pub struct Extension {
     pub data: Option<Vec<u8>>,
 }
 
-impl From<Extension> for crate::extensions::Extension {
-    fn from(extension: Extension) -> Self {
-        (&extension).into()
-    }
-}
-
-impl From<&Extension> for crate::extensions::Extension {
-    fn from(extension: &Extension) -> Self {
-        crate::extensions::Extension::new(extension.extension_type, extension.length)
-    }
-}
-
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct Data {

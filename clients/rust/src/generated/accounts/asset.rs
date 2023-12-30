@@ -40,9 +40,18 @@ pub struct Asset {
     pub delegate: Pubkey,
     pub name: [u8; 32],
     pub symbol: [u8; 10],
+    pub padding: u8,
 }
 
 impl Asset {
+    /// Prefix values used to generate a PDA for this account.
+    ///
+    /// Values are positional and appear in the following order:
+    ///
+    ///   0. `Asset::PREFIX`
+    ///   1. canvas (`Pubkey`)
+    pub const PREFIX: &'static [u8] = "asset".as_bytes();
+
     pub fn create_pda(
         canvas: Pubkey,
         bump: u8,

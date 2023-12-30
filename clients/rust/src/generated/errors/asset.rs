@@ -25,6 +25,9 @@ pub enum AssetError {
     /// 4 (0x4) - Extension not found
     #[error("Extension not found")]
     ExtensionNotFound,
+    /// 5 (0x5) - Invalid alignment
+    #[error("Invalid alignment")]
+    InvalidAlignment,
 }
 
 impl solana_program::program_error::PrintProgramError for AssetError {

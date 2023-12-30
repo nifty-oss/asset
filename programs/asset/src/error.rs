@@ -27,6 +27,10 @@ pub enum AssetError {
     /// 4 - Extension not found
     #[error("Extension not found")]
     ExtensionNotFound,
+
+    /// 5 - Invalid alignment
+    #[error("Invalid alignment")]
+    InvalidAlignment,
 }
 
 impl PrintProgramError for AssetError {

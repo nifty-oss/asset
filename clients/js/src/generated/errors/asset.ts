@@ -80,6 +80,19 @@ export class ExtensionNotFoundError extends ProgramError {
 codeToErrorMap.set(0x4, ExtensionNotFoundError);
 nameToErrorMap.set('ExtensionNotFound', ExtensionNotFoundError);
 
+/** InvalidAlignment: Invalid alignment */
+export class InvalidAlignmentError extends ProgramError {
+  override readonly name: string = 'InvalidAlignment';
+
+  readonly code: number = 0x5; // 5
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid alignment', program, cause);
+  }
+}
+codeToErrorMap.set(0x5, InvalidAlignmentError);
+nameToErrorMap.set('InvalidAlignment', InvalidAlignmentError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

@@ -1,6 +1,14 @@
+use podded::ZeroCopy;
 use solana_program::{
-    entrypoint::ProgramResult, msg, program::invoke_signed, program_error::ProgramError,
-    program_memory::sol_memcpy, pubkey::Pubkey, rent::Rent, system_instruction, sysvar::Sysvar,
+    entrypoint::ProgramResult,
+    msg,
+    program::{invoke, invoke_signed},
+    program_error::ProgramError,
+    program_memory::sol_memcpy,
+    pubkey::Pubkey,
+    rent::Rent,
+    system_instruction,
+    sysvar::Sysvar,
 };
 
 use crate::{
@@ -38,7 +46,9 @@ pub fn process_initialize(
     let bump = [bump];
     seeds.push(&bump);
 
-    if ctx.accounts.asset.data_is_empty() {
+    // offset on the account data where the new extension will be written; this will
+    // include any padding required to maintain the 8-bytes alignment
+    let offset = if ctx.accounts.asset.data_is_empty() {
         invoke_signed(
             &system_instruction::create_account(
                 ctx.accounts.payer.key,
@@ -50,6 +60,8 @@ pub fn process_initialize(
             &[ctx.accounts.payer.clone(), ctx.accounts.asset.clone()],
             &[&seeds],
         )?;
+
+        Asset::LEN
     } else {
         let data = (*ctx.accounts.asset.data).borrow();
 
@@ -70,8 +82,12 @@ pub fn process_initialize(
                     extension.extension_type()
                 )
             );
+
+            extension.boundary() as usize
+        } else {
+            Asset::LEN
         }
-    }
+    };
 
     require!(
         ctx.accounts.asset.owner == program_id,
@@ -98,20 +114,21 @@ pub fn process_initialize(
     // drop the reference to resize the account
     drop(data);
 
-    let length = if let Some(data) = &args.data {
+    // initialize the extension
+
+    let (length, data): (u32, &[u8]) = if let Some(data) = &args.data {
         if args.length as usize == data.len() {
             msg!(
                 "Initializing extension [{:?}] with instruction data",
                 args.extension_type
             );
         }
-        save_extension_data(&ctx, &args, data)?;
-
-        args.length - data.len() as u32
+        (args.length - data.len() as u32, data)
     } else {
-        save_extension_data(&ctx, &args, &[])?;
-        args.length
+        (args.length, &[])
     };
+
+    save_extension_data(&ctx, &args, offset, data)?;
 
     if length > 0 {
         msg!(
@@ -129,19 +146,55 @@ pub fn process_initialize(
 fn save_extension_data(
     ctx: &Context<InitializeAccounts>,
     args: &Extension,
+    offset: usize,
     data: &[u8],
 ) -> ProgramResult {
-    let offset = Asset::allocate(
-        ctx.accounts.asset,
-        ctx.accounts.payer,
-        ctx.accounts.system_program,
-        args.into(),
-        data.len(),
+    // make sure the allocated extension maintains the 8-bytes alignment
+    let boundary = std::alloc::Layout::from_size_align(
+        offset + crate::extensions::Extension::LEN + args.length as usize,
+        std::mem::size_of::<u64>(),
+    )
+    .map_err(|_| AssetError::InvalidAlignment)?
+    .pad_to_align()
+    .size();
+
+    let extended = offset + crate::extensions::Extension::LEN + data.len();
+    let required_rent = Rent::get()?
+        .minimum_balance(extended)
+        .saturating_sub(ctx.accounts.asset.lamports());
+
+    msg!("Funding {} lamports for account resize", required_rent);
+
+    invoke(
+        &system_instruction::transfer(
+            ctx.accounts.payer.key,
+            ctx.accounts.asset.key,
+            required_rent,
+        ),
+        &[
+            ctx.accounts.payer.clone(),
+            ctx.accounts.asset.clone(),
+            ctx.accounts.system_program.clone(),
+        ],
     )?;
 
+    ctx.accounts.asset.realloc(extended, false)?;
+
+    let asset_data = &mut (*ctx.accounts.asset.data).borrow_mut();
+    let extension = crate::extensions::Extension::load_mut(
+        &mut asset_data[offset..offset + crate::extensions::Extension::LEN],
+    );
+
+    extension.set_extension_type(args.extension_type);
+    extension.set_length(args.length);
+    extension.set_boundary(boundary as u32);
+
     if !data.is_empty() {
-        let account_data = &mut (*ctx.accounts.asset.data).borrow_mut();
-        sol_memcpy(&mut account_data[offset..], data, data.len());
+        sol_memcpy(
+            &mut asset_data[offset + crate::extensions::Extension::LEN..],
+            data,
+            data.len(),
+        );
     }
 
     Ok(())

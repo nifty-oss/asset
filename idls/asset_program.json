@@ -369,6 +369,11 @@
       "code": 4,
       "name": "ExtensionNotFound",
       "msg": "Extension not found"
+    },
+    {
+      "code": 5,
+      "name": "InvalidAlignment",
+      "msg": "Invalid alignment"
     }
   ],
   "metadata": {

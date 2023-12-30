@@ -4,10 +4,7 @@ use podded::{
     ZeroCopy,
 };
 use shank::ShankType;
-use solana_program::{
-    account_info::AccountInfo, msg, program::invoke, program_error::ProgramError, pubkey::Pubkey,
-    rent::Rent, system_instruction, sysvar::Sysvar,
-};
+use solana_program::pubkey::Pubkey;
 
 use super::{Delegate, Discriminator};
 use crate::extensions::{Extension, ExtensionData, ExtensionType};
@@ -59,48 +56,17 @@ pub struct Asset {
 
     /// Name of the asset.
     pub symbol: PodStr<MAX_SYMBOL_LENGTH>,
+
+    // Padding to maintain 8-byte alignment.
+    _padding: u8,
 }
 
 impl Asset {
     /// Length of the account data.
-    // Note: +1 to have 8 byte alignment since extension data might have
-    // a different alignment.
-    pub const LEN: usize = std::mem::size_of::<Asset>() + 1;
+    pub const LEN: usize = std::mem::size_of::<Asset>();
 
+    /// Seed used to derive the PDA.
     pub const SEED: &'static str = "asset";
-
-    /// Allocates space to store an extension in a given account.
-    ///
-    /// This is used to allocate space for the extension data. The function
-    /// return the offset represeting the start of the allocated space.
-    pub fn allocate<'a, 'b>(
-        account: &'b AccountInfo<'a>,
-        payer: &'b AccountInfo<'a>,
-        system_program: &'b AccountInfo<'a>,
-        extension: Extension,
-        size: usize,
-    ) -> Result<usize, ProgramError> {
-        let offset = account.data_len();
-        let extended = offset + Extension::LEN + size;
-        let required_rent = Rent::get()?
-            .minimum_balance(extended)
-            .saturating_sub(account.lamports());
-
-        msg!("Funding {} lamports for account realloc", required_rent);
-
-        invoke(
-            &system_instruction::transfer(payer.key, account.key, required_rent),
-            &[payer.clone(), account.clone(), system_program.clone()],
-        )?;
-
-        account.realloc(extended, false)?;
-
-        let data = &mut (*account.data).borrow_mut();
-        let location = Extension::load_mut(&mut data[offset..]);
-        *location = extension;
-
-        Ok(Extension::LEN + offset)
-    }
 
     /// Returns the extension data of a given type.
     ///
@@ -110,14 +76,13 @@ impl Asset {
         let mut cursor = Asset::LEN;
 
         while cursor < data.len() {
-            let header = Extension::load(&data[cursor..]);
-            cursor = cursor.saturating_add(Extension::LEN);
+            let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
 
-            if header.extension_type() == T::TYPE {
-                return Some(T::from_bytes(&data[cursor..]));
+            if extension.extension_type() == T::TYPE {
+                return Some(T::from_bytes(&data[cursor + Extension::LEN..]));
             }
 
-            cursor = cursor.saturating_add(header.length() as usize);
+            cursor = extension.boundary() as usize;
         }
 
         None
@@ -128,14 +93,13 @@ impl Asset {
         let mut cursor = Asset::LEN;
 
         while cursor < data.len() {
-            let header = Extension::load(&data[cursor..]);
-            cursor = cursor.saturating_add(Extension::LEN);
+            let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
 
-            if header.extension_type() == extension_type {
+            if extension.extension_type() == extension_type {
                 return true;
             }
 
-            cursor = cursor.saturating_add(header.length() as usize);
+            cursor = extension.boundary() as usize;
         }
 
         false
@@ -150,11 +114,9 @@ impl Asset {
         let mut extensions = Vec::new();
 
         while cursor < data.len() {
-            let extension = Extension::load(&data[cursor..]);
+            let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
             extensions.push(extension.extension_type());
-            cursor = cursor
-                .saturating_add(Extension::LEN)
-                .saturating_add(extension.length() as usize);
+            cursor = extension.boundary() as usize;
         }
 
         extensions
@@ -167,7 +129,10 @@ impl Asset {
     /// `None` is returned.
     pub fn first_extension(data: &[u8]) -> Option<(&Extension, usize)> {
         if Asset::LEN < data.len() {
-            return Some((Extension::load(&data[Asset::LEN..]), Asset::LEN));
+            return Some((
+                Extension::load(&data[Asset::LEN..]),
+                Asset::LEN + Extension::LEN,
+            ));
         }
 
         None
@@ -184,10 +149,8 @@ impl Asset {
 
         while cursor < data.len() {
             let extension = Extension::load(&data[cursor..]);
-            last = Some((extension, cursor.saturating_add(Extension::LEN)));
-            cursor = cursor
-                .saturating_add(Extension::LEN)
-                .saturating_add(extension.length() as usize);
+            last = Some((extension, cursor + Extension::LEN));
+            cursor = extension.boundary() as usize;
         }
 
         last
