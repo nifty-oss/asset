@@ -183,7 +183,7 @@ export function findAssetPda(
   context: Pick<Context, 'eddsa' | 'programs'>,
   seeds: {
     /** Address to derive the PDA from */
-    mold: PublicKey;
+    canvas: PublicKey;
   }
 ): Pda {
   const programId = context.programs.getPublicKey(
@@ -192,7 +192,7 @@ export function findAssetPda(
   );
   return context.eddsa.findPda(programId, [
     string({ size: 'variable' }).serialize('asset'),
-    publicKeySerializer().serialize(seeds.mold),
+    publicKeySerializer().serialize(seeds.canvas),
   ]);
 }
 

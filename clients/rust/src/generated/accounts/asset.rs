@@ -44,18 +44,18 @@ pub struct Asset {
 
 impl Asset {
     pub fn create_pda(
-        mold: Pubkey,
+        canvas: Pubkey,
         bump: u8,
     ) -> Result<solana_program::pubkey::Pubkey, solana_program::pubkey::PubkeyError> {
         solana_program::pubkey::Pubkey::create_program_address(
-            &["asset".as_bytes(), mold.as_ref(), &[bump]],
+            &["asset".as_bytes(), canvas.as_ref(), &[bump]],
             &crate::ASSET_ID,
         )
     }
 
-    pub fn find_pda(mold: &Pubkey) -> (solana_program::pubkey::Pubkey, u8) {
+    pub fn find_pda(canvas: &Pubkey) -> (solana_program::pubkey::Pubkey, u8) {
         solana_program::pubkey::Pubkey::find_program_address(
-            &["asset".as_bytes(), mold.as_ref()],
+            &["asset".as_bytes(), canvas.as_ref()],
             &crate::ASSET_ID,
         )
     }

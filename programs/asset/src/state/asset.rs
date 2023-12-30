@@ -9,8 +9,8 @@ use solana_program::{
     rent::Rent, system_instruction, sysvar::Sysvar,
 };
 
-use super::Discriminator;
-use crate::extensions::{Extension, ExtensionType, Header};
+use super::{Delegate, Discriminator};
+use crate::extensions::{Extension, ExtensionData, ExtensionType};
 
 /// Maximum length of a name.
 pub const MAX_NAME_LENGTH: usize = 32;
@@ -51,8 +51,8 @@ pub struct Asset {
     /// Delegate of the asset.
     ///
     /// The delegate is the account that can control the asset on behalf of
-    /// the holder. When a delegate is not set, the delegate is zero'd out.
-    pub delegate: Pubkey,
+    /// the holder.
+    pub delegate: Delegate,
 
     /// Name of the asset.
     pub name: PodStr<MAX_NAME_LENGTH>,
@@ -62,7 +62,10 @@ pub struct Asset {
 }
 
 impl Asset {
-    pub const LEN: usize = std::mem::size_of::<Asset>() + 2;
+    /// Length of the account data.
+    // Note: +1 to have 8 byte alignment since extension data might have
+    // a different alignment.
+    pub const LEN: usize = std::mem::size_of::<Asset>() + 1;
 
     pub const SEED: &'static str = "asset";
 
@@ -74,11 +77,11 @@ impl Asset {
         account: &'b AccountInfo<'a>,
         payer: &'b AccountInfo<'a>,
         system_program: &'b AccountInfo<'a>,
-        extension_type: ExtensionType,
+        extension: Extension,
         size: usize,
     ) -> Result<usize, ProgramError> {
         let offset = account.data_len();
-        let extended = offset + Header::LEN + size;
+        let extended = offset + Extension::LEN + size;
         let required_rent = Rent::get()?
             .minimum_balance(extended)
             .saturating_sub(account.lamports());
@@ -93,25 +96,24 @@ impl Asset {
         account.realloc(extended, false)?;
 
         let data = &mut (*account.data).borrow_mut();
-        let header = Header::load_mut(&mut data[offset..]);
-        header.set_extension_type(extension_type);
-        header.set_length(size);
+        let location = Extension::load_mut(&mut data[offset..]);
+        *location = extension;
 
-        Ok(Header::LEN + offset)
+        Ok(Extension::LEN + offset)
     }
 
-    pub fn get<'a, T: Extension<'a>>(data: &'a [u8]) -> Option<T> {
+    pub fn get<'a, T: ExtensionData<'a>>(data: &'a [u8]) -> Option<T> {
         let mut cursor = Asset::LEN;
 
         while cursor < data.len() {
-            let header = Header::load(&data[cursor..]);
-            cursor = cursor.saturating_add(Header::LEN);
+            let header = Extension::load(&data[cursor..]);
+            cursor = cursor.saturating_add(Extension::LEN);
 
             if header.extension_type() == T::TYPE {
                 return Some(T::from_bytes(&data[cursor..]));
             }
 
-            cursor = cursor.saturating_add(header.length());
+            cursor = cursor.saturating_add(header.length() as usize);
         }
 
         None
@@ -121,14 +123,14 @@ impl Asset {
         let mut cursor = Asset::LEN;
 
         while cursor < data.len() {
-            let header = Header::load(&data[cursor..]);
-            cursor = cursor.saturating_add(Header::LEN);
+            let header = Extension::load(&data[cursor..]);
+            cursor = cursor.saturating_add(Extension::LEN);
 
             if header.extension_type() == extension_type {
                 return true;
             }
 
-            cursor = cursor.saturating_add(header.length());
+            cursor = cursor.saturating_add(header.length() as usize);
         }
 
         false
@@ -139,19 +141,43 @@ impl Asset {
         let mut extensions = Vec::new();
 
         while cursor < data.len() {
-            let header = Header::load(&data[cursor..]);
-            extensions.push(header.extension_type());
+            let extension = Extension::load(&data[cursor..]);
+            extensions.push(extension.extension_type());
             cursor = cursor
-                .saturating_add(Header::LEN)
-                .saturating_add(header.length());
+                .saturating_add(Extension::LEN)
+                .saturating_add(extension.length() as usize);
         }
 
         extensions
+    }
+
+    pub fn first_extension(data: &[u8]) -> Option<(&Extension, usize)> {
+        if Asset::LEN < data.len() {
+            return Some((Extension::load(&data[Asset::LEN..]), Asset::LEN));
+        }
+
+        None
+    }
+
+    pub fn last_extension(data: &[u8]) -> Option<(&Extension, usize)> {
+        let mut cursor = Asset::LEN;
+        let mut last = None;
+
+        while cursor < data.len() {
+            let extension = Extension::load(&data[cursor..]);
+            last = Some((extension, cursor));
+            cursor = cursor
+                .saturating_add(Extension::LEN)
+                .saturating_add(extension.length() as usize);
+        }
+
+        last
     }
 }
 
 impl<'a> ZeroCopy<'a, Asset> for Asset {}
 
+#[repr(u8)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, ShankType)]
 pub enum State {
     #[default]

@@ -1,27 +1,27 @@
 #![cfg(feature = "test-sbf")]
 
 use borsh::BorshDeserialize;
+use nifty_asset::{accounts::Asset, instructions::CreateBuilder};
 use solana_program_test::{tokio, ProgramTest};
 use solana_sdk::{
     signature::{Keypair, Signer},
     transaction::Transaction,
 };
-use tpl_asset::{accounts::Asset, instructions::CreateBuilder};
 
 #[tokio::test]
 async fn create() {
-    let mut context = ProgramTest::new("asset_program", tpl_asset::ID, None)
+    let mut context = ProgramTest::new("asset_program", nifty_asset::ID, None)
         .start_with_context()
         .await;
 
     // Given a new keypair.
 
-    let mold = Keypair::new();
-    let asset = Asset::find_pda(&mold.pubkey()).0;
+    let canvas = Keypair::new();
+    let asset = Asset::find_pda(&canvas.pubkey()).0;
 
     let ix = CreateBuilder::new()
         .asset(asset)
-        .mold(mold.pubkey())
+        .canvas(canvas.pubkey())
         .authority(context.payer.pubkey())
         .holder(context.payer.pubkey())
         .payer(context.payer.pubkey())
@@ -34,7 +34,7 @@ async fn create() {
     let tx = Transaction::new_signed_with_payer(
         &[ix],
         Some(&context.payer.pubkey()),
-        &[&context.payer, &mold],
+        &[&context.payer, &canvas],
         context.last_blockhash,
     );
     context.banks_client.process_transaction(tx).await.unwrap();

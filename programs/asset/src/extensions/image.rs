@@ -1,4 +1,4 @@
-use super::{Extension, ExtensionType};
+use super::{ExtensionData, ExtensionType};
 
 /// Extension to add a list of creators.
 #[repr(C)]
@@ -7,7 +7,7 @@ pub struct Image<'a> {
     pub data: &'a [u8],
 }
 
-impl<'a> Extension<'a> for Image<'a> {
+impl<'a> ExtensionData<'a> for Image<'a> {
     const TYPE: ExtensionType = ExtensionType::Image;
 
     fn from_bytes(bytes: &'a [u8]) -> Self {

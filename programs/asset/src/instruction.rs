@@ -5,10 +5,20 @@ use crate::extensions::ExtensionType;
 
 #[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankContext, ShankInstruction)]
 #[rustfmt::skip]
-pub enum DASInstruction {
+pub enum Instruction {
+    /*
+    /// Closes an extension data buffer.
+    /// 
+    /// You can only close the asset account if it has not being created.
+    #[account(0, writable, name="buffer", desc = "Data buffer (pda of `['buffer', authority pubkey]`)")]
+    #[account(1, signer, name="authority", desc = "Authority of the buffer")]
+    #[account(2, signer, writable, name="payer", desc = "The account paying for the storage fees")]
+    Close,
+    */
+
     /// Create a new asset.
-    #[account(0, writable, name="asset", desc = "Asset account (pda of `['asset', mold pubkey]`)")]
-    #[account(1, signer, name="mold", desc = "Address to derive the PDA from")]
+    #[account(0, writable, name="asset", desc = "Asset account (pda of `['asset', canvas pubkey]`)")]
+    #[account(1, signer, name="canvas", desc = "Address to derive the PDA from")]
     #[account(2, signer, name="authority", desc = "The authority of the asset")]
     #[account(3, name="holder", desc = "The holder of the asset")]
     #[account(4, signer, writable, name="payer", desc = "The account paying for the storage fees")]
@@ -16,12 +26,18 @@ pub enum DASInstruction {
     Create(Metadata),
 
     /// Create a new asset.
-    #[account(0, writable, name="asset", desc = "Asset account (pda of `['asset', mold pubkey]`)")]
-    #[account(1, signer, name="mold", desc = "Address to derive the PDA from")]
-    #[account(2, optional, name="buffer", desc = "Extension data buffer (pda of `['buffer', mold pubkey]`)")]
-    #[account(3, signer, writable, name="payer", desc = "The account paying for the storage fees")]
-    #[account(4, name="system_program", desc = "The system program")]
+    #[account(0, writable, name="asset", desc = "Asset account (pda of `['asset', canvas pubkey]`)")]
+    #[account(1, signer, name="canvas", desc = "Address to derive the PDA from")]
+    #[account(2, signer, writable, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, name="system_program", desc = "The system program")]
     Initialize(Extension),
+
+    /// Allocate space for an extension data buffer.
+    #[account(0, writable, name="asset", desc = "Asset account (pda of `['asset', canvas pubkey]`)")]
+    #[account(1, signer, name="canvas", desc = "Address to derive the PDA from")]
+    #[account(2, signer, writable, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, name="system_program", desc = "The system program")]
+    Write(Data),
 }
 
 #[repr(C)]
@@ -39,16 +55,31 @@ pub struct Extension {
     /// Extension type to initialize.
     pub extension_type: ExtensionType,
 
+    /// Total length of the extension data.
+    pub length: u32,
+
     /// Extension data.
     pub data: Option<Vec<u8>>,
 }
 
+impl From<Extension> for crate::extensions::Extension {
+    fn from(extension: Extension) -> Self {
+        (&extension).into()
+    }
+}
+
+impl From<&Extension> for crate::extensions::Extension {
+    fn from(extension: &Extension) -> Self {
+        crate::extensions::Extension::new(extension.extension_type, extension.length)
+    }
+}
+
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
-pub struct Buffer {
+pub struct Data {
     /// Indicates whether to overwrite the buffer or not.
     pub overwrite: bool,
 
     /// Extension data.
-    pub data: Vec<u8>,
+    pub bytes: Vec<u8>,
 }

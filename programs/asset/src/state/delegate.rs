@@ -9,6 +9,7 @@ pub struct Delegate {
     pub address: Pubkey,
 }
 
+#[repr(u8)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, ShankType)]
 pub enum DelegateRole {
     #[default]

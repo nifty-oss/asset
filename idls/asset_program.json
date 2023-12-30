@@ -10,11 +10,11 @@
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "Asset account (pda of `['asset', mold pubkey]`)"
+            "Asset account (pda of `['asset', canvas pubkey]`)"
           ]
         },
         {
-          "name": "mold",
+          "name": "canvas",
           "isMut": false,
           "isSigner": true,
           "docs": [
@@ -75,24 +75,15 @@
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "Asset account (pda of `['asset', mold pubkey]`)"
+            "Asset account (pda of `['asset', canvas pubkey]`)"
           ]
         },
         {
-          "name": "mold",
+          "name": "canvas",
           "isMut": false,
           "isSigner": true,
           "docs": [
             "Address to derive the PDA from"
-          ]
-        },
-        {
-          "name": "buffer",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true,
-          "docs": [
-            "Extension data buffer (pda of `['buffer', mold pubkey]`)"
           ]
         },
         {
@@ -123,6 +114,55 @@
       "discriminant": {
         "type": "u8",
         "value": 1
+      }
+    },
+    {
+      "name": "Write",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Asset account (pda of `['asset', canvas pubkey]`)"
+          ]
+        },
+        {
+          "name": "canvas",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Address to derive the PDA from"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "data",
+          "type": {
+            "defined": "Data"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 2
       }
     }
   ],
@@ -195,6 +235,10 @@
             }
           },
           {
+            "name": "length",
+            "type": "u32"
+          },
+          {
             "name": "data",
             "type": {
               "option": "bytes"
@@ -204,7 +248,7 @@
       }
     },
     {
-      "name": "Buffer",
+      "name": "Data",
       "type": {
         "kind": "struct",
         "fields": [
@@ -213,7 +257,7 @@
             "type": "bool"
           },
           {
-            "name": "data",
+            "name": "bytes",
             "type": "bytes"
           }
         ]
@@ -303,38 +347,28 @@
   "errors": [
     {
       "code": 0,
-      "name": "InvalidSystemProgram",
-      "msg": "Invalid System Program"
-    },
-    {
-      "code": 1,
-      "name": "DeserializationError",
-      "msg": "Error deserializing account"
-    },
-    {
-      "code": 2,
-      "name": "SerializationError",
-      "msg": "Error serializing account"
-    },
-    {
-      "code": 3,
       "name": "AlreadyInitialized",
       "msg": "Asset already initialized"
     },
     {
-      "code": 4,
-      "name": "MissingSigner",
-      "msg": "Missing signer"
-    },
-    {
-      "code": 5,
-      "name": "MissingExtensionData",
-      "msg": "Missing extension data"
-    },
-    {
-      "code": 6,
+      "code": 1,
       "name": "InvalidAccountLength",
       "msg": "Invalid account length"
+    },
+    {
+      "code": 2,
+      "name": "IncompleteExtensionData",
+      "msg": "Incomplete extension data"
+    },
+    {
+      "code": 3,
+      "name": "Uninitialized",
+      "msg": "Uninitialized account"
+    },
+    {
+      "code": 4,
+      "name": "ExtensionNotFound",
+      "msg": "Extension not found"
     }
   ],
   "metadata": {

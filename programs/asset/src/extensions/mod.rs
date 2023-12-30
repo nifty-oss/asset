@@ -12,15 +12,21 @@ use podded::ZeroCopy;
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default, Pod, Zeroable)]
-pub struct Header {
+pub struct Extension {
     /// Data section.
     ///   0. type
     ///   1. length
     data: [u32; 2],
 }
 
-impl Header {
+impl Extension {
     pub const LEN: usize = std::mem::size_of::<Self>();
+
+    pub fn new(extension_type: ExtensionType, length: u32) -> Self {
+        Self {
+            data: [extension_type.into(), length],
+        }
+    }
 
     pub fn extension_type(&self) -> ExtensionType {
         self.data[0].into()
@@ -30,18 +36,18 @@ impl Header {
         self.data[0] = value.into();
     }
 
-    pub fn length(&self) -> usize {
-        self.data[1] as usize
+    pub fn length(&self) -> u32 {
+        self.data[1]
     }
 
-    pub fn set_length(&mut self, value: usize) {
-        self.data[1] = value as u32;
+    pub fn set_length(&mut self, value: u32) {
+        self.data[1] = value;
     }
 }
 
-impl<'a> ZeroCopy<'a, Header> for Header {}
+impl<'a> ZeroCopy<'a, Extension> for Extension {}
 
-pub trait Extension<'a> {
+pub trait ExtensionData<'a> {
     const TYPE: ExtensionType;
 
     fn from_bytes(bytes: &'a [u8]) -> Self;
@@ -49,7 +55,7 @@ pub trait Extension<'a> {
     fn length(&self) -> usize;
 }
 
-pub trait ExtensionMut<'a> {
+pub trait ExtensionDataMut<'a> {
     const TYPE: ExtensionType;
 
     fn from_bytes_mut(bytes: &'a mut [u8]) -> Self;

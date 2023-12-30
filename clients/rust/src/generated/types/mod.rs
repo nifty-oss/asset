@@ -6,7 +6,6 @@
 //!
 
 pub(crate) mod r#attributes;
-pub(crate) mod r#buffer;
 pub(crate) mod r#creator;
 pub(crate) mod r#creators;
 pub(crate) mod r#delegate;
@@ -18,7 +17,6 @@ pub(crate) mod r#state;
 pub(crate) mod r#trait;
 
 pub use self::r#attributes::*;
-pub use self::r#buffer::*;
 pub use self::r#creator::*;
 pub use self::r#creators::*;
 pub use self::r#delegate::*;

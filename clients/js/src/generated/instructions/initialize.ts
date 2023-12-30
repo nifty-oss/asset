@@ -41,12 +41,10 @@ import {
 
 // Accounts.
 export type InitializeInstructionAccounts = {
-  /** Asset account (pda of `['asset', mold pubkey]`) */
+  /** Asset account (pda of `['asset', canvas pubkey]`) */
   asset?: PublicKey | Pda;
   /** Address to derive the PDA from */
-  mold: Signer;
-  /** Extension data buffer (pda of `['buffer', mold pubkey]`) */
-  buffer?: PublicKey | Pda;
+  canvas: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
   /** The system program */
@@ -57,11 +55,13 @@ export type InitializeInstructionAccounts = {
 export type InitializeInstructionData = {
   discriminator: number;
   extensionType: ExtensionType;
+  length: number;
   data: Option<Uint8Array>;
 };
 
 export type InitializeInstructionDataArgs = {
   extensionType: ExtensionTypeArgs;
+  length: number;
   data?: OptionOrNullable<Uint8Array>;
 };
 
@@ -78,6 +78,7 @@ export function getInitializeInstructionDataSerializer(): Serializer<
       [
         ['discriminator', u8()],
         ['extensionType', getExtensionTypeSerializer()],
+        ['length', u32()],
         ['data', option(bytes({ size: u32() }))],
       ],
       { description: 'InitializeInstructionData' }
@@ -107,19 +108,18 @@ export function initialize(
       isWritable: true as boolean,
       value: input.asset ?? null,
     },
-    mold: { index: 1, isWritable: false as boolean, value: input.mold ?? null },
-    buffer: {
-      index: 2,
+    canvas: {
+      index: 1,
       isWritable: false as boolean,
-      value: input.buffer ?? null,
+      value: input.canvas ?? null,
     },
     payer: {
-      index: 3,
+      index: 2,
       isWritable: true as boolean,
       value: input.payer ?? null,
     },
     systemProgram: {
-      index: 4,
+      index: 3,
       isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
@@ -131,7 +131,7 @@ export function initialize(
   // Default values.
   if (!resolvedAccounts.asset.value) {
     resolvedAccounts.asset.value = findAssetPda(context, {
-      mold: expectPublicKey(resolvedAccounts.mold.value),
+      canvas: expectPublicKey(resolvedAccounts.canvas.value),
     });
   }
   if (!resolvedAccounts.payer.value) {

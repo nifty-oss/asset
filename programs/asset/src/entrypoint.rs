@@ -3,7 +3,7 @@ use solana_program::{
     program_error::PrintProgramError, pubkey::Pubkey,
 };
 
-use crate::{error::DASError, processor};
+use crate::{error::AssetError, processor};
 
 entrypoint!(process_instruction);
 fn process_instruction<'a>(
@@ -13,7 +13,7 @@ fn process_instruction<'a>(
 ) -> ProgramResult {
     if let Err(error) = processor::process_instruction(program_id, accounts, instruction_data) {
         // catch the error so we can print it
-        error.print::<DASError>();
+        error.print::<AssetError>();
         return Err(error);
     }
     Ok(())

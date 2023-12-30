@@ -7,4 +7,4 @@
  */
 
 export * from './create';
-export * from './initialize';
+export * from './write';

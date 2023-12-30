@@ -1,12 +1,10 @@
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program::invoke_signed,
+    entrypoint::ProgramResult, msg, program::invoke_signed, program_error::ProgramError,
     program_memory::sol_memcpy, pubkey::Pubkey, rent::Rent, system_instruction, sysvar::Sysvar,
 };
 
 use crate::{
-    err,
-    error::DASError,
-    extensions::ExtensionType,
+    error::AssetError,
     instruction::{
         accounts::{Context, InitializeAccounts},
         Extension,
@@ -15,19 +13,26 @@ use crate::{
     state::{Asset, Discriminator},
 };
 
-pub fn process_initialize<'a>(accounts: &'a [AccountInfo<'a>], args: Extension) -> ProgramResult {
-    let ctx = InitializeAccounts::context(accounts)?;
+pub fn process_initialize(
+    program_id: &Pubkey,
+    ctx: Context<InitializeAccounts>,
+    args: Extension,
+) -> ProgramResult {
+    // account validation
 
-    require!(ctx.accounts.mold.is_signer, DASError::MissingSigner);
+    require!(
+        ctx.accounts.canvas.is_signer,
+        ProgramError::MissingRequiredSignature,
+        "canvas"
+    );
 
-    // validate account derivation
-
-    let mut seeds = vec![Asset::SEED.as_bytes(), ctx.accounts.mold.key.as_ref()];
-    let (derived_key, bump) = Pubkey::find_program_address(&seeds, &crate::ID);
+    let mut seeds = vec![Asset::SEED.as_bytes(), ctx.accounts.canvas.key.as_ref()];
+    let (derived_key, bump) = Pubkey::find_program_address(&seeds, program_id);
 
     require!(
         *ctx.accounts.asset.key == derived_key,
-        DASError::DeserializationError
+        ProgramError::InvalidSeeds,
+        "asset"
     );
 
     let bump = [bump];
@@ -40,68 +45,98 @@ pub fn process_initialize<'a>(accounts: &'a [AccountInfo<'a>], args: Extension) 
                 ctx.accounts.asset.key,
                 Rent::get()?.minimum_balance(Asset::LEN),
                 Asset::LEN as u64,
-                &crate::ID,
+                program_id,
             ),
             &[ctx.accounts.payer.clone(), ctx.accounts.asset.clone()],
             &[&seeds],
         )?;
     } else {
+        let data = (*ctx.accounts.asset.data).borrow();
+
         require!(
-            ctx.accounts.asset.data_len() >= Asset::LEN,
-            DASError::InvalidAccountLength
+            data.len() >= Asset::LEN,
+            AssetError::InvalidAccountLength,
+            "asset"
         );
+
+        // if there is an extension on the account, need to make sure it has all
+        // its data written before initializing a new one
+        if let Some((extension, offset)) = Asset::last_extension(&data) {
+            require!(
+                extension.length() as usize + offset <= data.len(),
+                AssetError::IncompleteExtensionData,
+                format!(
+                    "incomplete '{:?}' extension data",
+                    extension.extension_type()
+                )
+            );
+        }
     }
+
+    require!(
+        ctx.accounts.asset.owner == program_id,
+        ProgramError::IllegalOwner,
+        "asset"
+    );
 
     let data = (*ctx.accounts.asset.data).borrow();
 
     // make sure that the asset is not already initialized
     require!(
         data[0] == Discriminator::Uninitialized as u8,
-        DASError::AlreadyInitialized
+        AssetError::AlreadyInitialized,
+        "asset"
     );
 
     // and the account does not have the extension
     require!(
         !Asset::contains(args.extension_type, &data),
-        DASError::AlreadyInitialized
+        AssetError::AlreadyInitialized,
+        "asset"
     );
 
     // drop the reference to resize the account
     drop(data);
 
-    if let Some(data) = args.data {
-        msg!(
-            "Initializing extension '{:?}' with instruction data",
-            args.extension_type
-        );
-        save_extension_data(&ctx, args.extension_type, &data)
-    } else if let Some(buffer) = ctx.accounts.buffer {
-        msg!(
-            "Initializing extension '{:?}' with buffer data",
-            args.extension_type
-        );
-        save_extension_data(&ctx, args.extension_type, &buffer.data.borrow())
+    let length = if let Some(data) = &args.data {
+        if args.length as usize == data.len() {
+            msg!(
+                "Initializing extension '{:?}' with instruction data",
+                args.extension_type
+            );
+        }
+        save_extension_data(&ctx, &args, data)?;
+
+        args.length - data.len() as u32
     } else {
-        err!(DASError::MissingExtensionData)
-    }
+        args.length
+    };
+
+    msg!(
+        "Initializing extension '{:?}' (waiting for {} bytes)",
+        args.extension_type,
+        length
+    );
+
+    Ok(())
 }
 
 fn save_extension_data(
     ctx: &Context<InitializeAccounts>,
-    extension_type: ExtensionType,
-    extension: &[u8],
+    args: &Extension,
+    data: &[u8],
 ) -> ProgramResult {
     let offset = Asset::allocate(
         ctx.accounts.asset,
         ctx.accounts.payer,
         ctx.accounts.system_program,
-        extension_type,
-        extension.len(),
+        args.into(),
+        data.len(),
     )?;
 
-    let data = &mut (*ctx.accounts.asset.data).borrow_mut();
+    let account_data = &mut (*ctx.accounts.asset.data).borrow_mut();
 
-    sol_memcpy(&mut data[offset..], extension, extension.len());
+    sol_memcpy(&mut account_data[offset..], data, data.len());
 
     Ok(())
 }

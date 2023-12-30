@@ -16,9 +16,11 @@ import {
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
+  bool,
+  bytes,
   mapSerializer,
-  string,
   struct,
+  u32,
   u8,
 } from '@metaplex-foundation/umi/serializers';
 import { findAssetPda } from '../accounts';
@@ -30,15 +32,11 @@ import {
 } from '../shared';
 
 // Accounts.
-export type CreateInstructionAccounts = {
+export type WriteInstructionAccounts = {
   /** Asset account (pda of `['asset', canvas pubkey]`) */
   asset?: PublicKey | Pda;
   /** Address to derive the PDA from */
   canvas: Signer;
-  /** The authority of the asset */
-  authority?: Signer;
-  /** The holder of the asset */
-  holder: PublicKey | Pda;
   /** The account paying for the storage fees */
   payer?: Signer;
   /** The system program */
@@ -46,38 +44,41 @@ export type CreateInstructionAccounts = {
 };
 
 // Data.
-export type CreateInstructionData = {
+export type WriteInstructionData = {
   discriminator: number;
-  name: string;
-  symbol: string;
+  overwrite: boolean;
+  bytes: Uint8Array;
 };
 
-export type CreateInstructionDataArgs = { name: string; symbol: string };
+export type WriteInstructionDataArgs = {
+  overwrite: boolean;
+  bytes: Uint8Array;
+};
 
-export function getCreateInstructionDataSerializer(): Serializer<
-  CreateInstructionDataArgs,
-  CreateInstructionData
+export function getWriteInstructionDataSerializer(): Serializer<
+  WriteInstructionDataArgs,
+  WriteInstructionData
 > {
-  return mapSerializer<CreateInstructionDataArgs, any, CreateInstructionData>(
-    struct<CreateInstructionData>(
+  return mapSerializer<WriteInstructionDataArgs, any, WriteInstructionData>(
+    struct<WriteInstructionData>(
       [
         ['discriminator', u8()],
-        ['name', string()],
-        ['symbol', string()],
+        ['overwrite', bool()],
+        ['bytes', bytes({ size: u32() })],
       ],
-      { description: 'CreateInstructionData' }
+      { description: 'WriteInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 0 })
-  ) as Serializer<CreateInstructionDataArgs, CreateInstructionData>;
+    (value) => ({ ...value, discriminator: 2 })
+  ) as Serializer<WriteInstructionDataArgs, WriteInstructionData>;
 }
 
 // Args.
-export type CreateInstructionArgs = CreateInstructionDataArgs;
+export type WriteInstructionArgs = WriteInstructionDataArgs;
 
 // Instruction.
-export function create(
-  context: Pick<Context, 'eddsa' | 'identity' | 'payer' | 'programs'>,
-  input: CreateInstructionAccounts & CreateInstructionArgs
+export function write(
+  context: Pick<Context, 'eddsa' | 'payer' | 'programs'>,
+  input: WriteInstructionAccounts & WriteInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -97,39 +98,26 @@ export function create(
       isWritable: false as boolean,
       value: input.canvas ?? null,
     },
-    authority: {
-      index: 2,
-      isWritable: false as boolean,
-      value: input.authority ?? null,
-    },
-    holder: {
-      index: 3,
-      isWritable: false as boolean,
-      value: input.holder ?? null,
-    },
     payer: {
-      index: 4,
+      index: 2,
       isWritable: true as boolean,
       value: input.payer ?? null,
     },
     systemProgram: {
-      index: 5,
+      index: 3,
       isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
 
   // Arguments.
-  const resolvedArgs: CreateInstructionArgs = { ...input };
+  const resolvedArgs: WriteInstructionArgs = { ...input };
 
   // Default values.
   if (!resolvedAccounts.asset.value) {
     resolvedAccounts.asset.value = findAssetPda(context, {
       canvas: expectPublicKey(resolvedAccounts.canvas.value),
     });
-  }
-  if (!resolvedAccounts.authority.value) {
-    resolvedAccounts.authority.value = context.identity;
   }
   if (!resolvedAccounts.payer.value) {
     resolvedAccounts.payer.value = context.payer;
@@ -155,8 +143,8 @@ export function create(
   );
 
   // Data.
-  const data = getCreateInstructionDataSerializer().serialize(
-    resolvedArgs as CreateInstructionDataArgs
+  const data = getWriteInstructionDataSerializer().serialize(
+    resolvedArgs as WriteInstructionDataArgs
   );
 
   // Bytes Created On Chain.

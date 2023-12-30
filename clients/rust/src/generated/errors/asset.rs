@@ -10,27 +10,21 @@ use thiserror::Error;
 
 #[derive(Clone, Debug, Eq, Error, FromPrimitive, PartialEq)]
 pub enum AssetError {
-    /// 0 (0x0) - Invalid System Program
-    #[error("Invalid System Program")]
-    InvalidSystemProgram,
-    /// 1 (0x1) - Error deserializing account
-    #[error("Error deserializing account")]
-    DeserializationError,
-    /// 2 (0x2) - Error serializing account
-    #[error("Error serializing account")]
-    SerializationError,
-    /// 3 (0x3) - Asset already initialized
+    /// 0 (0x0) - Asset already initialized
     #[error("Asset already initialized")]
     AlreadyInitialized,
-    /// 4 (0x4) - Missing signer
-    #[error("Missing signer")]
-    MissingSigner,
-    /// 5 (0x5) - Missing extension data
-    #[error("Missing extension data")]
-    MissingExtensionData,
-    /// 6 (0x6) - Invalid account length
+    /// 1 (0x1) - Invalid account length
     #[error("Invalid account length")]
     InvalidAccountLength,
+    /// 2 (0x2) - Incomplete extension data
+    #[error("Incomplete extension data")]
+    IncompleteExtensionData,
+    /// 3 (0x3) - Uninitialized account
+    #[error("Uninitialized account")]
+    Uninitialized,
+    /// 4 (0x4) - Extension not found
+    #[error("Extension not found")]
+    ExtensionNotFound,
 }
 
 impl solana_program::program_error::PrintProgramError for AssetError {

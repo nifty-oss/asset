@@ -2091,6 +2091,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "nifty-asset"
+version = "0.1.0"
+dependencies = [
+ "assert_matches",
+ "borsh 0.10.3",
+ "kaigan",
+ "num-derive 0.3.3",
+ "num-traits",
+ "serde",
+ "serde_with 3.4.0",
+ "solana-program",
+ "solana-program-test",
+ "solana-sdk",
+ "thiserror",
+]
+
+[[package]]
 name = "nix"
 version = "0.26.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5016,23 +5033,6 @@ name = "tower-service"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6bc1c9ce2b5135ac7f93c72918fc37feb872bdc6a5533a8b85eb4b86bfdae52"
-
-[[package]]
-name = "tpl-asset"
-version = "0.1.0"
-dependencies = [
- "assert_matches",
- "borsh 0.10.3",
- "kaigan",
- "num-derive 0.3.3",
- "num-traits",
- "serde",
- "serde_with 3.4.0",
- "solana-program",
- "solana-program-test",
- "solana-sdk",
- "thiserror",
-]
 
 [[package]]
 name = "tracing"

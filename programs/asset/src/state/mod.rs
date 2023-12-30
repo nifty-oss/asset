@@ -7,6 +7,7 @@ pub use delegate::*;
 use bytemuck::{Pod, Zeroable};
 use shank::ShankType;
 
+#[repr(u8)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, ShankType)]
 pub enum Discriminator {
     #[default]

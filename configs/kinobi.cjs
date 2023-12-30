@@ -6,9 +6,7 @@ const clientDir = path.join(__dirname, "..", "clients");
 const idlDir = path.join(__dirname, "..", "idls");
 
 // Instanciate Kinobi.
-const kinobi = k.createFromIdls([
-  path.join(idlDir, "asset_program.json"),
-]);
+const kinobi = k.createFromIdls([path.join(idlDir, "asset_program.json")]);
 
 // Update programs.
 kinobi.update(
@@ -132,7 +130,7 @@ kinobi.update(
     asset: {
       seeds: [
         k.stringConstantSeed("asset"),
-        k.publicKeySeed("mold", "Address to derive the PDA from"),
+        k.publicKeySeed("canvas", "Address to derive the PDA from"),
       ],
     },
   })
@@ -147,6 +145,12 @@ kinobi.update(
       },
     },
     initialize: {
+      accounts: {
+        asset: { defaultsTo: k.pdaDefault("asset") },
+      },
+      internal: true,
+    },
+    write: {
       accounts: {
         asset: { defaultsTo: k.pdaDefault("asset") },
       },

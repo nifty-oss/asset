@@ -1,7 +1,7 @@
 use bytemuck::{Pod, Zeroable};
 use podded::types::PodStr;
 
-use super::{Extension, ExtensionMut, ExtensionType};
+use super::{ExtensionData, ExtensionDataMut, ExtensionType};
 
 /// Extension to add attributes.
 #[repr(C)]
@@ -16,7 +16,7 @@ impl<'a> Attributes<'a> {
     }
 }
 
-impl<'a> Extension<'a> for Attributes<'a> {
+impl<'a> ExtensionData<'a> for Attributes<'a> {
     const TYPE: ExtensionType = ExtensionType::Attributes;
 
     fn from_bytes(bytes: &'a [u8]) -> Self {
@@ -35,7 +35,7 @@ pub struct AttributesMut<'a> {
     pub traits: &'a mut [Trait],
 }
 
-impl<'a> ExtensionMut<'a> for AttributesMut<'a> {
+impl<'a> ExtensionDataMut<'a> for AttributesMut<'a> {
     const TYPE: ExtensionType = ExtensionType::Attributes;
 
     fn from_bytes_mut(bytes: &'a mut [u8]) -> Self {

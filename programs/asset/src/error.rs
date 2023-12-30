@@ -7,45 +7,43 @@ use solana_program::{
 use thiserror::Error;
 
 #[derive(Error, Clone, Debug, Eq, PartialEq, FromPrimitive)]
-pub enum DASError {
-    /// 0 - Invalid System Program
-    #[error("Invalid System Program")]
-    InvalidSystemProgram,
-    /// 1 - Error deserializing account
-    #[error("Error deserializing account")]
-    DeserializationError,
-    /// 2 - Error serializing account
-    #[error("Error serializing account")]
-    SerializationError,
-    /// 3 - Asset already initialized
+pub enum AssetError {
+    /// 0 - Asset already initialized
     #[error("Asset already initialized")]
     AlreadyInitialized,
-    /// 4 - Missing signer
-    #[error("Missing signer")]
-    MissingSigner,
-    /// 4 - Missing extension data
-    #[error("Missing extension data")]
-    MissingExtensionData,
-    /// 5 - Invalid account length
+
+    /// 1 - Invalid account length
     #[error("Invalid account length")]
     InvalidAccountLength,
+
+    /// 2 - Incomplete extension data
+    #[error("Incomplete extension data")]
+    IncompleteExtensionData,
+
+    /// 3 - Uninitialized account
+    #[error("Uninitialized account")]
+    Uninitialized,
+
+    /// 4 - Extension not found
+    #[error("Extension not found")]
+    ExtensionNotFound,
 }
 
-impl PrintProgramError for DASError {
+impl PrintProgramError for AssetError {
     fn print<E>(&self) {
         msg!(&self.to_string());
     }
 }
 
-impl From<DASError> for ProgramError {
-    fn from(e: DASError) -> Self {
+impl From<AssetError> for ProgramError {
+    fn from(e: AssetError) -> Self {
         ProgramError::Custom(e as u32)
     }
 }
 
-impl<T> DecodeError<T> for DASError {
+impl<T> DecodeError<T> for AssetError {
     fn type_of() -> &'static str {
-        "Digital Asset Standard Error"
+        "nifty::asset"
     }
 }
 

@@ -15,96 +15,70 @@ type ProgramErrorConstructor = new (
 const codeToErrorMap: Map<number, ProgramErrorConstructor> = new Map();
 const nameToErrorMap: Map<string, ProgramErrorConstructor> = new Map();
 
-/** InvalidSystemProgram: Invalid System Program */
-export class InvalidSystemProgramError extends ProgramError {
-  override readonly name: string = 'InvalidSystemProgram';
-
-  readonly code: number = 0x0; // 0
-
-  constructor(program: Program, cause?: Error) {
-    super('Invalid System Program', program, cause);
-  }
-}
-codeToErrorMap.set(0x0, InvalidSystemProgramError);
-nameToErrorMap.set('InvalidSystemProgram', InvalidSystemProgramError);
-
-/** DeserializationError: Error deserializing account */
-export class DeserializationErrorError extends ProgramError {
-  override readonly name: string = 'DeserializationError';
-
-  readonly code: number = 0x1; // 1
-
-  constructor(program: Program, cause?: Error) {
-    super('Error deserializing account', program, cause);
-  }
-}
-codeToErrorMap.set(0x1, DeserializationErrorError);
-nameToErrorMap.set('DeserializationError', DeserializationErrorError);
-
-/** SerializationError: Error serializing account */
-export class SerializationErrorError extends ProgramError {
-  override readonly name: string = 'SerializationError';
-
-  readonly code: number = 0x2; // 2
-
-  constructor(program: Program, cause?: Error) {
-    super('Error serializing account', program, cause);
-  }
-}
-codeToErrorMap.set(0x2, SerializationErrorError);
-nameToErrorMap.set('SerializationError', SerializationErrorError);
-
 /** AlreadyInitialized: Asset already initialized */
 export class AlreadyInitializedError extends ProgramError {
   override readonly name: string = 'AlreadyInitialized';
 
-  readonly code: number = 0x3; // 3
+  readonly code: number = 0x0; // 0
 
   constructor(program: Program, cause?: Error) {
     super('Asset already initialized', program, cause);
   }
 }
-codeToErrorMap.set(0x3, AlreadyInitializedError);
+codeToErrorMap.set(0x0, AlreadyInitializedError);
 nameToErrorMap.set('AlreadyInitialized', AlreadyInitializedError);
-
-/** MissingSigner: Missing signer */
-export class MissingSignerError extends ProgramError {
-  override readonly name: string = 'MissingSigner';
-
-  readonly code: number = 0x4; // 4
-
-  constructor(program: Program, cause?: Error) {
-    super('Missing signer', program, cause);
-  }
-}
-codeToErrorMap.set(0x4, MissingSignerError);
-nameToErrorMap.set('MissingSigner', MissingSignerError);
-
-/** MissingExtensionData: Missing extension data */
-export class MissingExtensionDataError extends ProgramError {
-  override readonly name: string = 'MissingExtensionData';
-
-  readonly code: number = 0x5; // 5
-
-  constructor(program: Program, cause?: Error) {
-    super('Missing extension data', program, cause);
-  }
-}
-codeToErrorMap.set(0x5, MissingExtensionDataError);
-nameToErrorMap.set('MissingExtensionData', MissingExtensionDataError);
 
 /** InvalidAccountLength: Invalid account length */
 export class InvalidAccountLengthError extends ProgramError {
   override readonly name: string = 'InvalidAccountLength';
 
-  readonly code: number = 0x6; // 6
+  readonly code: number = 0x1; // 1
 
   constructor(program: Program, cause?: Error) {
     super('Invalid account length', program, cause);
   }
 }
-codeToErrorMap.set(0x6, InvalidAccountLengthError);
+codeToErrorMap.set(0x1, InvalidAccountLengthError);
 nameToErrorMap.set('InvalidAccountLength', InvalidAccountLengthError);
+
+/** IncompleteExtensionData: Incomplete extension data */
+export class IncompleteExtensionDataError extends ProgramError {
+  override readonly name: string = 'IncompleteExtensionData';
+
+  readonly code: number = 0x2; // 2
+
+  constructor(program: Program, cause?: Error) {
+    super('Incomplete extension data', program, cause);
+  }
+}
+codeToErrorMap.set(0x2, IncompleteExtensionDataError);
+nameToErrorMap.set('IncompleteExtensionData', IncompleteExtensionDataError);
+
+/** Uninitialized: Uninitialized account */
+export class UninitializedError extends ProgramError {
+  override readonly name: string = 'Uninitialized';
+
+  readonly code: number = 0x3; // 3
+
+  constructor(program: Program, cause?: Error) {
+    super('Uninitialized account', program, cause);
+  }
+}
+codeToErrorMap.set(0x3, UninitializedError);
+nameToErrorMap.set('Uninitialized', UninitializedError);
+
+/** ExtensionNotFound: Extension not found */
+export class ExtensionNotFoundError extends ProgramError {
+  override readonly name: string = 'ExtensionNotFound';
+
+  readonly code: number = 0x4; // 4
+
+  constructor(program: Program, cause?: Error) {
+    super('Extension not found', program, cause);
+  }
+}
+codeToErrorMap.set(0x4, ExtensionNotFoundError);
+nameToErrorMap.set('ExtensionNotFound', ExtensionNotFoundError);
 
 /**
  * Attempts to resolve a custom program error from the provided error code.

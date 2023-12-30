@@ -7,7 +7,6 @@
  */
 
 export * from './attributes';
-export * from './buffer';
 export * from './creator';
 export * from './creators';
 export * from './delegate';
