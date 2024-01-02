@@ -13,6 +13,7 @@ pub(crate) mod r#delegate_role;
 pub(crate) mod r#discriminator;
 pub(crate) mod r#extension_type;
 pub(crate) mod r#image;
+pub(crate) mod r#standard;
 pub(crate) mod r#state;
 pub(crate) mod r#trait;
 
@@ -24,5 +25,6 @@ pub use self::r#delegate_role::*;
 pub use self::r#discriminator::*;
 pub use self::r#extension_type::*;
 pub use self::r#image::*;
+pub use self::r#standard::*;
 pub use self::r#state::*;
 pub use self::r#trait::*;

@@ -10,16 +10,11 @@ use borsh::BorshSerialize;
 
 /// Accounts.
 pub struct Write {
-            /// Asset account (pda of `['asset', canvas pubkey]`)
+            /// Asset account
 
     
               
           pub asset: solana_program::pubkey::Pubkey,
-                /// Address to derive the PDA from
-
-    
-              
-          pub canvas: solana_program::pubkey::Pubkey,
                 /// The account paying for the storage fees
 
     
@@ -38,13 +33,9 @@ impl Write {
   }
   #[allow(clippy::vec_init_then_push)]
   pub fn instruction_with_remaining_accounts(&self, args: WriteInstructionArgs, remaining_accounts: &[solana_program::instruction::AccountMeta]) -> solana_program::instruction::Instruction {
-    let mut accounts = Vec::with_capacity(4 + remaining_accounts.len());
+    let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
                             accounts.push(solana_program::instruction::AccountMeta::new(
             self.asset,
-            false
-          ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.canvas,
             true
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new(
@@ -93,14 +84,12 @@ pub struct WriteInstructionArgs {
 ///
 /// ### Accounts:
 ///
-                ///   0. `[writable]` asset
-                ///   1. `[signer]` canvas
-                      ///   2. `[writable, signer]` payer
-                ///   3. `[optional]` system_program (default to `11111111111111111111111111111111`)
+                      ///   0. `[writable, signer]` asset
+                      ///   1. `[writable, signer]` payer
+                ///   2. `[optional]` system_program (default to `11111111111111111111111111111111`)
 #[derive(Default)]
 pub struct WriteBuilder {
             asset: Option<solana_program::pubkey::Pubkey>,
-                canvas: Option<solana_program::pubkey::Pubkey>,
                 payer: Option<solana_program::pubkey::Pubkey>,
                 system_program: Option<solana_program::pubkey::Pubkey>,
                         overwrite: Option<bool>,
@@ -112,16 +101,10 @@ impl WriteBuilder {
   pub fn new() -> Self {
     Self::default()
   }
-            /// Asset account (pda of `['asset', canvas pubkey]`)
+            /// Asset account
 #[inline(always)]
     pub fn asset(&mut self, asset: solana_program::pubkey::Pubkey) -> &mut Self {
                         self.asset = Some(asset);
-                    self
-    }
-            /// Address to derive the PDA from
-#[inline(always)]
-    pub fn canvas(&mut self, canvas: solana_program::pubkey::Pubkey) -> &mut Self {
-                        self.canvas = Some(canvas);
                     self
     }
             /// The account paying for the storage fees
@@ -163,7 +146,6 @@ impl WriteBuilder {
   pub fn instruction(&self) -> solana_program::instruction::Instruction {
     let accounts = Write {
                               asset: self.asset.expect("asset is not set"),
-                                        canvas: self.canvas.expect("canvas is not set"),
                                         payer: self.payer.expect("payer is not set"),
                                         system_program: self.system_program.unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
                       };
@@ -178,16 +160,11 @@ impl WriteBuilder {
 
   /// `write` CPI accounts.
   pub struct WriteCpiAccounts<'a, 'b> {
-                  /// Asset account (pda of `['asset', canvas pubkey]`)
+                  /// Asset account
 
       
                     
               pub asset: &'b solana_program::account_info::AccountInfo<'a>,
-                        /// Address to derive the PDA from
-
-      
-                    
-              pub canvas: &'b solana_program::account_info::AccountInfo<'a>,
                         /// The account paying for the storage fees
 
       
@@ -204,16 +181,11 @@ impl WriteBuilder {
 pub struct WriteCpi<'a, 'b> {
   /// The program to invoke.
   pub __program: &'b solana_program::account_info::AccountInfo<'a>,
-            /// Asset account (pda of `['asset', canvas pubkey]`)
+            /// Asset account
 
     
               
           pub asset: &'b solana_program::account_info::AccountInfo<'a>,
-                /// Address to derive the PDA from
-
-    
-              
-          pub canvas: &'b solana_program::account_info::AccountInfo<'a>,
                 /// The account paying for the storage fees
 
     
@@ -237,7 +209,6 @@ impl<'a, 'b> WriteCpi<'a, 'b> {
     Self {
       __program: program,
               asset: accounts.asset,
-              canvas: accounts.canvas,
               payer: accounts.payer,
               system_program: accounts.system_program,
                     __args: args,
@@ -262,13 +233,9 @@ impl<'a, 'b> WriteCpi<'a, 'b> {
     signers_seeds: &[&[&[u8]]],
     remaining_accounts: &[(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)]
   ) -> solana_program::entrypoint::ProgramResult {
-    let mut accounts = Vec::with_capacity(4 + remaining_accounts.len());
+    let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
                             accounts.push(solana_program::instruction::AccountMeta::new(
             *self.asset.key,
-            false
-          ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.canvas.key,
             true
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new(
@@ -295,10 +262,9 @@ impl<'a, 'b> WriteCpi<'a, 'b> {
       accounts,
       data,
     };
-    let mut account_infos = Vec::with_capacity(4 + 1 + remaining_accounts.len());
+    let mut account_infos = Vec::with_capacity(3 + 1 + remaining_accounts.len());
     account_infos.push(self.__program.clone());
                   account_infos.push(self.asset.clone());
-                        account_infos.push(self.canvas.clone());
                         account_infos.push(self.payer.clone());
                         account_infos.push(self.system_program.clone());
               remaining_accounts.iter().for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
@@ -315,10 +281,9 @@ impl<'a, 'b> WriteCpi<'a, 'b> {
 ///
 /// ### Accounts:
 ///
-                ///   0. `[writable]` asset
-                ///   1. `[signer]` canvas
-                      ///   2. `[writable, signer]` payer
-          ///   3. `[]` system_program
+                      ///   0. `[writable, signer]` asset
+                      ///   1. `[writable, signer]` payer
+          ///   2. `[]` system_program
 pub struct WriteCpiBuilder<'a, 'b> {
   instruction: Box<WriteCpiBuilderInstruction<'a, 'b>>,
 }
@@ -328,7 +293,6 @@ impl<'a, 'b> WriteCpiBuilder<'a, 'b> {
     let instruction = Box::new(WriteCpiBuilderInstruction {
       __program: program,
               asset: None,
-              canvas: None,
               payer: None,
               system_program: None,
                                             overwrite: None,
@@ -337,16 +301,10 @@ impl<'a, 'b> WriteCpiBuilder<'a, 'b> {
     });
     Self { instruction }
   }
-      /// Asset account (pda of `['asset', canvas pubkey]`)
+      /// Asset account
 #[inline(always)]
     pub fn asset(&mut self, asset: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.asset = Some(asset);
-                    self
-    }
-      /// Address to derive the PDA from
-#[inline(always)]
-    pub fn canvas(&mut self, canvas: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-                        self.instruction.canvas = Some(canvas);
                     self
     }
       /// The account paying for the storage fees
@@ -402,8 +360,6 @@ impl<'a, 'b> WriteCpiBuilder<'a, 'b> {
                   
           asset: self.instruction.asset.expect("asset is not set"),
                   
-          canvas: self.instruction.canvas.expect("canvas is not set"),
-                  
           payer: self.instruction.payer.expect("payer is not set"),
                   
           system_program: self.instruction.system_program.expect("system_program is not set"),
@@ -416,7 +372,6 @@ impl<'a, 'b> WriteCpiBuilder<'a, 'b> {
 struct WriteCpiBuilderInstruction<'a, 'b> {
   __program: &'b solana_program::account_info::AccountInfo<'a>,
             asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-                canvas: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                         overwrite: Option<bool>,

@@ -8,17 +8,9 @@
         {
           "name": "asset",
           "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "Asset account (pda of `['asset', canvas pubkey]`)"
-          ]
-        },
-        {
-          "name": "canvas",
-          "isMut": false,
           "isSigner": true,
           "docs": [
-            "Address to derive the PDA from"
+            "Asset account"
           ]
         },
         {
@@ -41,6 +33,7 @@
           "name": "payer",
           "isMut": true,
           "isSigner": true,
+          "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
           ]
@@ -49,6 +42,7 @@
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
+          "isOptional": true,
           "docs": [
             "The system program"
           ]
@@ -73,23 +67,16 @@
         {
           "name": "asset",
           "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "Asset account (pda of `['asset', canvas pubkey]`)"
-          ]
-        },
-        {
-          "name": "canvas",
-          "isMut": false,
           "isSigner": true,
           "docs": [
-            "Address to derive the PDA from"
+            "Asset account"
           ]
         },
         {
           "name": "payer",
           "isMut": true,
           "isSigner": true,
+          "isOptional": true,
           "docs": [
             "The account paying for the storage fees"
           ]
@@ -98,6 +85,7 @@
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
+          "isOptional": true,
           "docs": [
             "The system program"
           ]
@@ -122,17 +110,9 @@
         {
           "name": "asset",
           "isMut": true,
-          "isSigner": false,
-          "docs": [
-            "Asset account (pda of `['asset', canvas pubkey]`)"
-          ]
-        },
-        {
-          "name": "canvas",
-          "isMut": false,
           "isSigner": true,
           "docs": [
-            "Address to derive the PDA from"
+            "Asset account"
           ]
         },
         {
@@ -217,8 +197,14 @@
             "type": "string"
           },
           {
-            "name": "symbol",
-            "type": "string"
+            "name": "standard",
+            "type": {
+              "defined": "Standard"
+            }
+          },
+          {
+            "name": "mutable",
+            "type": "bool"
           }
         ]
       }
@@ -264,24 +250,6 @@
       }
     },
     {
-      "name": "Delegate",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "role",
-            "type": {
-              "defined": "DelegateRole"
-            }
-          },
-          {
-            "name": "address",
-            "type": "publicKey"
-          }
-        ]
-      }
-    },
-    {
       "name": "ExtensionType",
       "type": {
         "kind": "enum",
@@ -316,6 +284,20 @@
       }
     },
     {
+      "name": "Standard",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "NonFungible"
+          },
+          {
+            "name": "Subscription"
+          }
+        ]
+      }
+    },
+    {
       "name": "State",
       "type": {
         "kind": "enum",
@@ -338,7 +320,13 @@
             "name": "None"
           },
           {
-            "name": "Authority"
+            "name": "Transfer"
+          },
+          {
+            "name": "Lock"
+          },
+          {
+            "name": "Burn"
           }
         ]
       }

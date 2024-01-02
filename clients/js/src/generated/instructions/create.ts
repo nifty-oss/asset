@@ -16,29 +16,27 @@ import {
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
+  bool,
   mapSerializer,
   string,
   struct,
   u8,
 } from '@metaplex-foundation/umi/serializers';
-import { findAssetPda } from '../accounts';
 import {
   ResolvedAccount,
   ResolvedAccountsWithIndices,
-  expectPublicKey,
   getAccountMetasAndSigners,
 } from '../shared';
+import { Standard, StandardArgs, getStandardSerializer } from '../types';
 
 // Accounts.
 export type CreateInstructionAccounts = {
-  /** Asset account (pda of `['asset', canvas pubkey]`) */
-  asset?: PublicKey | Pda;
-  /** Address to derive the PDA from */
-  canvas: Signer;
+  /** Asset account */
+  asset: Signer;
   /** The authority of the asset */
   authority?: Signer;
   /** The holder of the asset */
-  holder: PublicKey | Pda;
+  holder?: PublicKey | Pda;
   /** The account paying for the storage fees */
   payer?: Signer;
   /** The system program */
@@ -49,10 +47,15 @@ export type CreateInstructionAccounts = {
 export type CreateInstructionData = {
   discriminator: number;
   name: string;
-  symbol: string;
+  standard: Standard;
+  mutable: boolean;
 };
 
-export type CreateInstructionDataArgs = { name: string; symbol: string };
+export type CreateInstructionDataArgs = {
+  name: string;
+  standard?: StandardArgs;
+  mutable?: boolean;
+};
 
 export function getCreateInstructionDataSerializer(): Serializer<
   CreateInstructionDataArgs,
@@ -63,11 +66,17 @@ export function getCreateInstructionDataSerializer(): Serializer<
       [
         ['discriminator', u8()],
         ['name', string()],
-        ['symbol', string()],
+        ['standard', getStandardSerializer()],
+        ['mutable', bool()],
       ],
       { description: 'CreateInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 0 })
+    (value) => ({
+      ...value,
+      discriminator: 0,
+      standard: value.standard ?? Standard.NonFungible,
+      mutable: value.mutable ?? true,
+    })
   ) as Serializer<CreateInstructionDataArgs, CreateInstructionData>;
 }
 
@@ -76,7 +85,7 @@ export type CreateInstructionArgs = CreateInstructionDataArgs;
 
 // Instruction.
 export function create(
-  context: Pick<Context, 'eddsa' | 'identity' | 'payer' | 'programs'>,
+  context: Pick<Context, 'identity' | 'programs'>,
   input: CreateInstructionAccounts & CreateInstructionArgs
 ): TransactionBuilder {
   // Program ID.
@@ -92,28 +101,23 @@ export function create(
       isWritable: true as boolean,
       value: input.asset ?? null,
     },
-    canvas: {
-      index: 1,
-      isWritable: false as boolean,
-      value: input.canvas ?? null,
-    },
     authority: {
-      index: 2,
+      index: 1,
       isWritable: false as boolean,
       value: input.authority ?? null,
     },
     holder: {
-      index: 3,
+      index: 2,
       isWritable: false as boolean,
       value: input.holder ?? null,
     },
     payer: {
-      index: 4,
+      index: 3,
       isWritable: true as boolean,
       value: input.payer ?? null,
     },
     systemProgram: {
-      index: 5,
+      index: 4,
       isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
@@ -123,23 +127,20 @@ export function create(
   const resolvedArgs: CreateInstructionArgs = { ...input };
 
   // Default values.
-  if (!resolvedAccounts.asset.value) {
-    resolvedAccounts.asset.value = findAssetPda(context, {
-      canvas: expectPublicKey(resolvedAccounts.canvas.value),
-    });
-  }
   if (!resolvedAccounts.authority.value) {
     resolvedAccounts.authority.value = context.identity;
   }
-  if (!resolvedAccounts.payer.value) {
-    resolvedAccounts.payer.value = context.payer;
+  if (!resolvedAccounts.holder.value) {
+    resolvedAccounts.holder.value = context.identity.publicKey;
   }
   if (!resolvedAccounts.systemProgram.value) {
-    resolvedAccounts.systemProgram.value = context.programs.getPublicKey(
-      'splSystem',
-      '11111111111111111111111111111111'
-    );
-    resolvedAccounts.systemProgram.isWritable = false;
+    if (resolvedAccounts.payer.value) {
+      resolvedAccounts.systemProgram.value = context.programs.getPublicKey(
+        'systemProgram',
+        '11111111111111111111111111111111'
+      );
+      resolvedAccounts.systemProgram.isWritable = false;
+    }
   }
 
   // Accounts in order.

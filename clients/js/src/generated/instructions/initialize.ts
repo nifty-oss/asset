@@ -26,11 +26,9 @@ import {
   u32,
   u8,
 } from '@metaplex-foundation/umi/serializers';
-import { findAssetPda } from '../accounts';
 import {
   ResolvedAccount,
   ResolvedAccountsWithIndices,
-  expectPublicKey,
   getAccountMetasAndSigners,
 } from '../shared';
 import {
@@ -41,10 +39,8 @@ import {
 
 // Accounts.
 export type InitializeInstructionAccounts = {
-  /** Asset account (pda of `['asset', canvas pubkey]`) */
-  asset?: PublicKey | Pda;
-  /** Address to derive the PDA from */
-  canvas: Signer;
+  /** Asset account */
+  asset: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
   /** The system program */
@@ -92,7 +88,7 @@ export type InitializeInstructionArgs = InitializeInstructionDataArgs;
 
 // Instruction.
 export function initialize(
-  context: Pick<Context, 'eddsa' | 'payer' | 'programs'>,
+  context: Pick<Context, 'programs'>,
   input: InitializeInstructionAccounts & InitializeInstructionArgs
 ): TransactionBuilder {
   // Program ID.
@@ -108,18 +104,13 @@ export function initialize(
       isWritable: true as boolean,
       value: input.asset ?? null,
     },
-    canvas: {
-      index: 1,
-      isWritable: false as boolean,
-      value: input.canvas ?? null,
-    },
     payer: {
-      index: 2,
+      index: 1,
       isWritable: true as boolean,
       value: input.payer ?? null,
     },
     systemProgram: {
-      index: 3,
+      index: 2,
       isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
@@ -129,20 +120,14 @@ export function initialize(
   const resolvedArgs: InitializeInstructionArgs = { ...input };
 
   // Default values.
-  if (!resolvedAccounts.asset.value) {
-    resolvedAccounts.asset.value = findAssetPda(context, {
-      canvas: expectPublicKey(resolvedAccounts.canvas.value),
-    });
-  }
-  if (!resolvedAccounts.payer.value) {
-    resolvedAccounts.payer.value = context.payer;
-  }
   if (!resolvedAccounts.systemProgram.value) {
-    resolvedAccounts.systemProgram.value = context.programs.getPublicKey(
-      'splSystem',
-      '11111111111111111111111111111111'
-    );
-    resolvedAccounts.systemProgram.isWritable = false;
+    if (resolvedAccounts.payer.value) {
+      resolvedAccounts.systemProgram.value = context.programs.getPublicKey(
+        'systemProgram',
+        '11111111111111111111111111111111'
+      );
+      resolvedAccounts.systemProgram.isWritable = false;
+    }
   }
 
   // Accounts in order.

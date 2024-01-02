@@ -41,8 +41,8 @@ kinobi.update(
                     child: k.linkTypeNode("State"),
                   }),
                   k.structFieldTypeNode({
-                    name: "bump",
-                    child: k.numberTypeNode("u8"),
+                    name: "standard",
+                    child: k.linkTypeNode("Standard"),
                   }),
                   k.structFieldTypeNode({
                     name: "mutable",
@@ -62,19 +62,11 @@ kinobi.update(
                   }),
                   k.structFieldTypeNode({
                     name: "delegate",
-                    child: k.publicKeyTypeNode(),
+                    child: k.linkTypeNode("Delegate"),
                   }),
                   k.structFieldTypeNode({
                     name: "name",
-                    child: k.stringTypeNode({ size: k.fixedSize(32) }),
-                  }),
-                  k.structFieldTypeNode({
-                    name: "symbol",
-                    child: k.stringTypeNode({ size: k.fixedSize(10) }),
-                  }),
-                  k.structFieldTypeNode({
-                    name: "padding",
-                    child: k.numberTypeNode("u8"),
+                    child: k.stringTypeNode({ size: k.fixedSize(35) }),
                   }),
                 ]),
               }),
@@ -82,6 +74,20 @@ kinobi.update(
           ],
           definedTypes: [
             ...node.definedTypes,
+            // delegate
+            k.definedTypeNode({
+              name: "delegate",
+              data: k.structTypeNode([
+                k.structFieldTypeNode({
+                  name: "address",
+                    child: k.publicKeyTypeNode(),
+                }),
+                k.structFieldTypeNode({
+                  name: "roles",
+                    child: k.numberTypeNode("u8"),
+                }),
+              ]),
+            }),
             // attributes
             k.definedTypeNodeFromIdl({
               name: "attributes",
@@ -128,36 +134,36 @@ kinobi.update(
   ])
 );
 
-// Update accounts.
-kinobi.update(
-  new k.UpdateAccountsVisitor({
-    asset: {
-      seeds: [
-        k.stringConstantSeed("asset"),
-        k.publicKeySeed("canvas", "Address to derive the PDA from"),
-      ],
-    },
-  })
-);
-
 // Update instructions.
 kinobi.update(
   new k.UpdateInstructionsVisitor({
     create: {
       accounts: {
-        asset: { defaultsTo: k.pdaDefault("asset") },
+        holder: { defaultsTo: k.identityDefault() },
+        systemProgram: {
+          defaultsTo: k.conditionalDefault("account", "payer", {
+            ifTrue: k.programDefault(
+              "systemProgram",
+              "11111111111111111111111111111111"
+            ),
+          }),
+        },
       },
     },
     initialize: {
       accounts: {
-        asset: { defaultsTo: k.pdaDefault("asset") },
+        systemProgram: {
+          defaultsTo: k.conditionalDefault("account", "payer", {
+            ifTrue: k.programDefault(
+              "systemProgram",
+              "11111111111111111111111111111111"
+            ),
+          }),
+        },
       },
       internal: true,
     },
     write: {
-      accounts: {
-        asset: { defaultsTo: k.pdaDefault("asset") },
-      },
       internal: true,
     },
   })
@@ -168,6 +174,10 @@ kinobi.update(
   new k.SetStructDefaultValuesVisitor({
     initialize: {
       data: k.vNone(),
+    },
+    CreateInstructionData: {
+      standard: k.vEnum("Standard", "NonFungible"),
+      mutable: k.vScalar(true),
     },
   })
 );

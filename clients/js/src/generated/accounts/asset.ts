@@ -26,14 +26,19 @@ import {
   publicKey as publicKeySerializer,
   string,
   struct,
-  u8,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  Delegate,
+  DelegateArgs,
   Discriminator,
   DiscriminatorArgs,
+  Standard,
+  StandardArgs,
   State,
   StateArgs,
+  getDelegateSerializer,
   getDiscriminatorSerializer,
+  getStandardSerializer,
   getStateSerializer,
 } from '../types';
 
@@ -42,28 +47,24 @@ export type Asset = Account<AssetAccountData>;
 export type AssetAccountData = {
   discriminator: Discriminator;
   state: State;
-  bump: number;
+  standard: Standard;
   mutable: boolean;
   holder: PublicKey;
   group: PublicKey;
   authority: PublicKey;
-  delegate: PublicKey;
+  delegate: Delegate;
   name: string;
-  symbol: string;
-  padding: number;
 };
 
 export type AssetAccountDataArgs = {
   state: StateArgs;
-  bump: number;
+  standard: StandardArgs;
   mutable: boolean;
   holder: PublicKey;
   group: PublicKey;
   authority: PublicKey;
-  delegate: PublicKey;
+  delegate: DelegateArgs;
   name: string;
-  symbol: string;
-  padding: number;
 };
 
 export function getAssetAccountDataSerializer(): Serializer<
@@ -75,15 +76,13 @@ export function getAssetAccountDataSerializer(): Serializer<
       [
         ['discriminator', getDiscriminatorSerializer()],
         ['state', getStateSerializer()],
-        ['bump', u8()],
+        ['standard', getStandardSerializer()],
         ['mutable', bool()],
         ['holder', publicKeySerializer()],
         ['group', publicKeySerializer()],
         ['authority', publicKeySerializer()],
-        ['delegate', publicKeySerializer()],
-        ['name', string({ size: 32 })],
-        ['symbol', string({ size: 10 })],
-        ['padding', u8()],
+        ['delegate', getDelegateSerializer()],
+        ['name', string({ size: 35 })],
       ],
       { description: 'AssetAccountData' }
     ),
@@ -158,61 +157,24 @@ export function getAssetGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
     .registerFields<{
       discriminator: DiscriminatorArgs;
       state: StateArgs;
-      bump: number;
+      standard: StandardArgs;
       mutable: boolean;
       holder: PublicKey;
       group: PublicKey;
       authority: PublicKey;
-      delegate: PublicKey;
+      delegate: DelegateArgs;
       name: string;
-      symbol: string;
-      padding: number;
     }>({
       discriminator: [0, getDiscriminatorSerializer()],
       state: [1, getStateSerializer()],
-      bump: [2, u8()],
+      standard: [2, getStandardSerializer()],
       mutable: [3, bool()],
       holder: [4, publicKeySerializer()],
       group: [36, publicKeySerializer()],
       authority: [68, publicKeySerializer()],
-      delegate: [100, publicKeySerializer()],
-      name: [132, string({ size: 32 })],
-      symbol: [164, string({ size: 10 })],
-      padding: [174, u8()],
+      delegate: [100, getDelegateSerializer()],
+      name: [133, string({ size: 35 })],
     })
     .deserializeUsing<Asset>((account) => deserializeAsset(account))
     .whereField('discriminator', Discriminator.Asset);
-}
-
-export function findAssetPda(
-  context: Pick<Context, 'eddsa' | 'programs'>,
-  seeds: {
-    /** Address to derive the PDA from */
-    canvas: PublicKey;
-  }
-): Pda {
-  const programId = context.programs.getPublicKey(
-    'asset',
-    'AssetGtQBTSgm5s91d1RAQod5JmaZiJDxqsgtqrZud73'
-  );
-  return context.eddsa.findPda(programId, [
-    string({ size: 'variable' }).serialize('asset'),
-    publicKeySerializer().serialize(seeds.canvas),
-  ]);
-}
-
-export async function fetchAssetFromSeeds(
-  context: Pick<Context, 'eddsa' | 'programs' | 'rpc'>,
-  seeds: Parameters<typeof findAssetPda>[1],
-  options?: RpcGetAccountOptions
-): Promise<Asset> {
-  return fetchAsset(context, findAssetPda(context, seeds), options);
-}
-
-export async function safeFetchAssetFromSeeds(
-  context: Pick<Context, 'eddsa' | 'programs' | 'rpc'>,
-  seeds: Parameters<typeof findAssetPda>[1],
-  options?: RpcGetAccountOptions
-): Promise<Asset | null> {
-  return safeFetchAsset(context, findAssetPda(context, seeds), options);
 }

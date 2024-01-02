@@ -23,20 +23,16 @@ import {
   u32,
   u8,
 } from '@metaplex-foundation/umi/serializers';
-import { findAssetPda } from '../accounts';
 import {
   ResolvedAccount,
   ResolvedAccountsWithIndices,
-  expectPublicKey,
   getAccountMetasAndSigners,
 } from '../shared';
 
 // Accounts.
 export type WriteInstructionAccounts = {
-  /** Asset account (pda of `['asset', canvas pubkey]`) */
-  asset?: PublicKey | Pda;
-  /** Address to derive the PDA from */
-  canvas: Signer;
+  /** Asset account */
+  asset: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
   /** The system program */
@@ -77,7 +73,7 @@ export type WriteInstructionArgs = WriteInstructionDataArgs;
 
 // Instruction.
 export function write(
-  context: Pick<Context, 'eddsa' | 'payer' | 'programs'>,
+  context: Pick<Context, 'payer' | 'programs'>,
   input: WriteInstructionAccounts & WriteInstructionArgs
 ): TransactionBuilder {
   // Program ID.
@@ -93,18 +89,13 @@ export function write(
       isWritable: true as boolean,
       value: input.asset ?? null,
     },
-    canvas: {
-      index: 1,
-      isWritable: false as boolean,
-      value: input.canvas ?? null,
-    },
     payer: {
-      index: 2,
+      index: 1,
       isWritable: true as boolean,
       value: input.payer ?? null,
     },
     systemProgram: {
-      index: 3,
+      index: 2,
       isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
@@ -114,11 +105,6 @@ export function write(
   const resolvedArgs: WriteInstructionArgs = { ...input };
 
   // Default values.
-  if (!resolvedAccounts.asset.value) {
-    resolvedAccounts.asset.value = findAssetPda(context, {
-      canvas: expectPublicKey(resolvedAccounts.canvas.value),
-    });
-  }
   if (!resolvedAccounts.payer.value) {
     resolvedAccounts.payer.value = context.payer;
   }

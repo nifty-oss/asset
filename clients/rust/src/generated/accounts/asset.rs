@@ -5,7 +5,9 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::Delegate;
 use crate::generated::types::Discriminator;
+use crate::generated::types::Standard;
 use crate::generated::types::State;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
@@ -16,7 +18,7 @@ use solana_program::pubkey::Pubkey;
 pub struct Asset {
     pub discriminator: Discriminator,
     pub state: State,
-    pub bump: u8,
+    pub standard: Standard,
     pub mutable: bool,
     #[cfg_attr(
         feature = "serde",
@@ -33,42 +35,12 @@ pub struct Asset {
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
     pub authority: Pubkey,
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
-    )]
-    pub delegate: Pubkey,
-    pub name: [u8; 32],
-    pub symbol: [u8; 10],
-    pub padding: u8,
+    pub delegate: Delegate,
+    #[cfg_attr(feature = "serde", serde(with = "serde_with::As::<serde_with::Bytes>"))]
+    pub name: [u8; 35],
 }
 
 impl Asset {
-    /// Prefix values used to generate a PDA for this account.
-    ///
-    /// Values are positional and appear in the following order:
-    ///
-    ///   0. `Asset::PREFIX`
-    ///   1. canvas (`Pubkey`)
-    pub const PREFIX: &'static [u8] = "asset".as_bytes();
-
-    pub fn create_pda(
-        canvas: Pubkey,
-        bump: u8,
-    ) -> Result<solana_program::pubkey::Pubkey, solana_program::pubkey::PubkeyError> {
-        solana_program::pubkey::Pubkey::create_program_address(
-            &["asset".as_bytes(), canvas.as_ref(), &[bump]],
-            &crate::ASSET_ID,
-        )
-    }
-
-    pub fn find_pda(canvas: &Pubkey) -> (solana_program::pubkey::Pubkey, u8) {
-        solana_program::pubkey::Pubkey::find_program_address(
-            &["asset".as_bytes(), canvas.as_ref()],
-            &crate::ASSET_ID,
-        )
-    }
-
     #[inline(always)]
     pub fn from_bytes(data: &[u8]) -> Result<Self, std::io::Error> {
         let mut data = data;

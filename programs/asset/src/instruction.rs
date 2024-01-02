@@ -1,7 +1,7 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::{ShankContext, ShankInstruction};
 
-use crate::extensions::ExtensionType;
+use crate::{extensions::ExtensionType, state::Standard};
 
 #[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankContext, ShankInstruction)]
 #[rustfmt::skip]
@@ -10,43 +10,43 @@ pub enum Instruction {
     /// Closes an extension data buffer.
     /// 
     /// You can only close the asset account if it has not being created.
-    #[account(0, writable, name="buffer", desc = "Data buffer (pda of `['buffer', authority pubkey]`)")]
-    #[account(1, signer, name="authority", desc = "Authority of the buffer")]
-    #[account(2, signer, writable, name="payer", desc = "The account paying for the storage fees")]
+    #[account(0, signer, writable, name="asset", desc = "Asset account")]
+    #[account(1, signer, writable, name="payer", desc = "The account paying for the storage fees")]
     Close,
     */
 
     /// Create a new asset.
-    #[account(0, writable, name="asset", desc = "Asset account (pda of `['asset', canvas pubkey]`)")]
-    #[account(1, signer, name="canvas", desc = "Address to derive the PDA from")]
-    #[account(2, signer, name="authority", desc = "The authority of the asset")]
-    #[account(3, name="holder", desc = "The holder of the asset")]
-    #[account(4, signer, writable, name="payer", desc = "The account paying for the storage fees")]
-    #[account(5, name="system_program", desc = "The system program")]
+    #[account(0, signer, writable, name="asset", desc = "Asset account")]
+    #[account(1, signer, name="authority", desc = "The authority of the asset")]
+    #[account(2, name="holder", desc = "The holder of the asset")]
+    #[account(3, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
+    #[account(4, optional, name="system_program", desc = "The system program")]
     Create(Metadata),
 
-    /// Create a new asset.
-    #[account(0, writable, name="asset", desc = "Asset account (pda of `['asset', canvas pubkey]`)")]
-    #[account(1, signer, name="canvas", desc = "Address to derive the PDA from")]
-    #[account(2, signer, writable, name="payer", desc = "The account paying for the storage fees")]
-    #[account(3, name="system_program", desc = "The system program")]
+    /// Initialize an extension.
+    #[account(0, signer, writable, name="asset", desc = "Asset account")]
+    #[account(1, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, optional, name="system_program", desc = "The system program")]
     Initialize(Extension),
 
-    /// Allocate space for an extension data buffer.
-    #[account(0, writable, name="asset", desc = "Asset account (pda of `['asset', canvas pubkey]`)")]
-    #[account(1, signer, name="canvas", desc = "Address to derive the PDA from")]
-    #[account(2, signer, writable, name="payer", desc = "The account paying for the storage fees")]
-    #[account(3, name="system_program", desc = "The system program")]
+    /// Write data to an extension.
+    #[account(0, signer, writable, name="asset", desc = "Asset account")]
+    #[account(1, signer, writable, name="payer", desc = "The account paying for the storage fees")]
+    #[account(2, name="system_program", desc = "The system program")]
     Write(Data),
 }
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct Metadata {
-    /// Some description for arg1.
+    /// Name of the asset.
     pub name: String,
-    /// Some description for arg2.
-    pub symbol: String,
+
+    /// Indicates the standard of an asset.
+    pub standard: Standard,
+
+    /// Indicates whether the asset is mutable or not.
+    pub mutable: bool,
 }
 
 #[repr(C)]

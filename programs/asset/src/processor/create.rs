@@ -1,7 +1,10 @@
-use podded::{types::POD_TRUE, ZeroCopy};
+use podded::{
+    types::{POD_FALSE, POD_TRUE},
+    ZeroCopy,
+};
 use solana_program::{
-    entrypoint::ProgramResult, msg, program::invoke_signed, program_error::ProgramError,
-    pubkey::Pubkey, rent::Rent, system_instruction, sysvar::Sysvar,
+    entrypoint::ProgramResult, msg, program::invoke, program_error::ProgramError, pubkey::Pubkey,
+    rent::Rent, system_instruction, system_program, sysvar::Sysvar,
 };
 
 use crate::{
@@ -19,33 +22,70 @@ pub fn process_create(
     ctx: Context<CreateAccounts>,
     args: Metadata,
 ) -> ProgramResult {
-    // validate account derivation
-
-    let mut seeds = vec![Asset::SEED.as_bytes(), ctx.accounts.canvas.key.as_ref()];
-    let (derived_key, bump) = Pubkey::find_program_address(&seeds, program_id);
+    // account validation
 
     require!(
-        *ctx.accounts.asset.key == derived_key,
-        ProgramError::InvalidSeeds,
+        ctx.accounts.asset.is_signer,
+        ProgramError::MissingRequiredSignature,
         "asset"
     );
 
-    let bump = [bump];
-    seeds.push(&bump);
+    require!(
+        ctx.accounts.authority.is_signer,
+        ProgramError::MissingRequiredSignature,
+        "authority"
+    );
 
     if ctx.accounts.asset.data_is_empty() {
-        invoke_signed(
+        let payer = {
+            require!(
+                ctx.accounts.payer.is_some(),
+                ProgramError::NotEnoughAccountKeys,
+                "payer"
+            );
+
+            ctx.accounts.payer.unwrap()
+        };
+
+        require!(
+            payer.is_signer,
+            ProgramError::MissingRequiredSignature,
+            "payer"
+        );
+
+        let system_program = {
+            require!(
+                ctx.accounts.system_program.is_some(),
+                ProgramError::NotEnoughAccountKeys,
+                "system_program"
+            );
+
+            ctx.accounts.system_program.unwrap()
+        };
+
+        require!(
+            system_program.key == &system_program::ID,
+            ProgramError::IncorrectProgramId,
+            "system_program"
+        );
+
+        invoke(
             &system_instruction::create_account(
-                ctx.accounts.payer.key,
+                payer.key,
                 ctx.accounts.asset.key,
                 Rent::get()?.minimum_balance(Asset::LEN),
                 Asset::LEN as u64,
                 program_id,
             ),
-            &[ctx.accounts.payer.clone(), ctx.accounts.asset.clone()],
-            &[&seeds],
+            &[payer.clone(), ctx.accounts.asset.clone()],
         )?;
     } else {
+        require!(
+            ctx.accounts.asset.owner == program_id,
+            ProgramError::IllegalOwner,
+            "asset"
+        );
+
         require!(
             ctx.accounts.asset.data_len() >= Asset::LEN,
             AssetError::InvalidAccountLength,
@@ -65,12 +105,11 @@ pub fn process_create(
     let mut asset = Asset::load_mut(&mut data);
 
     asset.discriminator = Discriminator::Asset;
-    asset.bump = bump[0];
-    asset.mutable = POD_TRUE;
+    asset.standard = args.standard;
+    asset.mutable = if args.mutable { POD_TRUE } else { POD_FALSE };
     asset.holder = *ctx.accounts.holder.key;
     asset.authority = *ctx.accounts.authority.key;
     asset.name = args.name.into();
-    asset.symbol = args.symbol.into();
 
     drop(data);
 

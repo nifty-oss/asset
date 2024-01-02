@@ -1,22 +1,18 @@
 use bytemuck::{Pod, Zeroable};
 use podded::{
-    types::{PodBool, PodStr},
+    types::{PodBool, PodOption, PodStr},
     ZeroCopy,
 };
-use shank::ShankType;
 use solana_program::pubkey::Pubkey;
 
-use super::{Delegate, Discriminator};
+use super::{Delegate, Discriminator, NullablePubkey, Standard, State};
 use crate::extensions::{Extension, ExtensionData, ExtensionType};
 
 /// Maximum length of a name.
-pub const MAX_NAME_LENGTH: usize = 32;
-
-/// Maximum length of a symbol.
-pub const MAX_SYMBOL_LENGTH: usize = 10;
+pub const MAX_NAME_LENGTH: usize = 35;
 
 #[repr(C)]
-#[derive(Clone, Copy, Default, Pod, Zeroable)]
+#[derive(Clone, Copy, Pod, Zeroable)]
 pub struct Asset {
     /// Account discriminator.
     pub discriminator: Discriminator,
@@ -24,8 +20,8 @@ pub struct Asset {
     /// State of the asset.
     pub state: State,
 
-    /// The PDA derivation bump.
-    pub bump: u8,
+    /// Standard of the asset.
+    pub standard: Standard,
 
     /// Indicates whether the asset is mutable.
     pub mutable: PodBool,
@@ -36,8 +32,9 @@ pub struct Asset {
     /// Group of the asset.
     ///
     /// This is a reference to the asset that represents the group. When
-    /// the asset is not part of a group, the group is zero'd out.
-    pub group: Pubkey,
+    /// the asset is not part of a group, the group is represented by
+    /// `Pubkey::default()`.
+    pub group: PodOption<NullablePubkey>,
 
     /// Authority of the asset.
     ///
@@ -49,24 +46,32 @@ pub struct Asset {
     ///
     /// The delegate is the account that can control the asset on behalf of
     /// the holder.
-    pub delegate: Delegate,
+    pub delegate: PodOption<Delegate>,
 
     /// Name of the asset.
     pub name: PodStr<MAX_NAME_LENGTH>,
-
-    /// Name of the asset.
-    pub symbol: PodStr<MAX_SYMBOL_LENGTH>,
-
-    // Padding to maintain 8-byte alignment.
-    _padding: u8,
 }
 
 impl Asset {
     /// Length of the account data.
     pub const LEN: usize = std::mem::size_of::<Asset>();
 
-    /// Seed used to derive the PDA.
-    pub const SEED: &'static str = "asset";
+    /// Indicates whether the account contains an extension of a given type.
+    pub fn contains(extension_type: ExtensionType, data: &[u8]) -> bool {
+        let mut cursor = Asset::LEN;
+
+        while cursor < data.len() {
+            let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
+
+            if extension.extension_type() == extension_type {
+                return true;
+            }
+
+            cursor = extension.boundary() as usize;
+        }
+
+        false
+    }
 
     /// Returns the extension data of a given type.
     ///
@@ -86,23 +91,6 @@ impl Asset {
         }
 
         None
-    }
-
-    /// Indicates whether the account contains an extension of a given type.
-    pub fn contains(extension_type: ExtensionType, data: &[u8]) -> bool {
-        let mut cursor = Asset::LEN;
-
-        while cursor < data.len() {
-            let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
-
-            if extension.extension_type() == extension_type {
-                return true;
-            }
-
-            cursor = extension.boundary() as usize;
-        }
-
-        false
     }
 
     /// Returns the extensions of the account.
@@ -158,15 +146,3 @@ impl Asset {
 }
 
 impl<'a> ZeroCopy<'a, Asset> for Asset {}
-
-#[repr(u8)]
-#[derive(Clone, Copy, Debug, Default, PartialEq, ShankType)]
-pub enum State {
-    #[default]
-    Unlocked,
-    Locked,
-}
-
-unsafe impl Pod for State {}
-
-unsafe impl Zeroable for State {}

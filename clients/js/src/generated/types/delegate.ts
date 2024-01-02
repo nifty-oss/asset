@@ -11,18 +11,18 @@ import {
   Serializer,
   publicKey as publicKeySerializer,
   struct,
+  u8,
 } from '@metaplex-foundation/umi/serializers';
-import { DelegateRole, DelegateRoleArgs, getDelegateRoleSerializer } from '.';
 
-export type Delegate = { role: DelegateRole; address: PublicKey };
+export type Delegate = { address: PublicKey; roles: number };
 
-export type DelegateArgs = { role: DelegateRoleArgs; address: PublicKey };
+export type DelegateArgs = Delegate;
 
 export function getDelegateSerializer(): Serializer<DelegateArgs, Delegate> {
   return struct<Delegate>(
     [
-      ['role', getDelegateRoleSerializer()],
       ['address', publicKeySerializer()],
+      ['roles', u8()],
     ],
     { description: 'Delegate' }
   ) as Serializer<DelegateArgs, Delegate>;

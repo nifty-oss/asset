@@ -880,9 +880,9 @@ dependencies = [
 
 [[package]]
 name = "podded"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9bdd4ed59b049c2a8404dece67a6f44cbfaddfc8f80b110cfefb78bcd4371f40"
+checksum = "f9fc1ba38872bc3dc012c95ecab568ef05c9dad6dfe85b14517ba2f9d91295f3"
 dependencies = [
  "bytemuck",
 ]

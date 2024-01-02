@@ -1,13 +1,7 @@
 use podded::ZeroCopy;
 use solana_program::{
-    entrypoint::ProgramResult,
-    msg,
-    program::{invoke, invoke_signed},
-    program_error::ProgramError,
-    program_memory::sol_memcpy,
-    pubkey::Pubkey,
-    rent::Rent,
-    system_instruction,
+    entrypoint::ProgramResult, msg, program::invoke, program_error::ProgramError,
+    program_memory::sol_memcpy, pubkey::Pubkey, rent::Rent, system_instruction, system_program,
     sysvar::Sysvar,
 };
 
@@ -29,58 +23,80 @@ pub fn process_initialize(
     // account validation
 
     require!(
-        ctx.accounts.canvas.is_signer,
+        ctx.accounts.asset.is_signer,
         ProgramError::MissingRequiredSignature,
-        "canvas"
-    );
-
-    let mut seeds = vec![Asset::SEED.as_bytes(), ctx.accounts.canvas.key.as_ref()];
-    let (derived_key, bump) = Pubkey::find_program_address(&seeds, program_id);
-
-    require!(
-        *ctx.accounts.asset.key == derived_key,
-        ProgramError::InvalidSeeds,
         "asset"
     );
-
-    let bump = [bump];
-    seeds.push(&bump);
 
     // offset on the account data where the new extension will be written; this will
     // include any padding required to maintain the 8-bytes alignment
     let offset = if ctx.accounts.asset.data_is_empty() {
-        invoke_signed(
+        let payer = {
+            require!(
+                ctx.accounts.payer.is_some(),
+                ProgramError::NotEnoughAccountKeys,
+                "payer"
+            );
+
+            ctx.accounts.payer.unwrap()
+        };
+
+        require!(
+            payer.is_signer,
+            ProgramError::MissingRequiredSignature,
+            "payer"
+        );
+
+        let system_program = {
+            require!(
+                ctx.accounts.system_program.is_some(),
+                ProgramError::NotEnoughAccountKeys,
+                "system_program"
+            );
+
+            ctx.accounts.system_program.unwrap()
+        };
+
+        require!(
+            system_program.key == &system_program::ID,
+            ProgramError::IncorrectProgramId,
+            "system_program"
+        );
+
+        invoke(
             &system_instruction::create_account(
-                ctx.accounts.payer.key,
+                payer.key,
                 ctx.accounts.asset.key,
                 Rent::get()?.minimum_balance(Asset::LEN),
                 Asset::LEN as u64,
                 program_id,
             ),
-            &[ctx.accounts.payer.clone(), ctx.accounts.asset.clone()],
-            &[&seeds],
+            &[payer.clone(), ctx.accounts.asset.clone()],
         )?;
 
         Asset::LEN
     } else {
-        let data = (*ctx.accounts.asset.data).borrow();
+        require!(
+            ctx.accounts.asset.owner == program_id,
+            ProgramError::IllegalOwner,
+            "asset"
+        );
 
         require!(
-            data.len() >= Asset::LEN,
+            ctx.accounts.asset.data_len() >= Asset::LEN,
             AssetError::InvalidAccountLength,
             "asset"
         );
 
+        let data = (*ctx.accounts.asset.data).borrow();
         // if there is an extension on the account, need to make sure it has all
         // its data written before initializing a new one
         if let Some((extension, offset)) = Asset::last_extension(&data) {
             require!(
                 extension.length() as usize + offset <= data.len(),
                 AssetError::IncompleteExtensionData,
-                format!(
-                    "incomplete [{:?}] extension data",
-                    extension.extension_type()
-                )
+                "incomplete [{:?}] extension data",
+                extension.extension_type()
             );
 
             extension.boundary() as usize
@@ -89,21 +105,13 @@ pub fn process_initialize(
         }
     };
 
-    require!(
-        ctx.accounts.asset.owner == program_id,
-        ProgramError::IllegalOwner,
-        "asset"
-    );
-
     let data = (*ctx.accounts.asset.data).borrow();
-
     // make sure that the asset is not already initialized
     require!(
         data[0] == Discriminator::Uninitialized as u8,
         AssetError::AlreadyInitialized,
         "asset"
     );
-
     // and the account does not have the extension
     require!(
         !Asset::contains(args.extension_type, &data),
@@ -157,28 +165,62 @@ fn save_extension_data(
     .map_err(|_| AssetError::InvalidAlignment)?
     .pad_to_align()
     .size();
-
     let extended = offset + crate::extensions::Extension::LEN + data.len();
-    let required_rent = Rent::get()?
-        .minimum_balance(extended)
-        .saturating_sub(ctx.accounts.asset.lamports());
 
-    msg!("Funding {} lamports for account resize", required_rent);
+    if extended > ctx.accounts.asset.data_len() {
+        let mut required_rent = Rent::get()?.minimum_balance(extended);
 
-    invoke(
-        &system_instruction::transfer(
-            ctx.accounts.payer.key,
-            ctx.accounts.asset.key,
-            required_rent,
-        ),
-        &[
-            ctx.accounts.payer.clone(),
-            ctx.accounts.asset.clone(),
-            ctx.accounts.system_program.clone(),
-        ],
-    )?;
+        if required_rent > ctx.accounts.asset.lamports() {
+            required_rent = required_rent.saturating_sub(ctx.accounts.asset.lamports());
 
-    ctx.accounts.asset.realloc(extended, false)?;
+            msg!("Funding {} lamports for account resize", required_rent);
+
+            let payer = {
+                require!(
+                    ctx.accounts.payer.is_some(),
+                    ProgramError::NotEnoughAccountKeys,
+                    "payer"
+                );
+
+                ctx.accounts.payer.unwrap()
+            };
+
+            require!(
+                payer.is_signer,
+                ProgramError::MissingRequiredSignature,
+                "payer"
+            );
+
+            let system_program = {
+                require!(
+                    ctx.accounts.system_program.is_some(),
+                    ProgramError::NotEnoughAccountKeys,
+                    "system_program"
+                );
+
+                ctx.accounts.system_program.unwrap()
+            };
+
+            require!(
+                system_program.key == &system_program::ID,
+                ProgramError::IncorrectProgramId,
+                "system_program"
+            );
+
+            invoke(
+                &system_instruction::transfer(payer.key, ctx.accounts.asset.key, required_rent),
+                &[payer.clone(), ctx.accounts.asset.clone()],
+            )?;
+        }
+
+        msg!(
+            "Resizing account from {} to {} bytes",
+            ctx.accounts.asset.data_len(),
+            extended
+        );
+
+        ctx.accounts.asset.realloc(extended, false)?;
+    }
 
     let asset_data = &mut (*ctx.accounts.asset.data).borrow_mut();
     let extension = crate::extensions::Extension::load_mut(

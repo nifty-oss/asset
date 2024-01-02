@@ -10,7 +10,9 @@ import { Serializer, scalarEnum } from '@metaplex-foundation/umi/serializers';
 
 export enum DelegateRole {
   None,
-  Authority,
+  Transfer,
+  Lock,
+  Burn,
 }
 
 export type DelegateRoleArgs = DelegateRole;

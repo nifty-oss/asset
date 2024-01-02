@@ -9,11 +9,11 @@ import {
 } from '@metaplex-foundation/umi';
 import { write as baseWrite } from './generated/instructions/write';
 
-const DEFAUILT_CHUNK_SIZE = 850;
+const DEFAULT_CHUNK_SIZE = 850;
 
 export type WriteInstruction = {
   /** Address to derive the PDA from */
-  canvas: Signer;
+  asset: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
   /** The system program */
@@ -35,7 +35,7 @@ export const write = (
   input: WriteInstruction
 ): TransactionBuilderGroup => {
   const payer = input.payer ?? context.payer;
-  const chunkSize = input.chunkSize ?? DEFAUILT_CHUNK_SIZE;
+  const chunkSize = input.chunkSize ?? DEFAULT_CHUNK_SIZE;
 
   const bufferSize = input.data.length;
   const numberOfWrites = Math.ceil(bufferSize / chunkSize);
@@ -47,8 +47,8 @@ export const write = (
         Math.min((index + 1) * chunkSize, input.data.length)
       );
       return baseWrite(context, {
+        asset: input.asset,
         payer,
-        canvas: input.canvas,
         bytes: slice,
         overwrite: index === 0,
       });

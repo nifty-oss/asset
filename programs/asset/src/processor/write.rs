@@ -20,7 +20,7 @@ pub(crate) fn process_write(
     ctx: Context<WriteAccounts>,
     data: Data,
 ) -> ProgramResult {
-    // validate account derivation
+    // account validation
 
     require!(
         ctx.accounts.system_program.key == &system_program::ID,
@@ -29,25 +29,28 @@ pub(crate) fn process_write(
     );
 
     require!(
-        ctx.accounts.canvas.is_signer,
+        ctx.accounts.payer.is_signer,
         ProgramError::MissingRequiredSignature,
-        "canvas"
-    );
-
-    let (derived_key, _) = Pubkey::find_program_address(
-        &[Asset::SEED.as_bytes(), ctx.accounts.canvas.key.as_ref()],
-        program_id,
+        "payer"
     );
 
     require!(
-        *ctx.accounts.asset.key == derived_key,
-        ProgramError::InvalidSeeds,
+        ctx.accounts.asset.is_signer,
+        ProgramError::MissingRequiredSignature,
         "asset"
     );
 
-    if ctx.accounts.asset.data_is_empty() {
-        return err!(AssetError::Uninitialized);
-    }
+    require!(
+        ctx.accounts.asset.owner == program_id,
+        ProgramError::IllegalOwner,
+        "asset"
+    );
+
+    require!(
+        !ctx.accounts.asset.data_is_empty(),
+        AssetError::InvalidAccountLength,
+        "asset"
+    );
 
     let asset_data = (*ctx.accounts.asset.data).borrow();
     // make sure that the asset is not already initialized
@@ -72,7 +75,7 @@ pub(crate) fn process_write(
     drop(asset_data);
 
     let offset = if data.overwrite {
-        msg!("Overwriting [{:?}] extension data", current);
+        msg!("Overwriting extension data");
         resize(
             ctx.accounts.asset,
             ctx.accounts.payer,
@@ -81,7 +84,7 @@ pub(crate) fn process_write(
         // when overwriting, we start from the beginning of the offset
         offset
     } else {
-        msg!("Appending [{:?}] extension data", current);
+        msg!("Appending extension data");
         let offset = ctx.accounts.asset.data_len();
         resize(
             ctx.accounts.asset,
