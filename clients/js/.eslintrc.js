@@ -18,6 +18,7 @@ module.exports = {
     'max-classes-per-file': 'off',
     'no-param-reassign': 'off',
     'func-names': 'off',
+    'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
   },
   ignorePatterns: ['dist/**', '.eslintrc.js'],
 };

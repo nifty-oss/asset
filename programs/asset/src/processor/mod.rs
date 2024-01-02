@@ -1,5 +1,6 @@
 mod create;
 mod initialize;
+mod transfer;
 mod write;
 
 use borsh::BorshDeserialize;
@@ -9,7 +10,7 @@ use solana_program::{
 };
 
 use crate::instruction::{
-    accounts::{CreateAccounts, InitializeAccounts, WriteAccounts},
+    accounts::{CreateAccounts, InitializeAccounts, TransferAccounts, WriteAccounts},
     Instruction,
 };
 
@@ -29,6 +30,10 @@ pub fn process_instruction<'a>(
         Instruction::Initialize(args) => {
             msg!("Instruction: Initialize");
             initialize::process_initialize(program_id, InitializeAccounts::context(accounts)?, args)
+        }
+        Instruction::Transfer => {
+            msg!("Instruction: Transfer");
+            transfer::process_transfer(program_id, TransferAccounts::context(accounts)?)
         }
         Instruction::Write(args) => {
             msg!("Instruction: Write");

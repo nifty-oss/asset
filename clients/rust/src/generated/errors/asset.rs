@@ -28,6 +28,9 @@ pub enum AssetError {
     /// 5 (0x5) - Invalid alignment
     #[error("Invalid alignment")]
     InvalidAlignment,
+    /// 6 (0x6) - Invalid holder or transfer delegate
+    #[error("Invalid holder or transfer delegate")]
+    InvalidTransferAuthority,
 }
 
 impl solana_program::program_error::PrintProgramError for AssetError {

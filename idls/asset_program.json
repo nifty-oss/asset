@@ -105,6 +105,40 @@
       }
     },
     {
+      "name": "Transfer",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Asset account"
+          ]
+        },
+        {
+          "name": "signer",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Current holder of the asset or transfer delegate"
+          ]
+        },
+        {
+          "name": "recipient",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The recipient of the asset"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 2
+      }
+    },
+    {
       "name": "Write",
       "accounts": [
         {
@@ -142,7 +176,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 2
+        "value": 3
       }
     }
   ],
@@ -362,6 +396,11 @@
       "code": 5,
       "name": "InvalidAlignment",
       "msg": "Invalid alignment"
+    },
+    {
+      "code": 6,
+      "name": "InvalidTransferAuthority",
+      "msg": "Invalid holder or transfer delegate"
     }
   ],
   "metadata": {

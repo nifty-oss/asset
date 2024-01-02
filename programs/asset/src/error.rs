@@ -31,6 +31,10 @@ pub enum AssetError {
     /// 5 - Invalid alignment
     #[error("Invalid alignment")]
     InvalidAlignment,
+
+    /// 6 - Invalid holder or transfer delegate.
+    #[error("Invalid holder or transfer delegate")]
+    InvalidTransferAuthority,
 }
 
 impl PrintProgramError for AssetError {

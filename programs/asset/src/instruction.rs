@@ -29,6 +29,12 @@ pub enum Instruction {
     #[account(2, optional, name="system_program", desc = "The system program")]
     Initialize(Extension),
 
+    /// Transfer ownership of the aseet to a new public key.
+    #[account(0, writable, name="asset", desc = "Asset account")]
+    #[account(1, signer, name="signer", desc = "Current holder of the asset or transfer delegate")]
+    #[account(2, name="recipient", desc = "The recipient of the asset")]
+    Transfer,
+
     /// Write data to an extension.
     #[account(0, signer, writable, name="asset", desc = "Asset account")]
     #[account(1, signer, writable, name="payer", desc = "The account paying for the storage fees")]

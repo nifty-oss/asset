@@ -93,6 +93,19 @@ export class InvalidAlignmentError extends ProgramError {
 codeToErrorMap.set(0x5, InvalidAlignmentError);
 nameToErrorMap.set('InvalidAlignment', InvalidAlignmentError);
 
+/** InvalidTransferAuthority: Invalid holder or transfer delegate */
+export class InvalidTransferAuthorityError extends ProgramError {
+  override readonly name: string = 'InvalidTransferAuthority';
+
+  readonly code: number = 0x6; // 6
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid holder or transfer delegate', program, cause);
+  }
+}
+codeToErrorMap.set(0x6, InvalidTransferAuthorityError);
+nameToErrorMap.set('InvalidTransferAuthority', InvalidTransferAuthorityError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

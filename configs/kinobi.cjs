@@ -11,7 +11,7 @@ const kinobi = k.createFromIdls([path.join(idlDir, "asset_program.json")]);
 // Update programs.
 kinobi.update(
   new k.UpdateProgramsVisitor({
-    assetProgram: { name: "asset" },
+    assetProgram: { name: "asset" }
   })
 );
 
@@ -34,11 +34,11 @@ kinobi.update(
                 struct: k.structTypeNode([
                   k.structFieldTypeNode({
                     name: "discriminator",
-                    child: k.linkTypeNode("Discriminator"),
+                    child: k.linkTypeNode("Discriminator")
                   }),
                   k.structFieldTypeNode({
                     name: "state",
-                    child: k.linkTypeNode("State"),
+                    child: k.linkTypeNode("State")
                   }),
                   k.structFieldTypeNode({
                     name: "standard",
@@ -46,19 +46,19 @@ kinobi.update(
                   }),
                   k.structFieldTypeNode({
                     name: "mutable",
-                    child: k.boolTypeNode(),
+                    child: k.boolTypeNode()
                   }),
                   k.structFieldTypeNode({
                     name: "holder",
-                    child: k.publicKeyTypeNode(),
+                    child: k.publicKeyTypeNode()
                   }),
                   k.structFieldTypeNode({
                     name: "group",
-                    child: k.publicKeyTypeNode(),
+                    child: k.publicKeyTypeNode()
                   }),
                   k.structFieldTypeNode({
                     name: "authority",
-                    child: k.publicKeyTypeNode(),
+                    child: k.publicKeyTypeNode()
                   }),
                   k.structFieldTypeNode({
                     name: "delegate",
@@ -96,10 +96,10 @@ kinobi.update(
                 fields: [
                   {
                     name: "traits",
-                    type: { vec: { defined: "trait" }, size: "remainder" },
-                  },
-                ],
-              },
+                    type: { vec: { defined: "trait" }, size: "remainder" }
+                  }
+                ]
+              }
             }),
             // trait
             k.definedTypeNode({
@@ -107,13 +107,13 @@ kinobi.update(
               data: k.structTypeNode([
                 k.structFieldTypeNode({
                   name: "traitType",
-                  child: k.stringTypeNode({ size: k.fixedSize(16) }),
+                  child: k.stringTypeNode({ size: k.fixedSize(16) })
                 }),
                 k.structFieldTypeNode({
                   name: "value",
-                  child: k.stringTypeNode({ size: k.fixedSize(16) }),
-                }),
-              ]),
+                  child: k.stringTypeNode({ size: k.fixedSize(16) })
+                })
+              ])
             }),
             // image
             k.definedTypeNode({
@@ -122,15 +122,15 @@ kinobi.update(
                 k.structFieldTypeNode({
                   name: "data",
                   child: k.arrayTypeNode(k.numberTypeNode("u8"), {
-                    size: k.remainderSize(),
-                  }),
-                }),
-              ]),
-            }),
-          ],
+                    size: k.remainderSize()
+                  })
+                })
+              ])
+            })
+          ]
         });
-      },
-    },
+      }
+    }
   ])
 );
 
@@ -161,7 +161,7 @@ kinobi.update(
           }),
         },
       },
-      internal: true,
+      internal: true
     },
     write: {
       internal: true,
@@ -185,11 +185,11 @@ kinobi.update(
 // Set ShankAccount discriminator.
 const key = (name) => ({
   field: "discriminator",
-  value: k.vEnum("Discriminator", name),
+  value: k.vEnum("Discriminator", name)
 });
 kinobi.update(
   new k.SetAccountDiscriminatorFromFieldVisitor({
-    asset: key("Asset"),
+    asset: key("Asset")
   })
 );
 
@@ -204,6 +204,6 @@ const rustDir = path.join(clientDir, "rust", "src", "generated");
 kinobi.accept(
   new k.RenderRustVisitor(rustDir, {
     formatCode: true,
-    crateFolder: crateDir,
+    crateFolder: crateDir
   })
 );
