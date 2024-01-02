@@ -25,7 +25,7 @@ impl<'a> ExtensionData<'a> for Attributes<'a> {
     }
 
     fn length(&self) -> usize {
-        self.traits.len() * std::mem::size_of::<Trait>()
+        std::mem::size_of_val(self.traits)
     }
 }
 
@@ -44,7 +44,7 @@ impl<'a> ExtensionDataMut<'a> for AttributesMut<'a> {
     }
 
     fn length(&self) -> usize {
-        self.traits.len() * std::mem::size_of::<Trait>()
+        std::mem::size_of_val(self.traits)
     }
 }
 

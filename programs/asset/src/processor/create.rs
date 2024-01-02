@@ -102,7 +102,7 @@ pub fn process_create(
         "asset"
     );
 
-    let mut asset = Asset::load_mut(&mut data);
+    let asset = Asset::load_mut(&mut data);
 
     asset.discriminator = Discriminator::Asset;
     asset.standard = args.standard;
