@@ -19,6 +19,7 @@ jobs:
       program_matrix: ${{ steps.program_matrix.outputs.matrix }}
       js_client: ${{ steps.changes.outputs.js_client }}
       rust_client: ${{ steps.changes.outputs.rust_client }}
+      rust_cli: ${{ steps.changes.outputs.rust_cli }}
     steps:
       - name: Git checkout
         uses: actions/checkout@v3
@@ -147,4 +148,11 @@ jobs:
     name: Rust Client
     needs: generate_clients
     uses: ./.github/workflows/test-rust-client.yml
+    secrets: inherit
+
+  build_rust_cli:
+    if: needs.changes.outputs.rust_cli == 'true'
+    name: Rust Cli
+    needs: generate_clients
+    uses: ./.github/workflows/build-cli.yml
     secrets: inherit
