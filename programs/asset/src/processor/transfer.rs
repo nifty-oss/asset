@@ -6,9 +6,16 @@ use crate::{
     instruction::accounts::{Context, TransferAccounts},
     require,
     state::{Asset, Delegate, DelegateRole, Discriminator},
+    utils::assert_delegate,
 };
 
-pub fn process_transfer(_program_id: &Pubkey, ctx: Context<TransferAccounts>) -> ProgramResult {
+pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> ProgramResult {
+    require!(
+        ctx.accounts.asset.owner == program_id,
+        ProgramError::IllegalOwner,
+        "asset"
+    );
+
     // Account must be a signer.
     require!(
         ctx.accounts.signer.is_signer,
@@ -29,15 +36,12 @@ pub fn process_transfer(_program_id: &Pubkey, ctx: Context<TransferAccounts>) ->
 
     let is_holder = asset.holder == *ctx.accounts.signer.key;
 
-    let is_transfer_delegate = if let Some(delegate) = asset.delegate.value() {
-        *delegate.address == *ctx.accounts.signer.key && delegate.is_active(DelegateRole::Transfer)
-    } else {
-        false
-    };
+    let is_delegate =
+        assert_delegate(asset, ctx.accounts.signer.key, DelegateRole::Transfer).is_ok();
 
     // Signing account must be holder or a transfer delegate.
     require!(
-        is_holder || is_transfer_delegate,
+        is_holder || is_delegate,
         AssetError::InvalidTransferAuthority,
         "not a holder or transfer delegate"
     );

@@ -67,7 +67,7 @@ struct WriteInstructionData {
 impl WriteInstructionData {
   fn new() -> Self {
     Self {
-                        discriminator: 3,
+                        discriminator: 4,
                                               }
   }
 }

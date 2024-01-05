@@ -93,18 +93,70 @@ export class InvalidAlignmentError extends ProgramError {
 codeToErrorMap.set(0x5, InvalidAlignmentError);
 nameToErrorMap.set('InvalidAlignment', InvalidAlignmentError);
 
+/** InvalidBurnAuthority: Invalid holder or burn delegate */
+export class InvalidBurnAuthorityError extends ProgramError {
+  override readonly name: string = 'InvalidBurnAuthority';
+
+  readonly code: number = 0x6; // 6
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid holder or burn delegate', program, cause);
+  }
+}
+codeToErrorMap.set(0x6, InvalidBurnAuthorityError);
+nameToErrorMap.set('InvalidBurnAuthority', InvalidBurnAuthorityError);
+
 /** InvalidTransferAuthority: Invalid holder or transfer delegate */
 export class InvalidTransferAuthorityError extends ProgramError {
   override readonly name: string = 'InvalidTransferAuthority';
 
-  readonly code: number = 0x6; // 6
+  readonly code: number = 0x7; // 7
 
   constructor(program: Program, cause?: Error) {
     super('Invalid holder or transfer delegate', program, cause);
   }
 }
-codeToErrorMap.set(0x6, InvalidTransferAuthorityError);
+codeToErrorMap.set(0x7, InvalidTransferAuthorityError);
 nameToErrorMap.set('InvalidTransferAuthority', InvalidTransferAuthorityError);
+
+/** DelegateNotFound: Delegate not found */
+export class DelegateNotFoundError extends ProgramError {
+  override readonly name: string = 'DelegateNotFound';
+
+  readonly code: number = 0x8; // 8
+
+  constructor(program: Program, cause?: Error) {
+    super('Delegate not found', program, cause);
+  }
+}
+codeToErrorMap.set(0x8, DelegateNotFoundError);
+nameToErrorMap.set('DelegateNotFound', DelegateNotFoundError);
+
+/** DelegateRoleNotActive: Delegate role not active */
+export class DelegateRoleNotActiveError extends ProgramError {
+  override readonly name: string = 'DelegateRoleNotActive';
+
+  readonly code: number = 0x9; // 9
+
+  constructor(program: Program, cause?: Error) {
+    super('Delegate role not active', program, cause);
+  }
+}
+codeToErrorMap.set(0x9, DelegateRoleNotActiveError);
+nameToErrorMap.set('DelegateRoleNotActive', DelegateRoleNotActiveError);
+
+/** InvalidDelegate: Invalid delegate */
+export class InvalidDelegateError extends ProgramError {
+  override readonly name: string = 'InvalidDelegate';
+
+  readonly code: number = 0xa; // 10
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid delegate', program, cause);
+  }
+}
+codeToErrorMap.set(0xa, InvalidDelegateError);
+nameToErrorMap.set('InvalidDelegate', InvalidDelegateError);
 
 /**
  * Attempts to resolve a custom program error from the provided error code.

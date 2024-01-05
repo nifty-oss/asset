@@ -4,6 +4,7 @@ pub mod extensions;
 pub mod instruction;
 pub mod processor;
 pub mod state;
+pub mod utils;
 
 pub use solana_program;
 

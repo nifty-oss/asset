@@ -1,3 +1,4 @@
+mod burn;
 mod create;
 mod initialize;
 mod transfer;
@@ -10,7 +11,7 @@ use solana_program::{
 };
 
 use crate::instruction::{
-    accounts::{CreateAccounts, InitializeAccounts, TransferAccounts, WriteAccounts},
+    accounts::{BurnAccounts, CreateAccounts, InitializeAccounts, TransferAccounts, WriteAccounts},
     Instruction,
 };
 
@@ -23,6 +24,10 @@ pub fn process_instruction<'a>(
         .map_err(|_| ProgramError::InvalidInstructionData)?;
 
     match instruction {
+        Instruction::Burn => {
+            msg!("Instruction: Burn");
+            burn::process_burn(program_id, BurnAccounts::context(accounts)?)
+        }
         Instruction::Create(args) => {
             msg!("Instruction: Create");
             create::process_create(program_id, CreateAccounts::context(accounts)?, args)

@@ -3,6 +3,41 @@
   "name": "asset_program",
   "instructions": [
     {
+      "name": "Burn",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Asset account"
+          ]
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The holder or burn delegate of the asset"
+          ]
+        },
+        {
+          "name": "recipient",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The account receiving refunded rent"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 0
+      }
+    },
+    {
       "name": "Create",
       "accounts": [
         {
@@ -58,7 +93,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 0
+        "value": 1
       }
     },
     {
@@ -101,7 +136,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 1
+        "value": 2
       }
     },
     {
@@ -135,7 +170,7 @@
       "args": [],
       "discriminant": {
         "type": "u8",
-        "value": 2
+        "value": 3
       }
     },
     {
@@ -176,7 +211,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 3
+        "value": 4
       }
     }
   ],
@@ -399,8 +434,28 @@
     },
     {
       "code": 6,
+      "name": "InvalidBurnAuthority",
+      "msg": "Invalid holder or burn delegate"
+    },
+    {
+      "code": 7,
       "name": "InvalidTransferAuthority",
       "msg": "Invalid holder or transfer delegate"
+    },
+    {
+      "code": 8,
+      "name": "DelegateNotFound",
+      "msg": "Delegate not found"
+    },
+    {
+      "code": 9,
+      "name": "DelegateRoleNotActive",
+      "msg": "Delegate role not active"
+    },
+    {
+      "code": 10,
+      "name": "InvalidDelegate",
+      "msg": "Invalid delegate"
     }
   ],
   "metadata": {

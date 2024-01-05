@@ -28,9 +28,21 @@ pub enum AssetError {
     /// 5 (0x5) - Invalid alignment
     #[error("Invalid alignment")]
     InvalidAlignment,
-    /// 6 (0x6) - Invalid holder or transfer delegate
+    /// 6 (0x6) - Invalid holder or burn delegate
+    #[error("Invalid holder or burn delegate")]
+    InvalidBurnAuthority,
+    /// 7 (0x7) - Invalid holder or transfer delegate
     #[error("Invalid holder or transfer delegate")]
     InvalidTransferAuthority,
+    /// 8 (0x8) - Delegate not found
+    #[error("Delegate not found")]
+    DelegateNotFound,
+    /// 9 (0x9) - Delegate role not active
+    #[error("Delegate role not active")]
+    DelegateRoleNotActive,
+    /// 10 (0xA) - Invalid delegate
+    #[error("Invalid delegate")]
+    InvalidDelegate,
 }
 
 impl solana_program::program_error::PrintProgramError for AssetError {

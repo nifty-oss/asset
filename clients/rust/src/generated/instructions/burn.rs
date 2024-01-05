@@ -9,16 +9,16 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 /// Accounts.
-pub struct Transfer {
+pub struct Burn {
     /// Asset account
     pub asset: solana_program::pubkey::Pubkey,
-    /// Current holder of the asset or transfer delegate
+    /// The holder or burn delegate of the asset
     pub signer: solana_program::pubkey::Pubkey,
-    /// The recipient of the asset
-    pub recipient: solana_program::pubkey::Pubkey,
+    /// The account receiving refunded rent
+    pub recipient: Option<solana_program::pubkey::Pubkey>,
 }
 
-impl Transfer {
+impl Burn {
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
         self.instruction_with_remaining_accounts(&[])
     }
@@ -31,16 +31,22 @@ impl Transfer {
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.asset, false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_program::instruction::AccountMeta::new(
             self.signer,
             true,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.recipient,
-            false,
-        ));
+        if let Some(recipient) = self.recipient {
+            accounts.push(solana_program::instruction::AccountMeta::new(
+                recipient, false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::ASSET_ID,
+                false,
+            ));
+        }
         accounts.extend_from_slice(remaining_accounts);
-        let data = TransferInstructionData::new().try_to_vec().unwrap();
+        let data = BurnInstructionData::new().try_to_vec().unwrap();
 
         solana_program::instruction::Instruction {
             program_id: crate::ASSET_ID,
@@ -51,32 +57,32 @@ impl Transfer {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct TransferInstructionData {
+struct BurnInstructionData {
     discriminator: u8,
 }
 
-impl TransferInstructionData {
+impl BurnInstructionData {
     fn new() -> Self {
-        Self { discriminator: 3 }
+        Self { discriminator: 0 }
     }
 }
 
-/// Instruction builder for `Transfer`.
+/// Instruction builder for `Burn`.
 ///
 /// ### Accounts:
 ///
 ///   0. `[writable]` asset
-///   1. `[signer]` signer
-///   2. `[]` recipient
+///   1. `[writable, signer]` signer
+///   2. `[writable, optional]` recipient
 #[derive(Default)]
-pub struct TransferBuilder {
+pub struct BurnBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
     signer: Option<solana_program::pubkey::Pubkey>,
     recipient: Option<solana_program::pubkey::Pubkey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
-impl TransferBuilder {
+impl BurnBuilder {
     pub fn new() -> Self {
         Self::default()
     }
@@ -86,16 +92,17 @@ impl TransferBuilder {
         self.asset = Some(asset);
         self
     }
-    /// Current holder of the asset or transfer delegate
+    /// The holder or burn delegate of the asset
     #[inline(always)]
     pub fn signer(&mut self, signer: solana_program::pubkey::Pubkey) -> &mut Self {
         self.signer = Some(signer);
         self
     }
-    /// The recipient of the asset
+    /// `[optional account]`
+    /// The account receiving refunded rent
     #[inline(always)]
-    pub fn recipient(&mut self, recipient: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.recipient = Some(recipient);
+    pub fn recipient(&mut self, recipient: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
+        self.recipient = recipient;
         self
     }
     /// Add an aditional account to the instruction.
@@ -118,42 +125,42 @@ impl TransferBuilder {
     }
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        let accounts = Transfer {
+        let accounts = Burn {
             asset: self.asset.expect("asset is not set"),
             signer: self.signer.expect("signer is not set"),
-            recipient: self.recipient.expect("recipient is not set"),
+            recipient: self.recipient,
         };
 
         accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
     }
 }
 
-/// `transfer` CPI accounts.
-pub struct TransferCpiAccounts<'a, 'b> {
+/// `burn` CPI accounts.
+pub struct BurnCpiAccounts<'a, 'b> {
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
-    /// Current holder of the asset or transfer delegate
+    /// The holder or burn delegate of the asset
     pub signer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The recipient of the asset
-    pub recipient: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The account receiving refunded rent
+    pub recipient: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
-/// `transfer` CPI instruction.
-pub struct TransferCpi<'a, 'b> {
+/// `burn` CPI instruction.
+pub struct BurnCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
-    /// Current holder of the asset or transfer delegate
+    /// The holder or burn delegate of the asset
     pub signer: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The recipient of the asset
-    pub recipient: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The account receiving refunded rent
+    pub recipient: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
-impl<'a, 'b> TransferCpi<'a, 'b> {
+impl<'a, 'b> BurnCpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
-        accounts: TransferCpiAccounts<'a, 'b>,
+        accounts: BurnCpiAccounts<'a, 'b>,
     ) -> Self {
         Self {
             __program: program,
@@ -200,14 +207,21 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
             *self.asset.key,
             false,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+        accounts.push(solana_program::instruction::AccountMeta::new(
             *self.signer.key,
             true,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.recipient.key,
-            false,
-        ));
+        if let Some(recipient) = self.recipient {
+            accounts.push(solana_program::instruction::AccountMeta::new(
+                *recipient.key,
+                false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::ASSET_ID,
+                false,
+            ));
+        }
         remaining_accounts.iter().for_each(|remaining_account| {
             accounts.push(solana_program::instruction::AccountMeta {
                 pubkey: *remaining_account.0.key,
@@ -215,7 +229,7 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let data = TransferInstructionData::new().try_to_vec().unwrap();
+        let data = BurnInstructionData::new().try_to_vec().unwrap();
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::ASSET_ID,
@@ -226,7 +240,9 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset.clone());
         account_infos.push(self.signer.clone());
-        account_infos.push(self.recipient.clone());
+        if let Some(recipient) = self.recipient {
+            account_infos.push(recipient.clone());
+        }
         remaining_accounts
             .iter()
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
@@ -239,20 +255,20 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
     }
 }
 
-/// Instruction builder for `Transfer` via CPI.
+/// Instruction builder for `Burn` via CPI.
 ///
 /// ### Accounts:
 ///
 ///   0. `[writable]` asset
-///   1. `[signer]` signer
-///   2. `[]` recipient
-pub struct TransferCpiBuilder<'a, 'b> {
-    instruction: Box<TransferCpiBuilderInstruction<'a, 'b>>,
+///   1. `[writable, signer]` signer
+///   2. `[writable, optional]` recipient
+pub struct BurnCpiBuilder<'a, 'b> {
+    instruction: Box<BurnCpiBuilderInstruction<'a, 'b>>,
 }
 
-impl<'a, 'b> TransferCpiBuilder<'a, 'b> {
+impl<'a, 'b> BurnCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
-        let instruction = Box::new(TransferCpiBuilderInstruction {
+        let instruction = Box::new(BurnCpiBuilderInstruction {
             __program: program,
             asset: None,
             signer: None,
@@ -267,7 +283,7 @@ impl<'a, 'b> TransferCpiBuilder<'a, 'b> {
         self.instruction.asset = Some(asset);
         self
     }
-    /// Current holder of the asset or transfer delegate
+    /// The holder or burn delegate of the asset
     #[inline(always)]
     pub fn signer(
         &mut self,
@@ -276,13 +292,14 @@ impl<'a, 'b> TransferCpiBuilder<'a, 'b> {
         self.instruction.signer = Some(signer);
         self
     }
-    /// The recipient of the asset
+    /// `[optional account]`
+    /// The account receiving refunded rent
     #[inline(always)]
     pub fn recipient(
         &mut self,
-        recipient: &'b solana_program::account_info::AccountInfo<'a>,
+        recipient: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
-        self.instruction.recipient = Some(recipient);
+        self.instruction.recipient = recipient;
         self
     }
     /// Add an additional account to the instruction.
@@ -326,14 +343,14 @@ impl<'a, 'b> TransferCpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
-        let instruction = TransferCpi {
+        let instruction = BurnCpi {
             __program: self.instruction.__program,
 
             asset: self.instruction.asset.expect("asset is not set"),
 
             signer: self.instruction.signer.expect("signer is not set"),
 
-            recipient: self.instruction.recipient.expect("recipient is not set"),
+            recipient: self.instruction.recipient,
         };
         instruction.invoke_signed_with_remaining_accounts(
             signers_seeds,
@@ -342,7 +359,7 @@ impl<'a, 'b> TransferCpiBuilder<'a, 'b> {
     }
 }
 
-struct TransferCpiBuilderInstruction<'a, 'b> {
+struct BurnCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     signer: Option<&'b solana_program::account_info::AccountInfo<'a>>,

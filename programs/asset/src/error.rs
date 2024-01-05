@@ -33,8 +33,24 @@ pub enum AssetError {
     InvalidAlignment,
 
     /// 6 - Invalid holder or transfer delegate.
+    #[error("Invalid holder or burn delegate")]
+    InvalidBurnAuthority,
+
+    /// 7 - Invalid holder or transfer delegate.
     #[error("Invalid holder or transfer delegate")]
     InvalidTransferAuthority,
+
+    /// 8 - Delegate not found.
+    #[error("Delegate not found")]
+    DelegateNotFound,
+
+    /// 9 - Delegate role not active
+    #[error("Delegate role not active")]
+    DelegateRoleNotActive,
+
+    /// 10 - Invalid delegate
+    #[error("Invalid delegate")]
+    InvalidDelegate,
 }
 
 impl PrintProgramError for AssetError {

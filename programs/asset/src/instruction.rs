@@ -15,6 +15,12 @@ pub enum Instruction {
     Close,
     */
 
+    /// Burn an asset.
+    #[account(0, writable, name="asset", desc = "Asset account")]
+    #[account(1, signer, writable, name="signer", desc = "The holder or burn delegate of the asset")]
+    #[account(2, optional, writable, name="recipient", desc = "The account receiving refunded rent")]
+    Burn,
+
     /// Create a new asset.
     #[account(0, signer, writable, name="asset", desc = "Asset account")]
     #[account(1, signer, name="authority", desc = "The authority of the asset")]
