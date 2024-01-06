@@ -15,8 +15,13 @@ asset_program: &asset_program
   - *program_common
   - "programs/asset/**"
 
+bridge_program: &bridge_program
+  - *program_common
+  - "programs/bridge/**"
+
 programs: &programs
   - *asset_program
+  - *bridge_program
 
 # Clients.
 
@@ -31,20 +36,45 @@ client_common: &client_common
   - "configs/shank.cjs"
   - "configs/kinobi.cjs"
 
-js_client: &js_client
+asset_js_client: &asset_js_client
   - *client_common
-  - "clients/js/**"
+  - "clients/asset/js/**"
 
-rust_client: &rust_client
+bridge_js_client: &bridge_js_client
   - *client_common
-  - "clients/rust/**"
+  - "clients/bridge/js/**"
+
+asset_rust_client: &asset_rust_client
+  - *client_common
+  - "clients/asset/rust/**"
+
+bridge_rust_client: &bridge_rust_client
+  - *client_common
+  - "clients/bridge/rust/**"
 
 clients: &clients
-  - *js_client
-  - *rust_client
+  - *asset_js_client
+  - *asset_rust_client
+  - *bridge_js_client
+  - *bridge_rust_client
+
+# CLIs.
+
+cli_common: &cli_common
+  - *programs
+  - *clients
+  - ".github/workflows/build-rust-cli.yml"
+
+rust_cli: &rust_cli
+  - *client_common
+  - "clients/cli/**"
+
+clis: &clis
+  - *rust_cli
 
 # Any.
 
 any: &any
   - *programs
   - *clients
+  - *clis

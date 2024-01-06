@@ -1,0 +1,304 @@
+{
+  "version": "0.1.0",
+  "name": "bridge_program",
+  "instructions": [
+    {
+      "name": "Bridge",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Asset account of the mint (pda of `['nifty::bridge::asset', mint pubkey]`)"
+          ]
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Bridge account for the asset (pda of `['nifty::bridge::vault', mint pubkey]`)"
+          ]
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Token owner account"
+          ]
+        },
+        {
+          "name": "token",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Token account"
+          ]
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Mint account of the token"
+          ]
+        },
+        {
+          "name": "metadata",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Metadata account of the mint"
+          ]
+        },
+        {
+          "name": "masterEdition",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Master Edition of the mint"
+          ]
+        },
+        {
+          "name": "tokenRecord",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "Owner token record account"
+          ]
+        },
+        {
+          "name": "vaultToken",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Vault token account"
+          ]
+        },
+        {
+          "name": "vaultTokenRecord",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "Vault token record account"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "niftyAssetProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Nifty Asset program"
+          ]
+        },
+        {
+          "name": "tokenMetadataProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Metaplex Token Metadata program"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "System program"
+          ]
+        },
+        {
+          "name": "sysvarInstructions",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Instructions sysvar account"
+          ]
+        },
+        {
+          "name": "splTokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL Token program"
+          ]
+        },
+        {
+          "name": "splAtaProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "SPL ATA program"
+          ]
+        },
+        {
+          "name": "authorizationRulesProgram",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "Token Auth Rules program"
+          ]
+        },
+        {
+          "name": "authorizationRules",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "Token Auth Rules account"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 0
+      }
+    },
+    {
+      "name": "Create",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Asset account of the mint (pda of `['nifty::bridge::asset', mint pubkey]`)"
+          ]
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Bridge account for the asset (pda of `['nifty::bridge::vault', mint pubkey]`)"
+          ]
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Mint account of the token"
+          ]
+        },
+        {
+          "name": "metadata",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Metadata account of the collection"
+          ]
+        },
+        {
+          "name": "updateAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "Update authority of the metadata"
+          ]
+        },
+        {
+          "name": "collection",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "Asset account of the collection (pda of `['nifty::bridge::asset', collection mint pubkey]`)"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "System program"
+          ]
+        },
+        {
+          "name": "niftyAssetProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Nifty Asset program"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 1
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "Discriminator",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Uninitialized"
+          },
+          {
+            "name": "Vault"
+          }
+        ]
+      }
+    },
+    {
+      "name": "State",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Idle"
+          },
+          {
+            "name": "Active"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 0,
+      "name": "InvalidMint",
+      "msg": "Invalid mint account"
+    },
+    {
+      "code": 1,
+      "name": "InvalidAuthority",
+      "msg": "Invalid authority account"
+    }
+  ],
+  "metadata": {
+    "origin": "shank",
+    "address": "BridgezKrNugsZwTcyAMYba643Z93RzC2yN1Y24LwAkm",
+    "binaryVersion": "0.3.0",
+    "libVersion": "0.3.0"
+  }
+}

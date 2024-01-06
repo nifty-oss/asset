@@ -15,6 +15,16 @@ module.exports = {
         programId: "AssetGtQBTSgm5s91d1RAQod5JmaZiJDxqsgtqrZud73",
         deployPath: getProgram("asset_program.so"),
       },
+      {
+        label: "Bridge",
+        programId: "BridgezKrNugsZwTcyAMYba643Z93RzC2yN1Y24LwAkm",
+        deployPath: getProgram("bridge_program.so"),
+      },
+      {
+        label: "Token Metadata",
+        programId: "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s",
+        deployPath: getProgram("mpl_token_metadata.so"),
+      },
     ],
   },
 };

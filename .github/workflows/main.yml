@@ -17,8 +17,9 @@ jobs:
       any: ${{ steps.changes.outputs.any }}
       programs: ${{ steps.changes.outputs.programs }}
       program_matrix: ${{ steps.program_matrix.outputs.matrix }}
-      js_client: ${{ steps.changes.outputs.js_client }}
-      rust_client: ${{ steps.changes.outputs.rust_client }}
+      clients: ${{ steps.changes.outputs.clients }}
+      js_client_matrix: ${{ steps.program_matrix.outputs.matrix }}
+      rust_client_matrix: ${{ steps.program_matrix.outputs.matrix }}
       rust_cli: ${{ steps.changes.outputs.rust_cli }}
     steps:
       - name: Git checkout
@@ -41,6 +42,22 @@ jobs:
           changes: ${{ steps.changes.outputs.changes }}
           suffix: _program
 
+      - name: Filter JS client matrix
+        id: js_client_matrix
+        uses: metaplex-foundation/actions/filter-matrix@v1
+        with:
+          matrix: ${{ env.PROGRAMS }}
+          changes: ${{ steps.changes.outputs.changes }}
+          suffix: _js_client
+
+      - name: Filter Rust client matrix
+        id: rust_client_matrix
+        uses: metaplex-foundation/actions/filter-matrix@v1
+        with:
+          matrix: ${{ env.PROGRAMS }}
+          changes: ${{ steps.changes.outputs.changes }}
+          suffix: _rust_client
+
   build_programs:
     name: Programs
     if: ${{ needs.changes.outputs.any == 'true' }}
@@ -60,7 +77,7 @@ jobs:
   generate_clients:
     name: Generate clients
     if: ${{ needs.changes.outputs.any == 'true' }}
-    needs: build_programs
+    needs: [changes, build_programs]
     runs-on: ubuntu-latest
     steps:
       - name: Git checkout
@@ -130,29 +147,35 @@ jobs:
         run: test -z "$(git status --porcelain)"
 
   test_js:
-    if: needs.changes.outputs.js_client == 'true'
+    if: ${{ needs.changes.outputs.clients == 'true' }}
     name: JS Client
-    needs: generate_clients
+    needs: [changes, generate_clients]
     uses: ./.github/workflows/test-js-client.yml
     secrets: inherit
+    with:
+      client_matrix: ${{ needs.changes.outputs.js_client_matrix }}
 
-  build_rust_client:
-    if: needs.changes.outputs.rust_client == 'true'
+  test_rust:
+    if: ${{ needs.changes.outputs.clients == 'true' }}
     name: Rust Client
-    needs: generate_clients
-    uses: ./.github/workflows/build-rust-client.yml
-    secrets: inherit
-
-  test_rust_client:
-    if: needs.changes.outputs.rust_client == 'true'
-    name: Rust Client
-    needs: generate_clients
+    needs: [changes, generate_clients]
     uses: ./.github/workflows/test-rust-client.yml
     secrets: inherit
+    with:
+      client_matrix: ${{ needs.changes.outputs.rust_client_matrix }}
+
+  build_rust:
+    if: ${{ needs.changes.outputs.clients == 'true' }}
+    name: Rust Client
+    needs: [changes, generate_clients]
+    uses: ./.github/workflows/build-rust-client.yml
+    secrets: inherit
+    with:
+      client_matrix: ${{ needs.changes.outputs.rust_client_matrix }}
 
   build_rust_cli:
-    if: needs.changes.outputs.rust_cli == 'true'
-    name: Rust Cli
-    needs: generate_clients
+    if: ${{ needs.changes.outputs.rust_cli == 'true' }}
+    name: Rust CLI
+    needs: [changes, generate_clients]
     uses: ./.github/workflows/build-cli.yml
     secrets: inherit

@@ -1,4 +1,4 @@
-name: Build Rust Client
+name: Build Rust CLI
 
 on:
   workflow_call:
@@ -16,7 +16,7 @@ on:
         type: string
       solana:
         description: Solana version
-        default: 1.16.17
+        default: 1.16.18
         required: true
         type: string
 
@@ -57,15 +57,15 @@ jobs:
           command: clippy
           args: --all-targets --all-features --no-deps --manifest-path ./clients/cli/Cargo.toml
 
-      - name: Build Rust cli
+      - name: Build Rust CLI
         shell: bash
         working-directory: clients/cli
         run: cargo build --all-features --release
 
-      - name: Upload Rust cli builds
+      - name: Upload Rust CLI builds
         uses: actions/upload-artifact@v3
         with:
           name: rust-cli-builds
           # First wildcard ensures exported paths are consistently under the clients folder.
-          path: ./client*/cli/target/release/*asset*
+          path: ./client*/cli/target/release/*nifty*
           if-no-files-found: error

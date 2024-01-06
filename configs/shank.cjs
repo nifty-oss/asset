@@ -13,3 +13,12 @@ generateIdl({
   binaryInstallDir,
   programDir: path.join(programDir, "asset"),
 });
+
+generateIdl({
+  generator: "shank",
+  programName: "bridge_program",
+  programId: "BridgezKrNugsZwTcyAMYba643Z93RzC2yN1Y24LwAkm",
+  idlDir,
+  binaryInstallDir,
+  programDir: path.join(programDir, "bridge"),
+});

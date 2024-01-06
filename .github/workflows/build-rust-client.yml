@@ -3,6 +3,8 @@ name: Build Rust Client
 on:
   workflow_call:
     inputs:
+      client_matrix:
+        type: string
       rust:
         type: string
       solana:
@@ -16,7 +18,7 @@ on:
         type: string
       solana:
         description: Solana version
-        default: 1.16.17
+        default: 1.16.18
         required: true
         type: string
 
@@ -27,6 +29,9 @@ jobs:
   build_sdk:
     name: Build
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        client: ${{ fromJson(inputs.client_matrix) }}
     steps:
       - name: Git checkout
         uses: actions/checkout@v3
@@ -48,18 +53,18 @@ jobs:
       - name: Cache Rust client test dependencies
         uses: metaplex-foundation/actions/cache-crate@v1
         with:
-          folder: ./clients/rust
-          key: rust-client-test
+          folder: ./clients/${{ matrix.client }}/rust
+          key: ${{ matrix.client }}-rust-client-test
 
       - name: Run cargo clippy
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --all-targets --all-features --no-deps --manifest-path ./clients/rust/Cargo.toml
+          args: --all-targets --all-features --no-deps --manifest-path ./clients/${{ matrix.client }}/rust/Cargo.toml
 
       - name: Build Rust client
         shell: bash
-        working-directory: clients/rust
+        working-directory: clients/${{ matrix.client }}/rust
         run: cargo build --all-features --release
 
       - name: Upload Rust client builds
@@ -67,5 +72,5 @@ jobs:
         with:
           name: rust-client-builds
           # First wildcard ensures exported paths are consistently under the clients folder.
-          path: ./client*/rust/target/release/*asset*
+          path: ./client*/${{ matrix.client }}/rust/target/release/*${{ matrix.client }}*
           if-no-files-found: error

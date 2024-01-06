@@ -5,18 +5,20 @@ const k = require("@metaplex-foundation/kinobi");
 const clientDir = path.join(__dirname, "..", "clients");
 const idlDir = path.join(__dirname, "..", "idls");
 
+//--- Asset program.
+
 // Instanciate Kinobi.
-const kinobi = k.createFromIdls([path.join(idlDir, "asset_program.json")]);
+const kAsset = k.createFromIdls([path.join(idlDir, "asset_program.json")]);
 
 // Update programs.
-kinobi.update(
+kAsset.update(
   new k.UpdateProgramsVisitor({
-    assetProgram: { name: "asset" }
+    assetProgram: { name: "asset" },
   })
 );
 
 // Add missing types from the IDL.
-kinobi.update(
+kAsset.update(
   new k.TransformNodesVisitor([
     {
       selector: { kind: "programNode", name: "asset" },
@@ -34,11 +36,11 @@ kinobi.update(
                 struct: k.structTypeNode([
                   k.structFieldTypeNode({
                     name: "discriminator",
-                    child: k.linkTypeNode("Discriminator")
+                    child: k.linkTypeNode("Discriminator"),
                   }),
                   k.structFieldTypeNode({
                     name: "state",
-                    child: k.linkTypeNode("State")
+                    child: k.linkTypeNode("State"),
                   }),
                   k.structFieldTypeNode({
                     name: "standard",
@@ -46,19 +48,19 @@ kinobi.update(
                   }),
                   k.structFieldTypeNode({
                     name: "mutable",
-                    child: k.boolTypeNode()
+                    child: k.boolTypeNode(),
                   }),
                   k.structFieldTypeNode({
                     name: "holder",
-                    child: k.publicKeyTypeNode()
+                    child: k.publicKeyTypeNode(),
                   }),
                   k.structFieldTypeNode({
                     name: "group",
-                    child: k.publicKeyTypeNode()
+                    child: k.publicKeyTypeNode(),
                   }),
                   k.structFieldTypeNode({
                     name: "authority",
-                    child: k.publicKeyTypeNode()
+                    child: k.publicKeyTypeNode(),
                   }),
                   k.structFieldTypeNode({
                     name: "delegate",
@@ -80,11 +82,11 @@ kinobi.update(
               data: k.structTypeNode([
                 k.structFieldTypeNode({
                   name: "address",
-                    child: k.publicKeyTypeNode(),
+                  child: k.publicKeyTypeNode(),
                 }),
                 k.structFieldTypeNode({
                   name: "roles",
-                    child: k.numberTypeNode("u8"),
+                  child: k.numberTypeNode("u8"),
                 }),
               ]),
             }),
@@ -96,10 +98,10 @@ kinobi.update(
                 fields: [
                   {
                     name: "traits",
-                    type: { vec: { defined: "trait" }, size: "remainder" }
-                  }
-                ]
-              }
+                    type: { vec: { defined: "trait" }, size: "remainder" },
+                  },
+                ],
+              },
             }),
             // trait
             k.definedTypeNode({
@@ -107,13 +109,13 @@ kinobi.update(
               data: k.structTypeNode([
                 k.structFieldTypeNode({
                   name: "traitType",
-                  child: k.stringTypeNode({ size: k.fixedSize(16) })
+                  child: k.stringTypeNode({ size: k.fixedSize(16) }),
                 }),
                 k.structFieldTypeNode({
                   name: "value",
-                  child: k.stringTypeNode({ size: k.fixedSize(16) })
-                })
-              ])
+                  child: k.stringTypeNode({ size: k.fixedSize(16) }),
+                }),
+              ]),
             }),
             // image
             k.definedTypeNode({
@@ -122,20 +124,20 @@ kinobi.update(
                 k.structFieldTypeNode({
                   name: "data",
                   child: k.arrayTypeNode(k.numberTypeNode("u8"), {
-                    size: k.remainderSize()
-                  })
-                })
-              ])
-            })
-          ]
+                    size: k.remainderSize(),
+                  }),
+                }),
+              ]),
+            }),
+          ],
         });
-      }
-    }
+      },
+    },
   ])
 );
 
 // Update instructions.
-kinobi.update(
+kAsset.update(
   new k.UpdateInstructionsVisitor({
     create: {
       accounts: {
@@ -161,7 +163,7 @@ kinobi.update(
           }),
         },
       },
-      internal: true
+      internal: true,
     },
     write: {
       internal: true,
@@ -170,7 +172,7 @@ kinobi.update(
 );
 
 // Set default values.
-kinobi.update(
+kAsset.update(
   new k.SetStructDefaultValuesVisitor({
     initialize: {
       data: k.vNone(),
@@ -183,27 +185,280 @@ kinobi.update(
 );
 
 // Set ShankAccount discriminator.
-const key = (name) => ({
+const assetKey = (name) => ({
   field: "discriminator",
-  value: k.vEnum("Discriminator", name)
+  value: k.vEnum("Discriminator", name),
 });
-kinobi.update(
+kAsset.update(
   new k.SetAccountDiscriminatorFromFieldVisitor({
-    asset: key("Asset")
+    asset: assetKey("Asset"),
   })
 );
 
 // Render JavaScript.
-const jsDir = path.join(clientDir, "js", "src", "generated");
-const prettier = require(path.join(clientDir, "js", ".prettierrc.json"));
-kinobi.accept(new k.RenderJavaScriptVisitor(jsDir, { prettier }));
+kAsset.accept(
+  new k.RenderJavaScriptVisitor(
+    path.join(clientDir, "asset", "js", "src", "generated"),
+    {
+      prettier: require(path.join(
+        clientDir,
+        "asset",
+        "js",
+        ".prettierrc.json"
+      )),
+    }
+  )
+);
 
 // Render Rust.
-const crateDir = path.join(clientDir, "rust");
-const rustDir = path.join(clientDir, "rust", "src", "generated");
-kinobi.accept(
-  new k.RenderRustVisitor(rustDir, {
+kAsset.accept(
+  new k.RenderRustVisitor(
+    path.join(clientDir, "asset", "rust", "src", "generated"),
+    {
+      formatCode: true,
+      crateFolder: path.join(clientDir, "asset", "rust"),
+    }
+  )
+);
+
+//--- Bridge program.
+
+const kBridge = k.createFromIdls([path.join(idlDir, "bridge_program.json")]);
+
+// Update programs.
+kBridge.update(
+  new k.UpdateProgramsVisitor({
+    bridgeProgram: { name: "bridge" },
+  })
+);
+
+// Add missing types from the IDL.
+kBridge.update(
+  new k.TransformNodesVisitor([
+    {
+      selector: { kind: "programNode", name: "bridge" },
+      transformer: (node) => {
+        k.assertProgramNode(node);
+        return k.programNode({
+          ...node,
+          accounts: [
+            ...node.accounts,
+            // metadata account
+            k.accountNode({
+              name: "vault",
+              data: k.accountDataNode({
+                name: "vaultAccountData",
+                struct: k.structTypeNode([
+                  k.structFieldTypeNode({
+                    name: "discriminator",
+                    child: k.linkTypeNode("Discriminator"),
+                  }),
+                  k.structFieldTypeNode({
+                    name: "state",
+                    child: k.linkTypeNode("State"),
+                  }),
+                  k.structFieldTypeNode({
+                    name: "bump",
+                    child: k.numberTypeNode("u8"),
+                  }),
+                  k.structFieldTypeNode({
+                    name: "mint",
+                    child: k.publicKeyTypeNode(),
+                  }),
+                  k.structFieldTypeNode({
+                    name: "assetBump",
+                    child: k.numberTypeNode("u8"),
+                  }),
+                ]),
+              }),
+            }),
+          ],
+        });
+      },
+    },
+  ])
+);
+
+// Update accounts.
+kBridge.update(
+  new k.UpdateAccountsVisitor({
+    vault: {
+      seeds: [
+        k.stringConstantSeed("nifty::bridge::vault"),
+        k.publicKeySeed("mint", "The address of the mint"),
+      ],
+    },
+  })
+);
+
+// Set default account values accross multiple instructions.
+kBridge.update(
+  new k.SetInstructionAccountDefaultValuesVisitor([
+    // default accounts
+    {
+      account: "vault",
+      ...k.pdaDefault("vault"),
+    },
+    {
+      account: "updateAuthority",
+      ignoreIfOptional: true,
+      ...k.identityDefault(),
+    },
+    {
+      account: "metadata",
+      ...k.pdaDefault("metadata", {
+        importFrom: "mplTokenMetadata",
+        seeds: { mint: k.accountDefault("mint") },
+      }),
+    },
+    {
+      account: "niftyAssetProgram",
+      ignoreIfOptional: true,
+      ...k.programDefault(
+        "niftyAsset",
+        "AssetGtQBTSgm5s91d1RAQod5JmaZiJDxqsgtqrZud73"
+      ),
+    },
+  ])
+);
+
+// Update instructions.
+kBridge.update(
+  new k.UpdateInstructionsVisitor({
+    create: {
+      accounts: {
+        asset: {
+          defaultsTo: k.resolverDefault("resolveBridgeAsset", [
+            k.dependsOnAccount("mint"),
+          ]),
+        },
+      },
+      args: {
+        version: {
+          type: k.numberTypeNode("u8"),
+          defaultsTo: k.valueDefault(k.vScalar(1)),
+        },
+      },
+    },
+    bridge: {
+      accounts: {
+        asset: {
+          defaultsTo: k.resolverDefault("resolveBridgeAsset", [
+            k.dependsOnAccount("mint"),
+          ]),
+        },
+        vault: { defaultsTo: k.pdaDefault("vault") },
+        tokenOwner: { defaultsTo: k.identityDefault() },
+        token: {
+          defaultsTo: k.pdaDefault("associatedToken", {
+            importFrom: "mplToolbox",
+            seeds: {
+              mint: k.accountDefault("mint"),
+              owner: k.accountDefault("owner"),
+            },
+          }),
+        },
+        metadata: {
+          defaultsTo: k.pdaDefault("metadata", {
+            importFrom: "mplTokenMetadata",
+            seeds: { mint: k.accountDefault("mint") },
+          }),
+        },
+        masterEdition: {
+          defaultsTo: k.pdaDefault("masterEdition", {
+            importFrom: "mplTokenMetadata",
+            seeds: { mint: k.accountDefault("mint") },
+          }),
+        },
+        tokenRecord: {
+          defaultsTo: k.conditionalDefault(
+            "arg",
+            "tokenStandard",
+            { value: k.vEnum("TokenStandard", "ProgrammableNonFungible") },
+            {
+              ifTrue: k.pdaDefault("tokenRecord", {
+                importFrom: "mplTokenMetadata",
+                seeds: {
+                  mint: k.accountDefault("mint"),
+                  token: k.accountDefault("token"),
+                },
+              }),
+            }
+          ),
+        },
+        vaultToken: {
+          defaultsTo: k.pdaDefault("associatedToken", {
+            importFrom: "mplToolbox",
+            seeds: {
+              mint: k.accountDefault("mint"),
+              owner: k.accountDefault("vault"),
+            },
+          }),
+        },
+        vaultTokenRecord: {
+          defaultsTo: k.conditionalDefault(
+            "arg",
+            "tokenStandard",
+            { value: k.vEnum("TokenStandard", "ProgrammableNonFungible") },
+            {
+              ifTrue: k.pdaDefault("tokenRecord", {
+                importFrom: "mplTokenMetadata",
+                seeds: {
+                  mint: k.accountDefault("mint"),
+                  token: k.accountDefault("vaultToken"),
+                },
+              }),
+            }
+          ),
+        },
+      },
+      args: {
+        tokenStandard: {
+          type: k.linkTypeNode("TokenStandard", {
+            importFrom: "mplTokenMetadata",
+          }),
+          defaultsTo: k.valueDefault(
+            k.vEnum(
+              "TokenStandard",
+              "NonFungible",
+              undefined,
+              "mplTokenMetadata"
+            )
+          ),
+        },
+      },
+    },
+  })
+);
+
+// Set ShankAccount discriminator.
+const bridgeKey = (name) => ({
+  field: "discriminator",
+  value: k.vEnum("Discriminator", name),
+});
+kBridge.update(
+  new k.SetAccountDiscriminatorFromFieldVisitor({
+    vault: bridgeKey("Vault"),
+  })
+);
+
+// Render JavaScript.
+kBridge.accept(
+  new k.RenderJavaScriptVisitor(
+    path.join(clientDir, "bridge", "js", "src", "generated"),
+    {
+      prettier: require(path.join(clientDir, "bridge", "js", ".prettierrc.json")),
+      dependencyMap: {
+        mplTokenMetadata: "@metaplex-foundation/mpl-token-metadata",
+      },
+    }
+  )
+);
+
+// Render Rust.
+kBridge.accept(
+  new k.RenderRustVisitor(path.join(clientDir, "bridge", "rust", "src", "generated"), {
     formatCode: true,
-    crateFolder: crateDir
+    crateFolder: path.join(clientDir, "bridge", "rust"),
   })
 );

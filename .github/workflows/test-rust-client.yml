@@ -3,7 +3,7 @@ name: Test Rust Client
 on:
   workflow_call:
     inputs:
-      program_matrix:
+      client_matrix:
         type: string
 
 env:
@@ -13,6 +13,9 @@ jobs:
   test_sdk:
     name: Test
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        client: ${{ fromJson(inputs.client_matrix) }}
     steps:
       - name: Git checkout
         uses: actions/checkout@v3
@@ -34,8 +37,8 @@ jobs:
       - name: Cache Rust client test dependencies
         uses: metaplex-foundation/actions/cache-crate@v1
         with:
-          folder: ./clients/rust
-          key: rust-client-test
+          folder: ./clients/${{ matrix.client }}/rust
+          key: ${{ matrix.client }}-rust-client-test
 
       - name: Download program builds
         uses: actions/download-artifact@v3
@@ -45,4 +48,4 @@ jobs:
       - name: Run tests
         shell: bash
         working-directory: configs/scripts/client
-        run: RUST_LOG=error ./test-rust.sh
+        run: RUST_LOG=error ./test-rust.sh ${{ matrix.client }}
