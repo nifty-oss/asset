@@ -51,7 +51,7 @@
         {
           "name": "authority",
           "isMut": false,
-          "isSigner": true,
+          "isSigner": false,
           "docs": [
             "The authority of the asset"
           ]

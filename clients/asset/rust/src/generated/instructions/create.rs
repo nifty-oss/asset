@@ -42,7 +42,7 @@ impl Create {
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.authority,
-            true,
+            false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.holder,
@@ -104,7 +104,7 @@ pub struct CreateInstructionArgs {
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` asset
-///   1. `[signer]` authority
+///   1. `[]` authority
 ///   2. `[]` holder
 ///   3. `[writable, signer, optional]` payer
 ///   4. `[optional]` system_program
@@ -302,7 +302,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.authority.key,
-            true,
+            false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.holder.key,
@@ -373,7 +373,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` asset
-///   1. `[signer]` authority
+///   1. `[]` authority
 ///   2. `[]` holder
 ///   3. `[writable, signer, optional]` payer
 ///   4. `[optional]` system_program

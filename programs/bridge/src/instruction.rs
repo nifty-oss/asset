@@ -31,7 +31,7 @@ pub enum Instruction {
     #[account(1, writable, name="vault", desc="Bridge account for the asset (pda of `['nifty::bridge::vault', mint pubkey]`)")]
     #[account(2, name="mint", desc="Mint account of the token")]
     #[account(3, name="metadata", desc="Metadata account of the collection")]
-    #[account(4, optional, signer, name="update_authority", desc="Update authority of the metadata")]
+    #[account(4, optional_signer, name="update_authority", desc="Update authority of the metadata")]
     #[account(5, optional, name="collection", desc="Asset account of the collection (pda of `['nifty::bridge::asset', collection mint pubkey]`)")]
     #[account(6, signer, writable, name="payer", desc="The account paying for the storage fees")]
     #[account(7, name="system_program", desc = "System program")]

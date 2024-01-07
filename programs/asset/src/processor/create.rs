@@ -30,12 +30,6 @@ pub fn process_create(
         "asset"
     );
 
-    require!(
-        ctx.accounts.authority.is_signer,
-        ProgramError::MissingRequiredSignature,
-        "authority"
-    );
-
     if ctx.accounts.asset.data_is_empty() {
         let payer = {
             require!(

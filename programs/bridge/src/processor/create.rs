@@ -52,7 +52,13 @@ pub fn process_create(program_id: &Pubkey, ctx: Context<CreateAccounts>) -> Prog
         "mint"
     );
 
-    let needs_update_authority = if let Some(Collection { verified, key }) = metadata.collection {
+    require!(
+        metadata.update_authority == *ctx.accounts.update_authority.key,
+        BridgeError::InvalidAuthority,
+        "update_authority"
+    );
+
+    let authority_as_signer = if let Some(Collection { verified, key }) = metadata.collection {
         // if collection is verified, then we require the collection NFT
         // to be bridged as well
         if verified {
@@ -95,24 +101,10 @@ pub fn process_create(program_id: &Pubkey, ctx: Context<CreateAccounts>) -> Prog
 
     // if the token does not belong to a collection or the collection is unverified,
     // then we require the update authority as a signer
-    if needs_update_authority {
+    if authority_as_signer {
         require!(
-            ctx.accounts.update_authority.is_some(),
-            ProgramError::NotEnoughAccountKeys,
-            "update_authority"
-        );
-
-        let update_authority = ctx.accounts.update_authority.unwrap();
-
-        require!(
-            update_authority.is_signer,
+            ctx.accounts.update_authority.is_signer,
             ProgramError::MissingRequiredSignature,
-            "update_authority"
-        );
-
-        require!(
-            metadata.update_authority == *update_authority.key,
-            BridgeError::InvalidAuthority,
             "update_authority"
         );
 
@@ -181,7 +173,7 @@ pub fn process_create(program_id: &Pubkey, ctx: Context<CreateAccounts>) -> Prog
 
     CreateCpiBuilder::new(ctx.accounts.nifty_asset_program)
         .asset(ctx.accounts.asset)
-        .authority(ctx.accounts.asset) // <-- this should be the update authority on the metadata
+        .authority(ctx.accounts.update_authority)
         .holder(ctx.accounts.vault)
         .payer(Some(ctx.accounts.payer))
         .system_program(Some(ctx.accounts.system_program))

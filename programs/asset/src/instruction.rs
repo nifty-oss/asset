@@ -26,7 +26,7 @@ pub enum Instruction {
 
     /// Create a new asset.
     #[account(0, signer, writable, name="asset", desc = "Asset account")]
-    #[account(1, signer, name="authority", desc = "The authority of the asset")]
+    #[account(1, name="authority", desc = "The authority of the asset")]
     #[account(2, name="holder", desc = "The holder of the asset")]
     #[account(3, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
     #[account(4, optional, name="system_program", desc = "The system program")]

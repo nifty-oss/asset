@@ -19,7 +19,7 @@ pub struct Create {
     /// Metadata account of the collection
     pub metadata: solana_program::pubkey::Pubkey,
     /// Update authority of the metadata
-    pub update_authority: Option<solana_program::pubkey::Pubkey>,
+    pub update_authority: (solana_program::pubkey::Pubkey, bool),
     /// Asset account of the collection (pda of `['nifty::bridge::asset', collection mint pubkey]`)
     pub collection: Option<solana_program::pubkey::Pubkey>,
     /// The account paying for the storage fees
@@ -53,17 +53,10 @@ impl Create {
             self.metadata,
             false,
         ));
-        if let Some(update_authority) = self.update_authority {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                update_authority,
-                true,
-            ));
-        } else {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::BRIDGE_ID,
-                false,
-            ));
-        }
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.update_authority.0,
+            self.update_authority.1,
+        ));
         if let Some(collection) = self.collection {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 collection, false,
@@ -115,7 +108,7 @@ impl CreateInstructionData {
 ///   1. `[writable]` vault
 ///   2. `[]` mint
 ///   3. `[]` metadata
-///   4. `[signer, optional]` update_authority
+///   4. `[signer]` update_authority
 ///   5. `[optional]` collection
 ///   6. `[writable, signer]` payer
 ///   7. `[optional]` system_program (default to `11111111111111111111111111111111`)
@@ -126,7 +119,7 @@ pub struct CreateBuilder {
     vault: Option<solana_program::pubkey::Pubkey>,
     mint: Option<solana_program::pubkey::Pubkey>,
     metadata: Option<solana_program::pubkey::Pubkey>,
-    update_authority: Option<solana_program::pubkey::Pubkey>,
+    update_authority: Option<(solana_program::pubkey::Pubkey, bool)>,
     collection: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
@@ -162,14 +155,14 @@ impl CreateBuilder {
         self.metadata = Some(metadata);
         self
     }
-    /// `[optional account]`
     /// Update authority of the metadata
     #[inline(always)]
     pub fn update_authority(
         &mut self,
-        update_authority: Option<solana_program::pubkey::Pubkey>,
+        update_authority: solana_program::pubkey::Pubkey,
+        as_signer: bool,
     ) -> &mut Self {
-        self.update_authority = update_authority;
+        self.update_authority = Some((update_authority, as_signer));
         self
     }
     /// `[optional account]`
@@ -227,7 +220,7 @@ impl CreateBuilder {
             vault: self.vault.expect("vault is not set"),
             mint: self.mint.expect("mint is not set"),
             metadata: self.metadata.expect("metadata is not set"),
-            update_authority: self.update_authority,
+            update_authority: self.update_authority.expect("update_authority is not set"),
             collection: self.collection,
             payer: self.payer.expect("payer is not set"),
             system_program: self
@@ -253,7 +246,7 @@ pub struct CreateCpiAccounts<'a, 'b> {
     /// Metadata account of the collection
     pub metadata: &'b solana_program::account_info::AccountInfo<'a>,
     /// Update authority of the metadata
-    pub update_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    pub update_authority: (&'b solana_program::account_info::AccountInfo<'a>, bool),
     /// Asset account of the collection (pda of `['nifty::bridge::asset', collection mint pubkey]`)
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
@@ -277,7 +270,7 @@ pub struct CreateCpi<'a, 'b> {
     /// Metadata account of the collection
     pub metadata: &'b solana_program::account_info::AccountInfo<'a>,
     /// Update authority of the metadata
-    pub update_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    pub update_authority: (&'b solana_program::account_info::AccountInfo<'a>, bool),
     /// Asset account of the collection (pda of `['nifty::bridge::asset', collection mint pubkey]`)
     pub collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
@@ -356,17 +349,10 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
             *self.metadata.key,
             false,
         ));
-        if let Some(update_authority) = self.update_authority {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                *update_authority.key,
-                true,
-            ));
-        } else {
-            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                crate::BRIDGE_ID,
-                false,
-            ));
-        }
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.update_authority.0.key,
+            self.update_authority.1,
+        ));
         if let Some(collection) = self.collection {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 *collection.key,
@@ -410,9 +396,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
         account_infos.push(self.vault.clone());
         account_infos.push(self.mint.clone());
         account_infos.push(self.metadata.clone());
-        if let Some(update_authority) = self.update_authority {
-            account_infos.push(update_authority.clone());
-        }
+        account_infos.push(self.update_authority.0.clone());
         if let Some(collection) = self.collection {
             account_infos.push(collection.clone());
         }
@@ -439,7 +423,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
 ///   1. `[writable]` vault
 ///   2. `[]` mint
 ///   3. `[]` metadata
-///   4. `[signer, optional]` update_authority
+///   4. `[signer]` update_authority
 ///   5. `[optional]` collection
 ///   6. `[writable, signer]` payer
 ///   7. `[]` system_program
@@ -492,14 +476,14 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
         self.instruction.metadata = Some(metadata);
         self
     }
-    /// `[optional account]`
     /// Update authority of the metadata
     #[inline(always)]
     pub fn update_authority(
         &mut self,
-        update_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+        update_authority: &'b solana_program::account_info::AccountInfo<'a>,
+        as_signer: bool,
     ) -> &mut Self {
-        self.instruction.update_authority = update_authority;
+        self.instruction.update_authority = Some((update_authority, as_signer));
         self
     }
     /// `[optional account]`
@@ -588,7 +572,10 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
 
             metadata: self.instruction.metadata.expect("metadata is not set"),
 
-            update_authority: self.instruction.update_authority,
+            update_authority: self
+                .instruction
+                .update_authority
+                .expect("update_authority is not set"),
 
             collection: self.instruction.collection,
 
@@ -617,7 +604,7 @@ struct CreateCpiBuilderInstruction<'a, 'b> {
     vault: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     mint: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     metadata: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    update_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    update_authority: Option<(&'b solana_program::account_info::AccountInfo<'a>, bool)>,
     collection: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,

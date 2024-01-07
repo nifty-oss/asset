@@ -1,4 +1,8 @@
-import { percentAmount, publicKey } from '@metaplex-foundation/umi';
+import {
+  generateSigner,
+  percentAmount,
+  publicKey,
+} from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
   Discriminator,
@@ -46,25 +50,30 @@ test('it can create an asset on the bridge', async (t) => {
   });
 });
 
-test('it cannot create an asset on the bridge without the update authority', async (t) => {
+test('it cannot create an asset on the bridge without the update authority as signer', async (t) => {
   // Given a Umi instance.
   const umi = await createUmi();
+  const authority = generateSigner(umi);
 
   // And a Token Metadata non-fungible.
   const mint = await createNft(umi, {
     name: 'Bridge Asset',
     uri: 'https://asset.bridge',
     sellerFeeBasisPoints: percentAmount(5.5),
+    authority,
+    updateAuthority: authority,
+    creators: [{ address: authority.publicKey, verified: true, share: 100 }],
   });
 
   // When we create the asset on the bridge.
   const promise = create(umi, {
     mint: publicKey(mint),
+    updateAuthority: authority.publicKey,
   }).sendAndConfirm(umi);
 
   // Then we get an error.
   await t.throwsAsync(promise, {
-    message: /insufficient account keys for instruction/,
+    message: /missing required signature/,
   });
 });
 
@@ -98,6 +107,7 @@ test('it can create an asset on the bridge with a collection', async (t) => {
   await create(umi, {
     mint: mint.publicKey,
     collection: findBridgeAssetPda(umi, { mint: collection.publicKey }),
+    updateAuthority: umi.identity,
   }).sendAndConfirm(umi);
 
   // Then the birdge vault is created.

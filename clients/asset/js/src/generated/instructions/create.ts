@@ -34,7 +34,7 @@ export type CreateInstructionAccounts = {
   /** Asset account */
   asset: Signer;
   /** The authority of the asset */
-  authority?: Signer;
+  authority?: PublicKey | Pda;
   /** The holder of the asset */
   holder?: PublicKey | Pda;
   /** The account paying for the storage fees */
@@ -128,7 +128,7 @@ export function create(
 
   // Default values.
   if (!resolvedAccounts.authority.value) {
-    resolvedAccounts.authority.value = context.identity;
+    resolvedAccounts.authority.value = context.identity.publicKey;
   }
   if (!resolvedAccounts.holder.value) {
     resolvedAccounts.holder.value = context.identity.publicKey;

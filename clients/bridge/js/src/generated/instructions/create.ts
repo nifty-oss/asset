@@ -42,7 +42,7 @@ export type CreateInstructionAccounts = {
   /** Metadata account of the collection */
   metadata?: PublicKey | Pda;
   /** Update authority of the metadata */
-  updateAuthority?: Signer;
+  updateAuthority?: PublicKey | Pda | Signer;
   /** Asset account of the collection (pda of `['nifty::bridge::asset', collection mint pubkey]`) */
   collection?: PublicKey | Pda;
   /** The account paying for the storage fees */
@@ -160,6 +160,9 @@ export function create(
     resolvedAccounts.metadata.value = findMetadataPda(context, {
       mint: expectPublicKey(resolvedAccounts.mint.value),
     });
+  }
+  if (!resolvedAccounts.updateAuthority.value) {
+    resolvedAccounts.updateAuthority.value = context.identity;
   }
   if (!resolvedAccounts.payer.value) {
     resolvedAccounts.payer.value = context.payer;
