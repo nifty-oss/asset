@@ -46,6 +46,11 @@ pub enum Commands {
     },
     Decode {
         asset: Pubkey,
+
+        /// The field to decode.
+        /// If not specified, the entire asset will be decoded.
+        #[arg(short, long)]
+        field: Option<String>,
     },
     Transfer {
         /// The asset to transfer.

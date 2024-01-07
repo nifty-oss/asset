@@ -34,7 +34,11 @@ fn main() -> Result<()> {
             immutable,
             owner,
         }),
-        Commands::Decode { asset } => handle_decode(DecodeArgs { rpc_url, asset }),
+        Commands::Decode { asset, field } => handle_decode(DecodeArgs {
+            rpc_url,
+            asset,
+            field,
+        }),
         Commands::Transfer { asset, recipient } => handle_transfer(TransferArgs {
             keypair_path,
             rpc_url,

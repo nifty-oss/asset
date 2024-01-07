@@ -104,6 +104,7 @@ Arguments:
   <ASSET>
 
 Options:
+  -f, --field <FIELD>                The field to decode. If not specified, the entire asset will be decoded
   -k, --keypair-path <KEYPAIR_PATH>  Path to the keypair file
   -r, --rpc-url <RPC_URL>            RPC URL for the Solana cluster
   -h, --help                         Print help
@@ -114,6 +115,14 @@ Example:
 ```bash
 nifty decode 92D3tDoqtREj3Exkr5ws9UPawG3yhaEwjSP4J5GumuRP
 ```
+
+Decode a specific field:
+
+```bash
+nifty decode 92D3tDoqtREj3Exkr5ws9UPawG3yhaEwjSP4J5GumuRP --field state
+```
+
+prints only the state information of the asset.
 
 ### Transfer
 
