@@ -79,7 +79,7 @@ export function getInitializeInstructionDataSerializer(): Serializer<
       ],
       { description: 'InitializeInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 2, data: value.data ?? none() })
+    (value) => ({ ...value, discriminator: 3, data: value.data ?? none() })
   ) as Serializer<InitializeInstructionDataArgs, InitializeInstructionData>;
 }
 

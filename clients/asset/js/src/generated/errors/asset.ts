@@ -158,6 +158,19 @@ export class InvalidDelegateError extends ProgramError {
 codeToErrorMap.set(0xa, InvalidDelegateError);
 nameToErrorMap.set('InvalidDelegate', InvalidDelegateError);
 
+/** InvalidHolder: Invalid holder */
+export class InvalidHolderError extends ProgramError {
+  override readonly name: string = 'InvalidHolder';
+
+  readonly code: number = 0xb; // 11
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid holder', program, cause);
+  }
+}
+codeToErrorMap.set(0xb, InvalidHolderError);
+nameToErrorMap.set('InvalidHolder', InvalidHolderError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

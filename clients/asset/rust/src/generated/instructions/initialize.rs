@@ -82,7 +82,7 @@ struct InitializeInstructionData {
 impl InitializeInstructionData {
   fn new() -> Self {
     Self {
-                        discriminator: 2,
+                        discriminator: 3,
                                                             }
   }
 }

@@ -8,4 +8,5 @@
 
 export * from './burn';
 export * from './create';
+export * from './delegate';
 export * from './transfer';

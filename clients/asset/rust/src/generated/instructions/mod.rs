@@ -7,8 +7,10 @@
 
 pub(crate) mod r#burn;
 pub(crate) mod r#create;
+pub(crate) mod r#delegate;
 pub(crate) mod r#transfer;
 
 pub use self::r#burn::*;
 pub use self::r#create::*;
+pub use self::r#delegate::*;
 pub use self::r#transfer::*;

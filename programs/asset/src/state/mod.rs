@@ -4,9 +4,9 @@ mod delegate;
 use std::ops::{Deref, DerefMut};
 
 pub use asset::*;
-use borsh::{BorshDeserialize, BorshSerialize};
 pub use delegate::*;
 
+use borsh::{BorshDeserialize, BorshSerialize};
 use bytemuck::{Pod, Zeroable};
 use podded::types::Nullable;
 use shank::ShankType;
@@ -96,6 +96,12 @@ unsafe impl Zeroable for State {}
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default, Pod, Zeroable)]
 pub struct NullablePubkey(Pubkey);
+
+impl NullablePubkey {
+    pub fn new(pubkey: Pubkey) -> Self {
+        Self(pubkey)
+    }
+}
 
 impl Deref for NullablePubkey {
     type Target = Pubkey;

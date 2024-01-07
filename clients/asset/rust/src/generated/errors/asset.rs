@@ -43,6 +43,9 @@ pub enum AssetError {
     /// 10 (0xA) - Invalid delegate
     #[error("Invalid delegate")]
     InvalidDelegate,
+    /// 11 (0xB) - Invalid holder
+    #[error("Invalid holder")]
+    InvalidHolder,
 }
 
 impl solana_program::program_error::PrintProgramError for AssetError {

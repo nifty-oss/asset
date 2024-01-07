@@ -1,5 +1,6 @@
 mod burn;
 mod create;
+mod delegate;
 mod initialize;
 mod transfer;
 mod write;
@@ -11,7 +12,10 @@ use solana_program::{
 };
 
 use crate::instruction::{
-    accounts::{BurnAccounts, CreateAccounts, InitializeAccounts, TransferAccounts, WriteAccounts},
+    accounts::{
+        BurnAccounts, CreateAccounts, DelegateAccounts, InitializeAccounts, TransferAccounts,
+        WriteAccounts,
+    },
     Instruction,
 };
 
@@ -31,6 +35,10 @@ pub fn process_instruction<'a>(
         Instruction::Create(args) => {
             msg!("Instruction: Create");
             create::process_create(program_id, CreateAccounts::context(accounts)?, args)
+        }
+        Instruction::Delegate(args) => {
+            msg!("Instruction: Delegate");
+            delegate::process_delegate(program_id, DelegateAccounts::context(accounts)?, args)
         }
         Instruction::Initialize(args) => {
             msg!("Instruction: Initialize");

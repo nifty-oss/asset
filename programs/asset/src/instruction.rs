@@ -1,7 +1,10 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::{ShankContext, ShankInstruction};
 
-use crate::{extensions::ExtensionType, state::Standard};
+use crate::{
+    extensions::ExtensionType,
+    state::{DelegateRole, Standard},
+};
 
 #[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankContext, ShankInstruction)]
 #[rustfmt::skip]
@@ -28,6 +31,12 @@ pub enum Instruction {
     #[account(3, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
     #[account(4, optional, name="system_program", desc = "The system program")]
     Create(Metadata),
+
+    /// Approve a delegate to manage an asset.
+    #[account(0, writable, name="asset", desc = "Asset account")]
+    #[account(1, signer, name="holder", desc = "The holder of the asset")]
+    #[account(2, name="delegate", desc = "The delegate account")]
+    Delegate(Vec<DelegateRole>),
 
     /// Initialize an extension.
     #[account(0, signer, writable, name="asset", desc = "Asset account")]

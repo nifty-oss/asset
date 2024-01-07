@@ -16,6 +16,7 @@ import {
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
+  array,
   mapSerializer,
   struct,
   u8,
@@ -25,42 +26,57 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
+import {
+  DelegateRole,
+  DelegateRoleArgs,
+  getDelegateRoleSerializer,
+} from '../types';
 
 // Accounts.
-export type TransferInstructionAccounts = {
+export type DelegateInstructionAccounts = {
   /** Asset account */
   asset: PublicKey | Pda;
-  /** Current holder of the asset or transfer delegate */
-  signer: Signer;
-  /** The recipient of the asset */
-  recipient: PublicKey | Pda;
+  /** The holder of the asset */
+  holder: Signer;
+  /** The delegate account */
+  delegate: PublicKey | Pda;
 };
 
 // Data.
-export type TransferInstructionData = { discriminator: number };
+export type DelegateInstructionData = {
+  discriminator: number;
+  args: Array<DelegateRole>;
+};
 
-export type TransferInstructionDataArgs = {};
+export type DelegateInstructionDataArgs = { args: Array<DelegateRoleArgs> };
 
-export function getTransferInstructionDataSerializer(): Serializer<
-  TransferInstructionDataArgs,
-  TransferInstructionData
+export function getDelegateInstructionDataSerializer(): Serializer<
+  DelegateInstructionDataArgs,
+  DelegateInstructionData
 > {
   return mapSerializer<
-    TransferInstructionDataArgs,
+    DelegateInstructionDataArgs,
     any,
-    TransferInstructionData
+    DelegateInstructionData
   >(
-    struct<TransferInstructionData>([['discriminator', u8()]], {
-      description: 'TransferInstructionData',
-    }),
-    (value) => ({ ...value, discriminator: 4 })
-  ) as Serializer<TransferInstructionDataArgs, TransferInstructionData>;
+    struct<DelegateInstructionData>(
+      [
+        ['discriminator', u8()],
+        ['args', array(getDelegateRoleSerializer())],
+      ],
+      { description: 'DelegateInstructionData' }
+    ),
+    (value) => ({ ...value, discriminator: 2 })
+  ) as Serializer<DelegateInstructionDataArgs, DelegateInstructionData>;
 }
 
+// Args.
+export type DelegateInstructionArgs = DelegateInstructionDataArgs;
+
 // Instruction.
-export function transfer(
+export function delegate(
   context: Pick<Context, 'programs'>,
-  input: TransferInstructionAccounts
+  input: DelegateInstructionAccounts & DelegateInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -75,17 +91,20 @@ export function transfer(
       isWritable: true as boolean,
       value: input.asset ?? null,
     },
-    signer: {
+    holder: {
       index: 1,
       isWritable: false as boolean,
-      value: input.signer ?? null,
+      value: input.holder ?? null,
     },
-    recipient: {
+    delegate: {
       index: 2,
       isWritable: false as boolean,
-      value: input.recipient ?? null,
+      value: input.delegate ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
+
+  // Arguments.
+  const resolvedArgs: DelegateInstructionArgs = { ...input };
 
   // Accounts in order.
   const orderedAccounts: ResolvedAccount[] = Object.values(
@@ -100,7 +119,9 @@ export function transfer(
   );
 
   // Data.
-  const data = getTransferInstructionDataSerializer().serialize({});
+  const data = getDelegateInstructionDataSerializer().serialize(
+    resolvedArgs as DelegateInstructionDataArgs
+  );
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

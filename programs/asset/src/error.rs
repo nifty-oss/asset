@@ -51,6 +51,10 @@ pub enum AssetError {
     /// 10 - Invalid delegate
     #[error("Invalid delegate")]
     InvalidDelegate,
+
+    /// 11 - Invalid holder
+    #[error("Invalid holder")]
+    InvalidHolder,
 }
 
 impl PrintProgramError for AssetError {

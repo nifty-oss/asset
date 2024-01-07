@@ -97,6 +97,49 @@
       }
     },
     {
+      "name": "Delegate",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Asset account"
+          ]
+        },
+        {
+          "name": "holder",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The holder of the asset"
+          ]
+        },
+        {
+          "name": "delegate",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The delegate account"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "vec": {
+              "defined": "DelegateRole"
+            }
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 2
+      }
+    },
+    {
       "name": "Initialize",
       "accounts": [
         {
@@ -136,7 +179,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 2
+        "value": 3
       }
     },
     {
@@ -170,7 +213,7 @@
       "args": [],
       "discriminant": {
         "type": "u8",
-        "value": 3
+        "value": 4
       }
     },
     {
@@ -211,7 +254,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 4
+        "value": 5
       }
     }
   ],
@@ -456,6 +499,11 @@
       "code": 10,
       "name": "InvalidDelegate",
       "msg": "Invalid delegate"
+    },
+    {
+      "code": 11,
+      "name": "InvalidHolder",
+      "msg": "Invalid holder"
     }
   ],
   "metadata": {
