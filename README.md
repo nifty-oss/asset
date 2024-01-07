@@ -5,7 +5,7 @@
   A standard for non-fungible assets.
 </p>
 <p align="center">
-  <img width="800" alt="Nifty Asset" src="https://github.com/nifty-oss/asset/assets/729235/9423deee-398b-4efa-933b-e168ee463dd3" />
+  <img width="800" alt="Nifty Asset" src="https://github.com/nifty-oss/asset/assets/729235/31ca7067-3c0c-4eb1-89f8-b89f33696052" />
 </p>
 <!--
 <p align="center">
