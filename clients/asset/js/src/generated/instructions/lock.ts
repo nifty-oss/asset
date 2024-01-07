@@ -27,40 +27,34 @@ import {
 } from '../shared';
 
 // Accounts.
-export type TransferInstructionAccounts = {
+export type LockInstructionAccounts = {
   /** Asset account */
   asset: PublicKey | Pda;
-  /** Current holder of the asset or transfer delegate */
-  signer: Signer;
-  /** The recipient of the asset */
-  recipient: PublicKey | Pda;
+  /** Delegate account */
+  delegate: Signer;
 };
 
 // Data.
-export type TransferInstructionData = { discriminator: number };
+export type LockInstructionData = { discriminator: number };
 
-export type TransferInstructionDataArgs = {};
+export type LockInstructionDataArgs = {};
 
-export function getTransferInstructionDataSerializer(): Serializer<
-  TransferInstructionDataArgs,
-  TransferInstructionData
+export function getLockInstructionDataSerializer(): Serializer<
+  LockInstructionDataArgs,
+  LockInstructionData
 > {
-  return mapSerializer<
-    TransferInstructionDataArgs,
-    any,
-    TransferInstructionData
-  >(
-    struct<TransferInstructionData>([['discriminator', u8()]], {
-      description: 'TransferInstructionData',
+  return mapSerializer<LockInstructionDataArgs, any, LockInstructionData>(
+    struct<LockInstructionData>([['discriminator', u8()]], {
+      description: 'LockInstructionData',
     }),
-    (value) => ({ ...value, discriminator: 5 })
-  ) as Serializer<TransferInstructionDataArgs, TransferInstructionData>;
+    (value) => ({ ...value, discriminator: 4 })
+  ) as Serializer<LockInstructionDataArgs, LockInstructionData>;
 }
 
 // Instruction.
-export function transfer(
+export function lock(
   context: Pick<Context, 'programs'>,
-  input: TransferInstructionAccounts
+  input: LockInstructionAccounts
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -75,15 +69,10 @@ export function transfer(
       isWritable: true as boolean,
       value: input.asset ?? null,
     },
-    signer: {
+    delegate: {
       index: 1,
       isWritable: false as boolean,
-      value: input.signer ?? null,
-    },
-    recipient: {
-      index: 2,
-      isWritable: false as boolean,
-      value: input.recipient ?? null,
+      value: input.delegate ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
 
@@ -100,7 +89,7 @@ export function transfer(
   );
 
   // Data.
-  const data = getTransferInstructionDataSerializer().serialize({});
+  const data = getLockInstructionDataSerializer().serialize({});
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

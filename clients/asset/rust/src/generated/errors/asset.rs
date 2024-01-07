@@ -46,6 +46,9 @@ pub enum AssetError {
     /// 11 (0xB) - Invalid holder
     #[error("Invalid holder")]
     InvalidHolder,
+    /// 12 (0xC) - Asset is locked
+    #[error("Asset is locked")]
+    LockedAsset,
 }
 
 impl solana_program::program_error::PrintProgramError for AssetError {

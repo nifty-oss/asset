@@ -55,6 +55,10 @@ pub enum AssetError {
     /// 11 - Invalid holder
     #[error("Invalid holder")]
     InvalidHolder,
+
+    /// 12 - Asset is locked.
+    #[error("Asset is locked")]
+    LockedAsset,
 }
 
 impl PrintProgramError for AssetError {
@@ -79,5 +83,12 @@ impl<T> DecodeError<T> for AssetError {
 macro_rules! err {
     ( $error:expr ) => {{
         Err($error.into())
+    }};
+    ( $error:expr, $msg:expr ) => {{
+        solana_program::msg!("[ERROR] {}", $msg);
+        Err($error.into())
+    }};
+    ( $error:expr, $msg:literal, $($args:tt)+ ) => {{
+        err!($error, &format!($msg, $($args)+))
     }};
 }

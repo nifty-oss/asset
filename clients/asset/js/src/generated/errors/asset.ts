@@ -171,6 +171,19 @@ export class InvalidHolderError extends ProgramError {
 codeToErrorMap.set(0xb, InvalidHolderError);
 nameToErrorMap.set('InvalidHolder', InvalidHolderError);
 
+/** LockedAsset: Asset is locked */
+export class LockedAssetError extends ProgramError {
+  override readonly name: string = 'LockedAsset';
+
+  readonly code: number = 0xc; // 12
+
+  constructor(program: Program, cause?: Error) {
+    super('Asset is locked', program, cause);
+  }
+}
+codeToErrorMap.set(0xc, LockedAssetError);
+nameToErrorMap.set('LockedAsset', LockedAssetError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

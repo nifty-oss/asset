@@ -183,6 +183,32 @@
       }
     },
     {
+      "name": "Lock",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Asset account"
+          ]
+        },
+        {
+          "name": "delegate",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Delegate account"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 4
+      }
+    },
+    {
       "name": "Transfer",
       "accounts": [
         {
@@ -213,7 +239,33 @@
       "args": [],
       "discriminant": {
         "type": "u8",
-        "value": 4
+        "value": 5
+      }
+    },
+    {
+      "name": "Unlock",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Asset account"
+          ]
+        },
+        {
+          "name": "delegate",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Delegate account"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 6
       }
     },
     {
@@ -254,7 +306,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 5
+        "value": 7
       }
     }
   ],
@@ -504,6 +556,11 @@
       "code": 11,
       "name": "InvalidHolder",
       "msg": "Invalid holder"
+    },
+    {
+      "code": 12,
+      "name": "LockedAsset",
+      "msg": "Asset is locked"
     }
   ],
   "metadata": {
