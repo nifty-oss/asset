@@ -44,7 +44,7 @@ jobs:
 
   publish_js:
     name: JS client / Publish
-    runs-on: ubuntu-latest
+    runs-on: buildjet-16vcpu-ubuntu-2204
     needs: test_js
     permissions:
       contents: write
@@ -106,7 +106,7 @@ jobs:
 
   deploy_js_docs:
     name: JS client / Deploy docs
-    runs-on: ubuntu-latest
+    runs-on: buildjet-16vcpu-ubuntu-2204
     needs: publish_js
     environment:
       name: js-client-documentation
@@ -126,4 +126,6 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         working-directory: ./clients/js
-        run: echo "url=$(vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }})" | tee $GITHUB_OUTPUT
+        run:
+          echo "url=$(vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }})" | tee
+          $GITHUB_OUTPUT

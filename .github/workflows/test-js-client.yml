@@ -12,10 +12,10 @@ env:
 jobs:
   test:
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: buildjet-16vcpu-ubuntu-2204
     strategy:
       matrix:
-        node: ["16.x", "18.x"]
+        node: ['16.x', '18.x']
         client: ${{ fromJson(inputs.client_matrix) }}
     steps:
       - name: Git checkout
@@ -48,7 +48,7 @@ jobs:
 
   lint:
     name: Lint
-    runs-on: ubuntu-latest
+    runs-on: buildjet-16vcpu-ubuntu-2204
     strategy:
       matrix:
         client: ${{ fromJson(inputs.client_matrix) }}

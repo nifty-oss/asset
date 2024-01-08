@@ -49,7 +49,7 @@ jobs:
 
   publish_crate:
     name: Rust Client / Publish Crate
-    runs-on: ubuntu-latest
+    runs-on: buildjet-16vcpu-ubuntu-2204
     needs: test_rust_client
     permissions:
       contents: write
@@ -61,7 +61,7 @@ jobs:
         run: cat .github/.env >> $GITHUB_ENV
 
       - name: Install Rust
-        uses: metaplex-foundation/actions/install-rust@v1
+        uses: ./.github/actions/install-rust
         with:
           toolchain: ${{ env.RUST_VERSION }}
 
@@ -101,5 +101,5 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         if: github.event.inputs.dry_run == 'false'
         with:
-          commit_message: "chore: Release ${{ env.CLIENT_NAME }} version ${{ env.CLIENT_VERSION }}"
+          commit_message: 'chore: Release ${{ env.CLIENT_NAME }} version ${{ env.CLIENT_VERSION }}'
           tagging_message: ${{ env.CLIENT_NAME }}@v${{ env.CLIENT_VERSION }}
