@@ -39,11 +39,40 @@ fn main() -> Result<()> {
             asset,
             field,
         }),
+        Commands::Delegate {
+            asset,
+            delegate,
+            role,
+        } => handle_delegate(DelegateArgs {
+            keypair_path,
+            rpc_url,
+            asset,
+            delegate,
+            role,
+        }),
+        Commands::Lock {
+            asset,
+            delegate_keypair_path,
+        } => handle_lock(LockArgs {
+            keypair_path,
+            rpc_url,
+            asset,
+            delegate_keypair_path,
+        }),
         Commands::Transfer { asset, recipient } => handle_transfer(TransferArgs {
             keypair_path,
             rpc_url,
             asset,
             recipient,
+        }),
+        Commands::Unlock {
+            asset,
+            delegate_keypair_path,
+        } => handle_unlock(UnlockArgs {
+            keypair_path,
+            rpc_url,
+            asset,
+            delegate_keypair_path,
         }),
     }
 }

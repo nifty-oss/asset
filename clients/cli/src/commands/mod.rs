@@ -1,13 +1,19 @@
 mod burn;
 mod create;
 mod decode;
+mod delegate;
+mod lock;
 mod transfer;
+mod unlock;
 
 // Rexport internal module types.
 pub use burn::*;
 pub use create::*;
 pub use decode::*;
+pub use delegate::*;
+pub use lock::*;
 pub use transfer::*;
+pub use unlock::*;
 
 // Internal lib
 pub use crate::{setup::CliConfig, transaction::send_and_confirm_tx};
@@ -17,7 +23,7 @@ pub use std::path::PathBuf;
 
 // External libs
 pub use {
-    anyhow::Result,
+    anyhow::{anyhow, Result},
     nifty_asset::{
         accounts::Asset,
         instructions::{Burn, Create, CreateInstructionArgs, Transfer},

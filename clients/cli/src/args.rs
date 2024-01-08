@@ -20,6 +20,7 @@ pub struct Args {
 
 #[derive(Clone, Subcommand)]
 pub enum Commands {
+    /// Burn an asset.
     Burn {
         /// The asset to burn.
         asset: Pubkey,
@@ -27,6 +28,7 @@ pub enum Commands {
         /// The recipient to receive reclaimed rent. Defaults to the signer.
         recipient: Option<Pubkey>,
     },
+    /// Create an asset.
     Create {
         /// The name of the asset.
         #[arg(short, long)]
@@ -44,7 +46,9 @@ pub enum Commands {
         #[arg(short, long)]
         owner: Option<Pubkey>,
     },
+    /// Get an asset account's data and decode it.
     Decode {
+        /// The asset to decode.
         asset: Pubkey,
 
         /// The field to decode.
@@ -52,11 +56,41 @@ pub enum Commands {
         #[arg(short, long)]
         field: Option<String>,
     },
+    /// Set a delegate on an asset with specific roles.
+    Delegate {
+        /// The asset to delegate.
+        asset: Pubkey,
+
+        /// The address to delegate to.
+        delegate: Pubkey,
+
+        /// The role for the delegate to have: "burn", "lock", "transfer".
+        /// Specify each one separately: --role burn --role lock --role transfer
+        #[arg(short = 'R', long)]
+        role: Vec<String>,
+    },
+    /// Lock an asset, preventing any actions to be performed on it.
+    Lock {
+        /// The asset to lock.
+        asset: Pubkey,
+
+        /// Path to the delegate keypair file. Defaults to the signer.
+        delegate_keypair_path: Option<PathBuf>,
+    },
+    /// Transfer an asset to a new holder.
     Transfer {
         /// The asset to transfer.
         asset: Pubkey,
 
         /// The recipient of the asset.
         recipient: Pubkey,
+    },
+    /// Unlock an asset, allowing actions to be performed on it.
+    Unlock {
+        /// The asset to unlock.
+        asset: Pubkey,
+
+        /// Path to the delegate keypair file. Defaults to the signer.
+        delegate_keypair_path: Option<PathBuf>,
     },
 }

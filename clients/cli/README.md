@@ -124,6 +124,81 @@ nifty decode 92D3tDoqtREj3Exkr5ws9UPawG3yhaEwjSP4J5GumuRP --field state
 
 prints only the state information of the asset.
 
+### Delegate
+
+Set a delegate on an asset with specific roles
+
+```
+Usage: nifty delegate [OPTIONS] <ASSET> <DELEGATE>
+
+Arguments:
+  <ASSET>     The asset to delegate
+  <DELEGATE>  The address to delegate to
+
+Options:
+  -k, --keypair-path <KEYPAIR_PATH>  Path to the keypair file
+  -R, --role <ROLE>                  The role for the delegate to have: "burn", "lock", "transfer". Specify each one separately: --role burn --role lock --role transfer
+  -r, --rpc-url <RPC_URL>            RPC URL for the Solana cluster
+  -h, --help                         Print help
+```
+
+Example:
+
+```bash
+nifty delegate 92D3tDoqtREj3Exkr5ws9UPawG3yhaEwjSP4J5GumuRP 9Z3tDoqtREj3Exkr5ws9UPawG3yhaEwjSP4J5GumuRP --role burn --role lock
+```
+
+### Lock
+
+Lock an asset, preventing any actions to be performed on it.
+
+```
+Usage: nifty lock [OPTIONS] <ASSET> [DELEGATE_KEYPAIR_PATH]
+
+Arguments:
+  <ASSET>                  The asset to lock
+  [DELEGATE_KEYPAIR_PATH]  Path to the delegate keypair file. Defaults to the signer
+
+Options:
+  -k, --keypair-path <KEYPAIR_PATH>  Path to the keypair file
+  -r, --rpc-url <RPC_URL>            RPC URL for the Solana cluster
+  -h, --help                         Print help
+```
+
+Example:
+
+```bash
+nifty lock 92D3tDoqtREj3Exkr5ws9UPawG3yhaEwjSP4J5GumuRP
+```
+
+The keypair used must be the delegate of the asset.
+
+
+### Unlock
+
+Unlock an asset, allowing actions to be performed on it.
+
+```
+Usage: nifty unlock [OPTIONS] <ASSET> [DELEGATE_KEYPAIR_PATH]
+
+Arguments:
+  <ASSET>                  The asset to unlock
+  [DELEGATE_KEYPAIR_PATH]  Path to the delegate keypair file. Defaults to the signer
+
+Options:
+  -k, --keypair-path <KEYPAIR_PATH>  Path to the keypair file
+  -r, --rpc-url <RPC_URL>            RPC URL for the Solana cluster
+  -h, --help                         Print help
+```
+
+Example:
+
+```bash
+nifty unlock 92D3tDoqtREj3Exkr5ws9UPawG3yhaEwjSP4J5GumuRP
+```
+
+The keypair used must be the delegate of the asset.
+
 ### Transfer
 
 Transfers an asset to a new owner.
