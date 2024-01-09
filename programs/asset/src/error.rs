@@ -59,6 +59,10 @@ pub enum AssetError {
     /// 12 - Asset is locked.
     #[error("Asset is locked")]
     LockedAsset,
+
+    /// 13 - Invalid authority.
+    #[error("Invalid authority")]
+    InvalidAuthority,
 }
 
 impl PrintProgramError for AssetError {

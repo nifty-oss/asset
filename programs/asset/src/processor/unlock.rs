@@ -2,6 +2,8 @@ use podded::ZeroCopy;
 use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
+    err,
+    error::AssetError,
     instruction::accounts::{Context, UnlockAccounts},
     require,
     state::{Asset, DelegateRole, Discriminator, State},
@@ -12,7 +14,7 @@ pub fn process_unlock(program_id: &Pubkey, ctx: Context<UnlockAccounts>) -> Prog
     // account validation
 
     require!(
-        ctx.accounts.delegate.is_signer,
+        ctx.accounts.authority.is_signer,
         ProgramError::MissingRequiredSignature,
         "delegate"
     );
@@ -35,7 +37,11 @@ pub fn process_unlock(program_id: &Pubkey, ctx: Context<UnlockAccounts>) -> Prog
 
     let asset = Asset::load_mut(&mut data);
 
-    assert_delegate(asset, ctx.accounts.delegate.key, DelegateRole::Lock)?;
+    if asset.delegate.value().is_some() {
+        assert_delegate(asset, ctx.accounts.authority.key, DelegateRole::Lock)?;
+    } else if asset.holder != *ctx.accounts.authority.key {
+        return err!(AssetError::InvalidAuthority);
+    }
 
     asset.state = State::Unlocked;
 

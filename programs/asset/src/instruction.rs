@@ -46,7 +46,7 @@ pub enum Instruction {
 
     /// Lock an asset.
     #[account(0, writable, name="asset", desc = "Asset account")]
-    #[account(1, signer, name="delegate", desc = "Delegate account")]
+    #[account(1, signer, name="authority", desc = "Delegate or holder account")]
     Lock,
 
     /// Transfer ownership of the aseet to a new public key.
@@ -57,7 +57,7 @@ pub enum Instruction {
 
     /// Unlock an asset.
     #[account(0, writable, name="asset", desc = "Asset account")]
-    #[account(1, signer, name="delegate", desc = "Delegate account")]
+    #[account(1, signer, name="authority", desc = "Delegate ot holder account")]
     Unlock,
 
     /// Write data to an extension.

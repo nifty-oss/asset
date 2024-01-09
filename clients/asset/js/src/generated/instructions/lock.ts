@@ -30,8 +30,8 @@ import {
 export type LockInstructionAccounts = {
   /** Asset account */
   asset: PublicKey | Pda;
-  /** Delegate account */
-  delegate: Signer;
+  /** Delegate or holder account */
+  authority?: Signer;
 };
 
 // Data.
@@ -53,7 +53,7 @@ export function getLockInstructionDataSerializer(): Serializer<
 
 // Instruction.
 export function lock(
-  context: Pick<Context, 'programs'>,
+  context: Pick<Context, 'identity' | 'programs'>,
   input: LockInstructionAccounts
 ): TransactionBuilder {
   // Program ID.
@@ -69,12 +69,17 @@ export function lock(
       isWritable: true as boolean,
       value: input.asset ?? null,
     },
-    delegate: {
+    authority: {
       index: 1,
       isWritable: false as boolean,
-      value: input.delegate ?? null,
+      value: input.authority ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
+
+  // Default values.
+  if (!resolvedAccounts.authority.value) {
+    resolvedAccounts.authority.value = context.identity;
+  }
 
   // Accounts in order.
   const orderedAccounts: ResolvedAccount[] = Object.values(

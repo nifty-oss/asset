@@ -184,6 +184,19 @@ export class LockedAssetError extends ProgramError {
 codeToErrorMap.set(0xc, LockedAssetError);
 nameToErrorMap.set('LockedAsset', LockedAssetError);
 
+/** InvalidAuthority: Invalid authority */
+export class InvalidAuthorityError extends ProgramError {
+  override readonly name: string = 'InvalidAuthority';
+
+  readonly code: number = 0xd; // 13
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid authority', program, cause);
+  }
+}
+codeToErrorMap.set(0xd, InvalidAuthorityError);
+nameToErrorMap.set('InvalidAuthority', InvalidAuthorityError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

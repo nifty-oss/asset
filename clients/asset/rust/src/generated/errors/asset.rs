@@ -49,6 +49,9 @@ pub enum AssetError {
     /// 12 (0xC) - Asset is locked
     #[error("Asset is locked")]
     LockedAsset,
+    /// 13 (0xD) - Invalid authority
+    #[error("Invalid authority")]
+    InvalidAuthority,
 }
 
 impl solana_program::program_error::PrintProgramError for AssetError {

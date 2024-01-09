@@ -194,11 +194,11 @@
           ]
         },
         {
-          "name": "delegate",
+          "name": "authority",
           "isMut": false,
           "isSigner": true,
           "docs": [
-            "Delegate account"
+            "Delegate or holder account"
           ]
         }
       ],
@@ -254,11 +254,11 @@
           ]
         },
         {
-          "name": "delegate",
+          "name": "authority",
           "isMut": false,
           "isSigner": true,
           "docs": [
-            "Delegate account"
+            "Delegate ot holder account"
           ]
         }
       ],
@@ -561,6 +561,11 @@
       "code": 12,
       "name": "LockedAsset",
       "msg": "Asset is locked"
+    },
+    {
+      "code": 13,
+      "name": "InvalidAuthority",
+      "msg": "Invalid authority"
     }
   ],
   "metadata": {
