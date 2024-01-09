@@ -52,12 +52,12 @@ fn main() -> Result<()> {
         }),
         Commands::Lock {
             asset,
-            delegate_keypair_path,
+            authority_keypair_path,
         } => handle_lock(LockArgs {
             keypair_path,
             rpc_url,
             asset,
-            delegate_keypair_path,
+            authority_keypair_path,
         }),
         Commands::Transfer { asset, recipient } => handle_transfer(TransferArgs {
             keypair_path,
@@ -67,12 +67,12 @@ fn main() -> Result<()> {
         }),
         Commands::Unlock {
             asset,
-            delegate_keypair_path,
+            authority_keypair_path,
         } => handle_unlock(UnlockArgs {
             keypair_path,
             rpc_url,
             asset,
-            delegate_keypair_path,
+            authority_keypair_path,
         }),
     }
 }

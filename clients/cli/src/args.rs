@@ -74,8 +74,8 @@ pub enum Commands {
         /// The asset to lock.
         asset: Pubkey,
 
-        /// Path to the delegate keypair file. Defaults to the signer.
-        delegate_keypair_path: Option<PathBuf>,
+        /// Path to the authority keypair file. Defaults to the signer.
+        authority_keypair_path: Option<PathBuf>,
     },
     /// Transfer an asset to a new holder.
     Transfer {
@@ -90,7 +90,7 @@ pub enum Commands {
         /// The asset to unlock.
         asset: Pubkey,
 
-        /// Path to the delegate keypair file. Defaults to the signer.
-        delegate_keypair_path: Option<PathBuf>,
+        /// Path to the authority keypair file. Defaults to the signer.
+        authority_keypair_path: Option<PathBuf>,
     },
 }
