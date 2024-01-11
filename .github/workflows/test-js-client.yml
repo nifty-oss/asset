@@ -25,14 +25,14 @@ jobs:
         run: cat .github/.env >> $GITHUB_ENV
 
       - name: Start validator
-        uses: metaplex-foundation/actions/start-validator@v1
+        uses: nifty-oss/actions/start-validator@v1
         with:
           node: ${{ matrix.node }}
           solana: ${{ env.SOLANA_VERSION }}
           cache: ${{ env.CACHE }}
 
       - name: Install dependencies
-        uses: metaplex-foundation/actions/install-node-dependencies@v1
+        uses: nifty-oss/actions/install-node-dependencies@v1
         with:
           folder: ./clients/${{ matrix.client }}/js
           cache: ${{ env.CACHE }}
@@ -60,13 +60,13 @@ jobs:
         run: cat .github/.env >> $GITHUB_ENV
 
       - name: Install Node.js
-        uses: metaplex-foundation/actions/install-node-with-pnpm@v1
+        uses: nifty-oss/actions/install-node-with-pnpm@v1
         with:
           version: ${{ env.NODE_VERSION }}
           cache: ${{ env.CACHE }}
 
       - name: Install dependencies
-        uses: metaplex-foundation/actions/install-node-dependencies@v1
+        uses: nifty-oss/actions/install-node-dependencies@v1
         with:
           folder: ./clients/${{ matrix.client }}/js
           cache: ${{ env.CACHE }}

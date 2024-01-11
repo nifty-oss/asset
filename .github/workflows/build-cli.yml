@@ -35,24 +35,24 @@ jobs:
         run: cat .github/.env >> $GITHUB_ENV
 
       - name: Install Rust
-        uses: ./.github/actions/install-rust
+        uses: nifty-oss/actions/install-rust@v1
         with:
           toolchain: ${{ inputs.rust || env.RUST_VERSION }}
 
       - name: Install Solana
-        uses: ./.github/actions/install-solana
+        uses: nifty-oss/actions/install-solana@v1
         with:
           version: ${{ inputs.solana || env.SOLANA_VERSION }}
           cache: ${{ env.CACHE }}
 
       - name: Cache Rust client test dependencies
-        uses: ./.github/actions/cache-crate
+        uses: nifty-oss/actions/buildjet-cache-crate@v1
         with:
           folder: ./clients/cli
           key: rust-cli-test
 
       - name: Run cargo clippy
-        uses: actions-rs/cargo@v1
+        uses: nifty-oss/actions/cargo@v1
         with:
           command: clippy
           args: --all-targets --all-features --no-deps --manifest-path ./clients/cli/Cargo.toml

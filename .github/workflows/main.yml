@@ -36,7 +36,7 @@ jobs:
 
       - name: Filter program matrix
         id: program_matrix
-        uses: metaplex-foundation/actions/filter-matrix@v1
+        uses: nifty-oss/actions/filter-matrix@v1
         with:
           matrix: ${{ env.PROGRAMS }}
           changes: ${{ steps.changes.outputs.changes }}
@@ -44,7 +44,7 @@ jobs:
 
       - name: Filter JS client matrix
         id: js_client_matrix
-        uses: metaplex-foundation/actions/filter-matrix@v1
+        uses: nifty-oss/actions/filter-matrix@v1
         with:
           matrix: ${{ env.PROGRAMS }}
           changes: ${{ steps.changes.outputs.changes }}
@@ -52,7 +52,7 @@ jobs:
 
       - name: Filter Rust client matrix
         id: rust_client_matrix
-        uses: metaplex-foundation/actions/filter-matrix@v1
+        uses: nifty-oss/actions/filter-matrix@v1
         with:
           matrix: ${{ env.PROGRAMS }}
           changes: ${{ steps.changes.outputs.changes }}
@@ -90,22 +90,25 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y pkg-config build-essential libudev-dev
 
       - name: Install Rust
-        uses: ./.github/actions/install-rust
+        uses: nifty-oss/actions/install-rust@v1
         with:
           toolchain: ${{ env.RUST_VERSION }}
 
       - name: Install Solana
-        uses: ./.github/actions/install-solana
+        uses: nifty-oss/actions/install-solana@v1
         with:
           version: ${{ env.SOLANA_VERSION }}
           cache: ${{ env.CACHE }}
 
       - name: Cache program dependencies
         if: env.CACHE == 'true'
-        uses: ./.github/actions/cache-programs
+        uses: nifty-oss/actions/buildjet-cache-crate@v1
+        with:
+          folder: ./programs
+          key: programs
 
       - name: Install Node.js
-        uses: metaplex-foundation/actions/install-node-with-pnpm@v1
+        uses: nifty-oss/actions/install-node-with-pnpm@v1
         with:
           version: ${{ env.NODE_VERSION }}
           cache: ${{ env.CACHE }}
@@ -113,32 +116,7 @@ jobs:
 
       - name: Cache IDL generators
         if: env.CACHE == 'true'
-        uses: metaplex-foundation/actions/cache-idl-generators@v1
-
-      - name: Install Linux Build Deps
-        run: sudo apt-get update && sudo apt-get install -y pkg-config build-essential libudev-dev
-
-      - name: Install Rust
-        uses: ./.github/actions/install-rust
-        with:
-          toolchain: ${{ env.RUST_VERSION }}
-
-      - name: Install Solana
-        uses: ./.github/actions/install-solana
-        with:
-          version: ${{ env.SOLANA_VERSION }}
-          cache: ${{ env.CACHE }}
-
-      - name: Cache program dependencies
-        if: env.CACHE == 'true'
-        uses: ./.github/actions/cache-programs
-
-      - name: Install Node.js
-        uses: metaplex-foundation/actions/install-node-with-pnpm@v1
-        with:
-          version: ${{ env.NODE_VERSION }}
-          cache: ${{ env.CACHE }}
-          dependencies: true
+        uses: nifty-oss/actions/buildjet-cache-idl-generators@v1
 
       - name: Generate IDLs and clients
         run: pnpm generate
