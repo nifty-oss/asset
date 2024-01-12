@@ -5,16 +5,20 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+pub(crate) mod r#allocate;
 pub(crate) mod r#burn;
 pub(crate) mod r#create;
 pub(crate) mod r#delegate;
 pub(crate) mod r#lock;
 pub(crate) mod r#transfer;
 pub(crate) mod r#unlock;
+pub(crate) mod r#write;
 
+pub use self::r#allocate::*;
 pub use self::r#burn::*;
 pub use self::r#create::*;
 pub use self::r#delegate::*;
 pub use self::r#lock::*;
 pub use self::r#transfer::*;
 pub use self::r#unlock::*;
+pub use self::r#write::*;

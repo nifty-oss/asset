@@ -1,6 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use bytemuck::{Pod, Zeroable};
-use podded::types::PodOption;
+use podded::pod::PodOption;
 use shank::ShankType;
 
 use super::{Nullable, NullablePubkey};

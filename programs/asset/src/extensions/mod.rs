@@ -1,10 +1,12 @@
 mod attributes;
 mod creators;
 mod image;
+mod links;
 
 pub use attributes::*;
 pub use creators::*;
 pub use image::*;
+pub use links::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
 use bytemuck::{Pod, Zeroable};
@@ -86,6 +88,7 @@ pub enum ExtensionType {
     Attributes,
     Creators,
     Image,
+    Links,
 }
 
 impl From<u32> for ExtensionType {
@@ -95,6 +98,7 @@ impl From<u32> for ExtensionType {
             1 => ExtensionType::Attributes,
             2 => ExtensionType::Creators,
             3 => ExtensionType::Image,
+            4 => ExtensionType::Links,
             _ => panic!("invalid extension value: {value}"),
         }
     }
@@ -107,6 +111,7 @@ impl From<ExtensionType> for u32 {
             ExtensionType::Attributes => 1,
             ExtensionType::Creators => 2,
             ExtensionType::Image => 3,
+            ExtensionType::Links => 4,
         }
     }
 }

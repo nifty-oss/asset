@@ -1,7 +1,4 @@
-use podded::{
-    types::{POD_FALSE, POD_TRUE},
-    ZeroCopy,
-};
+use podded::ZeroCopy;
 use solana_program::{
     entrypoint::ProgramResult, msg, program::invoke, program_error::ProgramError, pubkey::Pubkey,
     rent::Rent, system_instruction, system_program, sysvar::Sysvar,
@@ -100,14 +97,12 @@ pub fn process_create(
 
     asset.discriminator = Discriminator::Asset;
     asset.standard = args.standard;
-    asset.mutable = if args.mutable { POD_TRUE } else { POD_FALSE };
+    asset.mutable = args.mutable.into();
     asset.holder = *ctx.accounts.holder.key;
     asset.authority = *ctx.accounts.authority.key;
     asset.name = args.name.into();
 
-    drop(data);
-
-    let extensions = Asset::get_extensions(&ctx.accounts.asset.data.borrow());
+    let extensions = Asset::get_extensions(&data);
 
     if !extensions.is_empty() {
         msg!("Asset created with {:?} extension(s)", extensions);

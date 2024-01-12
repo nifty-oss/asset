@@ -90,30 +90,56 @@ kAsset.update(
                 }),
               ]),
             }),
-            // attributes
-            k.definedTypeNodeFromIdl({
-              name: "attributes",
-              type: {
-                kind: "struct",
-                fields: [
-                  {
-                    name: "traits",
-                    type: { vec: { defined: "trait" }, size: "remainder" },
-                  },
-                ],
-              },
+            // extension header
+            k.definedTypeNode({
+              name: "extensionHeader",
+              data: k.structTypeNode([
+                k.structFieldTypeNode({
+                  name: "kind",
+                  child: k.numberTypeNode("u32"),
+                }),
+                k.structFieldTypeNode({
+                  name: "length",
+                  child: k.numberTypeNode("u32"),
+                }),
+                k.structFieldTypeNode({
+                  name: "boundary",
+                  child: k.numberTypeNode("u32"),
+                }),
+                k.structFieldTypeNode({
+                  name: "padding",
+                  child: k.numberTypeNode("u32"),
+                }),
+              ]),
+              internal: true,
             }),
-            // trait
+            // attributes
+            k.definedTypeNode({
+              name: "attributes",
+              data: k.structTypeNode([
+                k.structFieldTypeNode({
+                  name: "traits",
+                  child: k.arrayTypeNode(k.linkTypeNode("trait"), {
+                    size: k.remainderSize(),
+                  }),
+                }),
+              ]),
+            }),
+            // link
             k.definedTypeNode({
               name: "trait",
               data: k.structTypeNode([
                 k.structFieldTypeNode({
                   name: "traitType",
-                  child: k.stringTypeNode({ size: k.fixedSize(16) }),
+                  child: k.stringTypeNode({
+                    size: k.prefixedSize(k.numberTypeNode("u8")),
+                  }),
                 }),
                 k.structFieldTypeNode({
                   name: "value",
-                  child: k.stringTypeNode({ size: k.fixedSize(16) }),
+                  child: k.stringTypeNode({
+                    size: k.prefixedSize(k.numberTypeNode("u8")),
+                  }),
                 }),
               ]),
             }),
@@ -125,6 +151,36 @@ kAsset.update(
                   name: "data",
                   child: k.arrayTypeNode(k.numberTypeNode("u8"), {
                     size: k.remainderSize(),
+                  }),
+                }),
+              ]),
+            }),
+            // links
+            k.definedTypeNode({
+              name: "links",
+              data: k.structTypeNode([
+                k.structFieldTypeNode({
+                  name: "values",
+                  child: k.arrayTypeNode(k.linkTypeNode("link"), {
+                    size: k.remainderSize(),
+                  }),
+                }),
+              ]),
+            }),
+            // link
+            k.definedTypeNode({
+              name: "link",
+              data: k.structTypeNode([
+                k.structFieldTypeNode({
+                  name: "name",
+                  child: k.stringTypeNode({
+                    size: k.prefixedSize(k.numberTypeNode("u8")),
+                  }),
+                }),
+                k.structFieldTypeNode({
+                  name: "uri",
+                  child: k.stringTypeNode({
+                    size: k.prefixedSize(k.numberTypeNode("u8")),
                   }),
                 }),
               ]),
@@ -152,7 +208,7 @@ kAsset.update(
         },
       },
     },
-    initialize: {
+    allocate: {
       accounts: {
         systemProgram: {
           defaultsTo: k.conditionalDefault("account", "payer", {
@@ -163,10 +219,6 @@ kAsset.update(
           }),
         },
       },
-      internal: true,
-    },
-    write: {
-      internal: true,
     },
   })
 );
@@ -192,6 +244,13 @@ const assetKey = (name) => ({
 kAsset.update(
   new k.SetAccountDiscriminatorFromFieldVisitor({
     asset: assetKey("Asset"),
+  })
+);
+
+// Use custom serializers.
+kAsset.update(
+  new k.UseCustomAccountSerializerVisitor({
+    asset: { extract: true },
   })
 );
 
@@ -447,7 +506,12 @@ kBridge.accept(
   new k.RenderJavaScriptVisitor(
     path.join(clientDir, "bridge", "js", "src", "generated"),
     {
-      prettier: require(path.join(clientDir, "bridge", "js", ".prettierrc.json")),
+      prettier: require(path.join(
+        clientDir,
+        "bridge",
+        "js",
+        ".prettierrc.json"
+      )),
       dependencyMap: {
         mplTokenMetadata: "@metaplex-foundation/mpl-token-metadata",
       },
@@ -457,8 +521,11 @@ kBridge.accept(
 
 // Render Rust.
 kBridge.accept(
-  new k.RenderRustVisitor(path.join(clientDir, "bridge", "rust", "src", "generated"), {
-    formatCode: true,
-    crateFolder: path.join(clientDir, "bridge", "rust"),
-  })
+  new k.RenderRustVisitor(
+    path.join(clientDir, "bridge", "rust", "src", "generated"),
+    {
+      formatCode: true,
+      crateFolder: path.join(clientDir, "bridge", "rust"),
+    }
+  )
 );

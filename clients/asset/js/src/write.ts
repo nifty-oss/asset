@@ -9,7 +9,7 @@ import {
 } from '@metaplex-foundation/umi';
 import { write as baseWrite } from './generated/instructions/write';
 
-const DEFAULT_CHUNK_SIZE = 850;
+export const DEFAULT_CHUNK_SIZE = 850;
 
 export type WriteInstruction = {
   /** Address to derive the PDA from */

@@ -14,7 +14,6 @@ import {
   PublicKey,
   Signer,
   TransactionBuilder,
-  none,
   transactionBuilder,
 } from '@metaplex-foundation/umi';
 import {
@@ -38,7 +37,7 @@ import {
 } from '../types';
 
 // Accounts.
-export type InitializeInstructionAccounts = {
+export type AllocateInstructionAccounts = {
   /** Asset account */
   asset: Signer;
   /** The account paying for the storage fees */
@@ -48,48 +47,48 @@ export type InitializeInstructionAccounts = {
 };
 
 // Data.
-export type InitializeInstructionData = {
+export type AllocateInstructionData = {
   discriminator: number;
   extensionType: ExtensionType;
   length: number;
   data: Option<Uint8Array>;
 };
 
-export type InitializeInstructionDataArgs = {
+export type AllocateInstructionDataArgs = {
   extensionType: ExtensionTypeArgs;
   length: number;
-  data?: OptionOrNullable<Uint8Array>;
+  data: OptionOrNullable<Uint8Array>;
 };
 
-export function getInitializeInstructionDataSerializer(): Serializer<
-  InitializeInstructionDataArgs,
-  InitializeInstructionData
+export function getAllocateInstructionDataSerializer(): Serializer<
+  AllocateInstructionDataArgs,
+  AllocateInstructionData
 > {
   return mapSerializer<
-    InitializeInstructionDataArgs,
+    AllocateInstructionDataArgs,
     any,
-    InitializeInstructionData
+    AllocateInstructionData
   >(
-    struct<InitializeInstructionData>(
+    struct<AllocateInstructionData>(
       [
         ['discriminator', u8()],
         ['extensionType', getExtensionTypeSerializer()],
         ['length', u32()],
         ['data', option(bytes({ size: u32() }))],
       ],
-      { description: 'InitializeInstructionData' }
+      { description: 'AllocateInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 3, data: value.data ?? none() })
-  ) as Serializer<InitializeInstructionDataArgs, InitializeInstructionData>;
+    (value) => ({ ...value, discriminator: 3 })
+  ) as Serializer<AllocateInstructionDataArgs, AllocateInstructionData>;
 }
 
 // Args.
-export type InitializeInstructionArgs = InitializeInstructionDataArgs;
+export type AllocateInstructionArgs = AllocateInstructionDataArgs;
 
 // Instruction.
-export function initialize(
+export function allocate(
   context: Pick<Context, 'programs'>,
-  input: InitializeInstructionAccounts & InitializeInstructionArgs
+  input: AllocateInstructionAccounts & AllocateInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -117,7 +116,7 @@ export function initialize(
   } satisfies ResolvedAccountsWithIndices;
 
   // Arguments.
-  const resolvedArgs: InitializeInstructionArgs = { ...input };
+  const resolvedArgs: AllocateInstructionArgs = { ...input };
 
   // Default values.
   if (!resolvedAccounts.systemProgram.value) {
@@ -143,8 +142,8 @@ export function initialize(
   );
 
   // Data.
-  const data = getInitializeInstructionDataSerializer().serialize(
-    resolvedArgs as InitializeInstructionDataArgs
+  const data = getAllocateInstructionDataSerializer().serialize(
+    resolvedArgs as AllocateInstructionDataArgs
   );
 
   // Bytes Created On Chain.

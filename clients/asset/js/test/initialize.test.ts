@@ -1,7 +1,7 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import { httpDownloader } from '@metaplex-foundation/umi-downloader-http';
 import test from 'ava';
-import { attributes, image, initialize, write } from '../src';
+import { attributes, image, initialize } from '../src';
 import { createUmi } from './_setup';
 
 test('it can initialize a new asset with an extension', async (t) => {
@@ -13,9 +13,7 @@ test('it can initialize a new asset with an extension', async (t) => {
   await initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: attributes({
-      traits: [{ traitType: 'head', value: 'hat' }],
-    }),
+    extension: attributes([{ traitType: 'head', value: 'hat' }]),
   }).sendAndConfirm(umi);
 
   // Then the asset account was created.
@@ -31,18 +29,14 @@ test('it cannot initialize the same extension', async (t) => {
   await initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: attributes({
-      traits: [{ traitType: 'head', value: 'hat' }],
-    }),
+    extension: attributes([{ traitType: 'head', value: 'hat' }]),
   }).sendAndConfirm(umi);
 
   // When we try to initialize the same extension again.
   const promise = initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: attributes({
-      traits: [{ traitType: 'power', value: 'wizard' }],
-    }),
+    extension: attributes([{ traitType: 'power', value: 'wizard' }]),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(promise, { message: /Asset already initialized/ });
@@ -57,28 +51,20 @@ test('it can initialize a new asset with multiple extensions', async (t) => {
   await initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: attributes({
-      traits: [{ traitType: 'head', value: 'hat' }],
-    }),
+    extension: attributes([{ traitType: 'head', value: 'hat' }]),
   }).sendAndConfirm(umi);
 
   const imageData = (
     await umi.downloader.download([
-      'https://arweave.net/Dwf8_jphHptJkT9-hGVVUgqEZA2LSOSU9wD_Da-MfSQ',
+      'https://arweave.net/Y8MBS8tqo9XJ_Z1l9V6BIMvhknWxhzP0UxSNBk1OXSs',
     ])
   )[0].buffer;
 
-  // And we initialize an image extension.
+  // When we initialize an image extension.
   await initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: image({ length: imageData.length }),
-  }).sendAndConfirm(umi);
-
-  // When we write the extension data.
-  await write(umi, {
-    asset,
-    data: new Uint8Array(imageData),
+    extension: image(imageData),
   }).sendAndConfirm(umi);
 
   // Then an account was created.

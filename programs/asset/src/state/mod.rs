@@ -8,7 +8,7 @@ pub use delegate::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
 use bytemuck::{Pod, Zeroable};
-use podded::types::Nullable;
+use podded::pod::Nullable;
 use shank::ShankType;
 use solana_program::pubkey::Pubkey;
 

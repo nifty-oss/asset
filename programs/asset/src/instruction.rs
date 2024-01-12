@@ -18,13 +18,13 @@ pub enum Instruction {
     Close,
     */
 
-    /// Burn an asset.
+    /// Burns an asset.
     #[account(0, writable, name="asset", desc = "Asset account")]
     #[account(1, signer, writable, name="signer", desc = "The holder or burn delegate of the asset")]
     #[account(2, optional, writable, name="recipient", desc = "The account receiving refunded rent")]
     Burn,
 
-    /// Create a new asset.
+    /// Creates a new asset.
     #[account(0, signer, writable, name="asset", desc = "Asset account")]
     #[account(1, name="authority", desc = "The authority of the asset")]
     #[account(2, name="holder", desc = "The holder of the asset")]
@@ -32,35 +32,35 @@ pub enum Instruction {
     #[account(4, optional, name="system_program", desc = "The system program")]
     Create(Metadata),
 
-    /// Approve a delegate to manage an asset.
+    /// Approves a delegate to manage an asset.
     #[account(0, writable, name="asset", desc = "Asset account")]
     #[account(1, signer, name="holder", desc = "The holder of the asset")]
     #[account(2, name="delegate", desc = "The delegate account")]
     Delegate(Vec<DelegateRole>),
 
-    /// Initialize an extension.
+    /// Allocates an extension.
     #[account(0, signer, writable, name="asset", desc = "Asset account")]
     #[account(1, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
     #[account(2, optional, name="system_program", desc = "The system program")]
-    Initialize(Extension),
+    Allocate(Extension),
 
-    /// Lock an asset.
+    /// Locks an asset.
     #[account(0, writable, name="asset", desc = "Asset account")]
     #[account(1, signer, name="authority", desc = "Delegate or holder account")]
     Lock,
 
-    /// Transfer ownership of the aseet to a new public key.
+    /// Transfers ownership of the aseet to a new public key.
     #[account(0, writable, name="asset", desc = "Asset account")]
     #[account(1, signer, name="signer", desc = "Current holder of the asset or transfer delegate")]
     #[account(2, name="recipient", desc = "The recipient of the asset")]
     Transfer,
 
-    /// Unlock an asset.
+    /// Unlocks an asset.
     #[account(0, writable, name="asset", desc = "Asset account")]
     #[account(1, signer, name="authority", desc = "Delegate ot holder account")]
     Unlock,
 
-    /// Write data to an extension.
+    /// Writes data to an extension.
     #[account(0, signer, writable, name="asset", desc = "Asset account")]
     #[account(1, signer, writable, name="payer", desc = "The account paying for the storage fees")]
     #[account(2, name="system_program", desc = "The system program")]

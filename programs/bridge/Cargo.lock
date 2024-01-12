@@ -932,9 +932,9 @@ dependencies = [
 
 [[package]]
 name = "kaigan"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ade400c53c86236d5b03b681e6c4e3d1d8da674e78a3916480886614674f017"
+checksum = "e623cca1f0e2a0919032c1bdabbf81dd9aa34658d5066aca7bb90d608317ab91"
 dependencies = [
  "borsh 0.10.3",
 ]
@@ -1246,9 +1246,9 @@ checksum = "e3148f5046208a5d56bcfc03053e3ca6334e51da8dfb19b6cdc8b306fae3283e"
 
 [[package]]
 name = "podded"
-version = "0.3.1"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f363b3a0c52114935d4221ef952ca5bc9e72cd98da9c4031bfc2441dd7f50de"
+checksum = "239a0770c3a1948fc3ac671d5d92a5126c630baf51962d5982e43a378ce4025d"
 dependencies = [
  "bytemuck",
 ]

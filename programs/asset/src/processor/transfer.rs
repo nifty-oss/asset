@@ -1,4 +1,4 @@
-use podded::{types::PodOption, ZeroCopy};
+use podded::{pod::PodOption, ZeroCopy};
 use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{

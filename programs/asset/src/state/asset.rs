@@ -1,6 +1,6 @@
 use bytemuck::{Pod, Zeroable};
 use podded::{
-    types::{PodBool, PodOption, PodStr},
+    pod::{PodBool, PodOption, PodStr},
     ZeroCopy,
 };
 use solana_program::pubkey::Pubkey;
@@ -84,7 +84,9 @@ impl Asset {
             let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
 
             if extension.extension_type() == T::TYPE {
-                return Some(T::from_bytes(&data[cursor + Extension::LEN..]));
+                let start = cursor + Extension::LEN;
+                let end = start + extension.length() as usize;
+                return Some(T::from_bytes(&data[start..end]));
             }
 
             cursor = extension.boundary() as usize;

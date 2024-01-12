@@ -13,6 +13,7 @@ export enum ExtensionType {
   Attributes,
   Creators,
   Image,
+  Links,
 }
 
 export type ExtensionTypeArgs = ExtensionType;

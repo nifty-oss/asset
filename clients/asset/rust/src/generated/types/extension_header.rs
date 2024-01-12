@@ -5,15 +5,16 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
+use borsh::BorshDeserialize;
 
-#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq, PartialOrd, Hash)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub enum ExtensionType {
-    None,
-    Attributes,
-    Creators,
-    Image,
-    Links,
+pub struct ExtensionHeader {
+pub kind: u32,
+pub length: u32,
+pub boundary: u32,
+pub padding: u32,
 }
+
+

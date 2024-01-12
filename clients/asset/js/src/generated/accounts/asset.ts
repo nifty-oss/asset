@@ -20,21 +20,16 @@ import {
   publicKey as toPublicKey,
 } from '@metaplex-foundation/umi';
 import {
-  Serializer,
   bool,
-  mapSerializer,
   publicKey as publicKeySerializer,
   string,
-  struct,
 } from '@metaplex-foundation/umi/serializers';
+import { AssetAccountData, getAssetAccountDataSerializer } from '../../hooked';
 import {
-  Delegate,
   DelegateArgs,
   Discriminator,
   DiscriminatorArgs,
-  Standard,
   StandardArgs,
-  State,
   StateArgs,
   getDelegateSerializer,
   getDiscriminatorSerializer,
@@ -43,52 +38,6 @@ import {
 } from '../types';
 
 export type Asset = Account<AssetAccountData>;
-
-export type AssetAccountData = {
-  discriminator: Discriminator;
-  state: State;
-  standard: Standard;
-  mutable: boolean;
-  holder: PublicKey;
-  group: PublicKey;
-  authority: PublicKey;
-  delegate: Delegate;
-  name: string;
-};
-
-export type AssetAccountDataArgs = {
-  state: StateArgs;
-  standard: StandardArgs;
-  mutable: boolean;
-  holder: PublicKey;
-  group: PublicKey;
-  authority: PublicKey;
-  delegate: DelegateArgs;
-  name: string;
-};
-
-export function getAssetAccountDataSerializer(): Serializer<
-  AssetAccountDataArgs,
-  AssetAccountData
-> {
-  return mapSerializer<AssetAccountDataArgs, any, AssetAccountData>(
-    struct<AssetAccountData>(
-      [
-        ['discriminator', getDiscriminatorSerializer()],
-        ['state', getStateSerializer()],
-        ['standard', getStandardSerializer()],
-        ['mutable', bool()],
-        ['holder', publicKeySerializer()],
-        ['group', publicKeySerializer()],
-        ['authority', publicKeySerializer()],
-        ['delegate', getDelegateSerializer()],
-        ['name', string({ size: 35 })],
-      ],
-      { description: 'AssetAccountData' }
-    ),
-    (value) => ({ ...value, discriminator: Discriminator.Asset })
-  ) as Serializer<AssetAccountDataArgs, AssetAccountData>;
-}
 
 export function deserializeAsset(rawAccount: RpcAccount): Asset {
   return deserializeAccount(rawAccount, getAssetAccountDataSerializer());

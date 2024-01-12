@@ -13,16 +13,16 @@ import {
   u8,
 } from '@metaplex-foundation/umi/serializers';
 
-export type Trait = { traitType: string; value: string };
+export type Link = { name: string; uri: string };
 
-export type TraitArgs = Trait;
+export type LinkArgs = Link;
 
-export function getTraitSerializer(): Serializer<TraitArgs, Trait> {
-  return struct<Trait>(
+export function getLinkSerializer(): Serializer<LinkArgs, Link> {
+  return struct<Link>(
     [
-      ['traitType', string({ size: u8() })],
-      ['value', string({ size: u8() })],
+      ['name', string({ size: u8() })],
+      ['uri', string({ size: u8() })],
     ],
-    { description: 'Trait' }
-  ) as Serializer<TraitArgs, Trait>;
+    { description: 'Link' }
+  ) as Serializer<LinkArgs, Link>;
 }

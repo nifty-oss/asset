@@ -8,16 +8,16 @@ use solana_program::{
 use crate::{
     error::AssetError,
     instruction::{
-        accounts::{Context, InitializeAccounts},
+        accounts::{AllocateAccounts, Context},
         Extension,
     },
     require,
     state::{Asset, Discriminator},
 };
 
-pub fn process_initialize(
+pub fn process_allocate(
     program_id: &Pubkey,
-    ctx: Context<InitializeAccounts>,
+    ctx: Context<AllocateAccounts>,
     args: Extension,
 ) -> ProgramResult {
     // account validation
@@ -152,7 +152,7 @@ pub fn process_initialize(
 }
 
 fn save_extension_data(
-    ctx: &Context<InitializeAccounts>,
+    ctx: &Context<AllocateAccounts>,
     args: &Extension,
     offset: usize,
     data: &[u8],

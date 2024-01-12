@@ -6,9 +6,11 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
+export * from './allocate';
 export * from './burn';
 export * from './create';
 export * from './delegate';
 export * from './lock';
 export * from './transfer';
 export * from './unlock';
+export * from './write';

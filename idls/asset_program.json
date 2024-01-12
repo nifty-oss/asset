@@ -140,7 +140,7 @@
       }
     },
     {
-      "name": "Initialize",
+      "name": "Allocate",
       "accounts": [
         {
           "name": "asset",
@@ -429,6 +429,9 @@
           },
           {
             "name": "Image"
+          },
+          {
+            "name": "Links"
           }
         ]
       }

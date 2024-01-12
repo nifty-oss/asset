@@ -14,6 +14,8 @@ export * from './delegateRole';
 export * from './discriminator';
 export * from './extensionType';
 export * from './image';
+export * from './link';
+export * from './links';
 export * from './standard';
 export * from './state';
 export * from './trait';

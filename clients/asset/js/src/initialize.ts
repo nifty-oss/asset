@@ -1,74 +1,41 @@
 import {
   Context,
-  OptionOrNullable,
-  TransactionBuilder,
+  TransactionBuilderGroup,
   some,
+  transactionBuilderGroup,
 } from '@metaplex-foundation/umi';
-import {
-  Attributes,
-  ExtensionType,
-  Image,
-  getAttributesSerializer,
-  getImageSerializer,
-} from './generated';
-import {
-  InitializeInstructionAccounts,
-  initialize as baseInitialize,
-} from './generated/instructions/initialize';
-
-type Extension =
-  | ({ type: ExtensionType.Attributes } & Attributes)
-  | ({ type: ExtensionType.Image } & { length?: number } & Image);
-
-export const attributes = (input: Attributes): Extension => ({
-  type: ExtensionType.Attributes,
-  ...input,
-});
-
-export const image = (
-  input: { data: Array<number> } | { length: number }
-): Extension => ({
-  type: ExtensionType.Image,
-  length: 'length' in input ? input.length : 0,
-  data: 'data' in input ? input.data : [],
-});
+import { Extension, getExtensionSerializerFromType } from './extensions';
+import { AllocateInstructionAccounts, allocate } from './generated';
+import { DEFAULT_CHUNK_SIZE, write } from './write';
 
 export function initialize(
-  context: Pick<Context, 'eddsa' | 'payer' | 'programs'>,
-  input: InitializeInstructionAccounts & { extension: Extension }
-): TransactionBuilder {
-  let data: OptionOrNullable<Uint8Array> = null;
-  let length = 0;
+  context: Pick<
+    Context,
+    'eddsa' | 'identity' | 'payer' | 'programs' | 'transactions'
+  >,
+  input: AllocateInstructionAccounts & { extension: Extension }
+): TransactionBuilderGroup {
+  const data = getExtensionSerializerFromType(input.extension.type).serialize(
+    input.extension
+  );
 
-  switch (input.extension.type) {
-    case ExtensionType.Attributes:
-      {
-        const bytes = getAttributesSerializer().serialize({
-          traits: input.extension.traits,
-        });
-        data = some(bytes);
-        length = bytes.length;
-      }
-      break;
-    case ExtensionType.Image:
-      if (input.extension.data.length === 0) {
-        length = input.extension.length ?? 0;
-      } else {
-        const bytes = getImageSerializer().serialize({
-          data: input.extension.data,
-        });
-        data = some(bytes);
-        length = bytes.length;
-      }
-      break;
-    default:
-      throw new Error('Invalid extension type');
-  }
+  const chunked = data.length > DEFAULT_CHUNK_SIZE;
 
-  return baseInitialize(context, {
+  const builder = allocate(context, {
     ...input,
     extensionType: input.extension.type,
-    length,
-    data,
+    length: data.length,
+    data: chunked ? null : some(data),
   });
+
+  if (chunked) {
+    return write(context, {
+      ...input,
+      data,
+    })
+      .prepend(builder)
+      .sequential();
+  }
+
+  return transactionBuilderGroup([builder]);
 }

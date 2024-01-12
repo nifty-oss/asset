@@ -5,45 +5,58 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::ExtensionType;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 /// Accounts.
-pub struct Write {
+pub struct Allocate {
     /// Asset account
     pub asset: solana_program::pubkey::Pubkey,
     /// The account paying for the storage fees
-    pub payer: solana_program::pubkey::Pubkey,
+    pub payer: Option<solana_program::pubkey::Pubkey>,
     /// The system program
-    pub system_program: solana_program::pubkey::Pubkey,
+    pub system_program: Option<solana_program::pubkey::Pubkey>,
 }
 
-impl Write {
+impl Allocate {
     pub fn instruction(
         &self,
-        args: WriteInstructionArgs,
+        args: AllocateInstructionArgs,
     ) -> solana_program::instruction::Instruction {
         self.instruction_with_remaining_accounts(args, &[])
     }
     #[allow(clippy::vec_init_then_push)]
     pub fn instruction_with_remaining_accounts(
         &self,
-        args: WriteInstructionArgs,
+        args: AllocateInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
         let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.asset, true,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            self.payer, true,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.system_program,
-            false,
-        ));
+        if let Some(payer) = self.payer {
+            accounts.push(solana_program::instruction::AccountMeta::new(payer, true));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::ASSET_ID,
+                false,
+            ));
+        }
+        if let Some(system_program) = self.system_program {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                system_program,
+                false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::ASSET_ID,
+                false,
+            ));
+        }
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = WriteInstructionData::new().try_to_vec().unwrap();
+        let mut data = AllocateInstructionData::new().try_to_vec().unwrap();
         let mut args = args.try_to_vec().unwrap();
         data.append(&mut args);
 
@@ -56,41 +69,43 @@ impl Write {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct WriteInstructionData {
+struct AllocateInstructionData {
     discriminator: u8,
 }
 
-impl WriteInstructionData {
+impl AllocateInstructionData {
     fn new() -> Self {
-        Self { discriminator: 7 }
+        Self { discriminator: 3 }
     }
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct WriteInstructionArgs {
-    pub overwrite: bool,
-    pub bytes: Vec<u8>,
+pub struct AllocateInstructionArgs {
+    pub extension_type: ExtensionType,
+    pub length: u32,
+    pub data: Option<Vec<u8>>,
 }
 
-/// Instruction builder for `Write`.
+/// Instruction builder for `Allocate`.
 ///
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` asset
-///   1. `[writable, signer]` payer
-///   2. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   1. `[writable, signer, optional]` payer
+///   2. `[optional]` system_program
 #[derive(Default)]
-pub struct WriteBuilder {
+pub struct AllocateBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
-    overwrite: Option<bool>,
-    bytes: Option<Vec<u8>>,
+    extension_type: Option<ExtensionType>,
+    length: Option<u32>,
+    data: Option<Vec<u8>>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
-impl WriteBuilder {
+impl AllocateBuilder {
     pub fn new() -> Self {
         Self::default()
     }
@@ -100,27 +115,37 @@ impl WriteBuilder {
         self.asset = Some(asset);
         self
     }
+    /// `[optional account]`
     /// The account paying for the storage fees
     #[inline(always)]
-    pub fn payer(&mut self, payer: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.payer = Some(payer);
+    pub fn payer(&mut self, payer: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
+        self.payer = payer;
         self
     }
-    /// `[optional account, default to '11111111111111111111111111111111']`
+    /// `[optional account]`
     /// The system program
     #[inline(always)]
-    pub fn system_program(&mut self, system_program: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.system_program = Some(system_program);
+    pub fn system_program(
+        &mut self,
+        system_program: Option<solana_program::pubkey::Pubkey>,
+    ) -> &mut Self {
+        self.system_program = system_program;
         self
     }
     #[inline(always)]
-    pub fn overwrite(&mut self, overwrite: bool) -> &mut Self {
-        self.overwrite = Some(overwrite);
+    pub fn extension_type(&mut self, extension_type: ExtensionType) -> &mut Self {
+        self.extension_type = Some(extension_type);
         self
     }
     #[inline(always)]
-    pub fn bytes(&mut self, bytes: Vec<u8>) -> &mut Self {
-        self.bytes = Some(bytes);
+    pub fn length(&mut self, length: u32) -> &mut Self {
+        self.length = Some(length);
+        self
+    }
+    /// `[optional argument]`
+    #[inline(always)]
+    pub fn data(&mut self, data: Vec<u8>) -> &mut Self {
+        self.data = Some(data);
         self
     }
     /// Add an aditional account to the instruction.
@@ -143,51 +168,53 @@ impl WriteBuilder {
     }
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        let accounts = Write {
+        let accounts = Allocate {
             asset: self.asset.expect("asset is not set"),
-            payer: self.payer.expect("payer is not set"),
-            system_program: self
-                .system_program
-                .unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
+            payer: self.payer,
+            system_program: self.system_program,
         };
-        let args = WriteInstructionArgs {
-            overwrite: self.overwrite.clone().expect("overwrite is not set"),
-            bytes: self.bytes.clone().expect("bytes is not set"),
+        let args = AllocateInstructionArgs {
+            extension_type: self
+                .extension_type
+                .clone()
+                .expect("extension_type is not set"),
+            length: self.length.clone().expect("length is not set"),
+            data: self.data.clone(),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
     }
 }
 
-/// `write` CPI accounts.
-pub struct WriteCpiAccounts<'a, 'b> {
+/// `allocate` CPI accounts.
+pub struct AllocateCpiAccounts<'a, 'b> {
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
-    pub payer: &'b solana_program::account_info::AccountInfo<'a>,
+    pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
-    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
-/// `write` CPI instruction.
-pub struct WriteCpi<'a, 'b> {
+/// `allocate` CPI instruction.
+pub struct AllocateCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
-    pub payer: &'b solana_program::account_info::AccountInfo<'a>,
+    pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
-    pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
+    pub system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The arguments for the instruction.
-    pub __args: WriteInstructionArgs,
+    pub __args: AllocateInstructionArgs,
 }
 
-impl<'a, 'b> WriteCpi<'a, 'b> {
+impl<'a, 'b> AllocateCpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
-        accounts: WriteCpiAccounts<'a, 'b>,
-        args: WriteInstructionArgs,
+        accounts: AllocateCpiAccounts<'a, 'b>,
+        args: AllocateInstructionArgs,
     ) -> Self {
         Self {
             __program: program,
@@ -235,14 +262,27 @@ impl<'a, 'b> WriteCpi<'a, 'b> {
             *self.asset.key,
             true,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.payer.key,
-            true,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.system_program.key,
-            false,
-        ));
+        if let Some(payer) = self.payer {
+            accounts.push(solana_program::instruction::AccountMeta::new(
+                *payer.key, true,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::ASSET_ID,
+                false,
+            ));
+        }
+        if let Some(system_program) = self.system_program {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                *system_program.key,
+                false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::ASSET_ID,
+                false,
+            ));
+        }
         remaining_accounts.iter().for_each(|remaining_account| {
             accounts.push(solana_program::instruction::AccountMeta {
                 pubkey: *remaining_account.0.key,
@@ -250,7 +290,7 @@ impl<'a, 'b> WriteCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let mut data = WriteInstructionData::new().try_to_vec().unwrap();
+        let mut data = AllocateInstructionData::new().try_to_vec().unwrap();
         let mut args = self.__args.try_to_vec().unwrap();
         data.append(&mut args);
 
@@ -262,8 +302,12 @@ impl<'a, 'b> WriteCpi<'a, 'b> {
         let mut account_infos = Vec::with_capacity(3 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset.clone());
-        account_infos.push(self.payer.clone());
-        account_infos.push(self.system_program.clone());
+        if let Some(payer) = self.payer {
+            account_infos.push(payer.clone());
+        }
+        if let Some(system_program) = self.system_program {
+            account_infos.push(system_program.clone());
+        }
         remaining_accounts
             .iter()
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
@@ -276,26 +320,27 @@ impl<'a, 'b> WriteCpi<'a, 'b> {
     }
 }
 
-/// Instruction builder for `Write` via CPI.
+/// Instruction builder for `Allocate` via CPI.
 ///
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` asset
-///   1. `[writable, signer]` payer
-///   2. `[]` system_program
-pub struct WriteCpiBuilder<'a, 'b> {
-    instruction: Box<WriteCpiBuilderInstruction<'a, 'b>>,
+///   1. `[writable, signer, optional]` payer
+///   2. `[optional]` system_program
+pub struct AllocateCpiBuilder<'a, 'b> {
+    instruction: Box<AllocateCpiBuilderInstruction<'a, 'b>>,
 }
 
-impl<'a, 'b> WriteCpiBuilder<'a, 'b> {
+impl<'a, 'b> AllocateCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
-        let instruction = Box::new(WriteCpiBuilderInstruction {
+        let instruction = Box::new(AllocateCpiBuilderInstruction {
             __program: program,
             asset: None,
             payer: None,
             system_program: None,
-            overwrite: None,
-            bytes: None,
+            extension_type: None,
+            length: None,
+            data: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -306,29 +351,40 @@ impl<'a, 'b> WriteCpiBuilder<'a, 'b> {
         self.instruction.asset = Some(asset);
         self
     }
+    /// `[optional account]`
     /// The account paying for the storage fees
     #[inline(always)]
-    pub fn payer(&mut self, payer: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-        self.instruction.payer = Some(payer);
+    pub fn payer(
+        &mut self,
+        payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    ) -> &mut Self {
+        self.instruction.payer = payer;
         self
     }
+    /// `[optional account]`
     /// The system program
     #[inline(always)]
     pub fn system_program(
         &mut self,
-        system_program: &'b solana_program::account_info::AccountInfo<'a>,
+        system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
-        self.instruction.system_program = Some(system_program);
+        self.instruction.system_program = system_program;
         self
     }
     #[inline(always)]
-    pub fn overwrite(&mut self, overwrite: bool) -> &mut Self {
-        self.instruction.overwrite = Some(overwrite);
+    pub fn extension_type(&mut self, extension_type: ExtensionType) -> &mut Self {
+        self.instruction.extension_type = Some(extension_type);
         self
     }
     #[inline(always)]
-    pub fn bytes(&mut self, bytes: Vec<u8>) -> &mut Self {
-        self.instruction.bytes = Some(bytes);
+    pub fn length(&mut self, length: u32) -> &mut Self {
+        self.instruction.length = Some(length);
+        self
+    }
+    /// `[optional argument]`
+    #[inline(always)]
+    pub fn data(&mut self, data: Vec<u8>) -> &mut Self {
+        self.instruction.data = Some(data);
         self
     }
     /// Add an additional account to the instruction.
@@ -372,25 +428,23 @@ impl<'a, 'b> WriteCpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
-        let args = WriteInstructionArgs {
-            overwrite: self
+        let args = AllocateInstructionArgs {
+            extension_type: self
                 .instruction
-                .overwrite
+                .extension_type
                 .clone()
-                .expect("overwrite is not set"),
-            bytes: self.instruction.bytes.clone().expect("bytes is not set"),
+                .expect("extension_type is not set"),
+            length: self.instruction.length.clone().expect("length is not set"),
+            data: self.instruction.data.clone(),
         };
-        let instruction = WriteCpi {
+        let instruction = AllocateCpi {
             __program: self.instruction.__program,
 
             asset: self.instruction.asset.expect("asset is not set"),
 
-            payer: self.instruction.payer.expect("payer is not set"),
+            payer: self.instruction.payer,
 
-            system_program: self
-                .instruction
-                .system_program
-                .expect("system_program is not set"),
+            system_program: self.instruction.system_program,
             __args: args,
         };
         instruction.invoke_signed_with_remaining_accounts(
@@ -400,13 +454,14 @@ impl<'a, 'b> WriteCpiBuilder<'a, 'b> {
     }
 }
 
-struct WriteCpiBuilderInstruction<'a, 'b> {
+struct AllocateCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    overwrite: Option<bool>,
-    bytes: Option<Vec<u8>>,
+    extension_type: Option<ExtensionType>,
+    length: Option<u32>,
+    data: Option<Vec<u8>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,
