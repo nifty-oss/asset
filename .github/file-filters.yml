@@ -27,9 +27,6 @@ programs: &programs
 
 client_common: &client_common
   - *programs
-  - ".github/workflows/test-js.yml"
-  - ".github/workflows/test-rust-client.yml"
-  - ".github/workflows/build-rust-client.yml"
   - ".github/workflows/main.yml"
   - ".github/file-filters.yml"
   - ".github/.env"
@@ -38,43 +35,52 @@ client_common: &client_common
 
 asset_js_client: &asset_js_client
   - *client_common
+  - ".github/workflows/test-js-client.yml"
   - "clients/asset/js/**"
 
 bridge_js_client: &bridge_js_client
   - *client_common
+  - ".github/workflows/test-js-client.yml"
   - "clients/bridge/js/**"
 
 asset_rust_client: &asset_rust_client
   - *client_common
+  - ".github/workflows/test-rust-client.yml"
+  - ".github/workflows/build-rust-client.yml"
   - "clients/asset/rust/**"
 
 bridge_rust_client: &bridge_rust_client
   - *client_common
+  - ".github/workflows/test-rust-client.yml"
+  - ".github/workflows/build-rust-client.yml"
   - "clients/bridge/rust/**"
 
-clients: &clients
+js_clients: &js_clients
   - *asset_js_client
-  - *asset_rust_client
   - *bridge_js_client
+
+rust_clients: &rust_clients
+  - *asset_rust_client
   - *bridge_rust_client
 
 # CLIs.
 
 cli_common: &cli_common
   - *programs
-  - *clients
-  - ".github/workflows/build-rust-cli.yml"
+  - *client_common
 
 rust_cli: &rust_cli
-  - *client_common
+  - *cli_common
+  - ".github/workflows/build-rust-cli.yml"
   - "clients/cli/**"
 
-clis: &clis
+cli_clients: &cli_clients
   - *rust_cli
 
 # Any.
 
 any: &any
   - *programs
-  - *clients
-  - *clis
+  - *js_clients
+  - *rust_clients
+  - *cli_clients

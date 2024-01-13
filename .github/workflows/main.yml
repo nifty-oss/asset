@@ -17,9 +17,10 @@ jobs:
       any: ${{ steps.changes.outputs.any }}
       programs: ${{ steps.changes.outputs.programs }}
       program_matrix: ${{ steps.program_matrix.outputs.matrix }}
-      clients: ${{ steps.changes.outputs.clients }}
-      js_client_matrix: ${{ steps.program_matrix.outputs.matrix }}
-      rust_client_matrix: ${{ steps.program_matrix.outputs.matrix }}
+      js_clients: ${{ steps.changes.outputs.js_clients }}
+      rust_clients: ${{ steps.changes.outputs.rust_clients }}
+      js_client_matrix: ${{ steps.js_client_matrix.outputs.matrix }}
+      rust_client_matrix: ${{ steps.rust_client_matrix.outputs.matrix }}
       rust_cli: ${{ steps.changes.outputs.rust_cli }}
     steps:
       - name: Git checkout
@@ -125,7 +126,7 @@ jobs:
         run: test -z "$(git status --porcelain)"
 
   test_js:
-    if: ${{ needs.changes.outputs.clients == 'true' }}
+    if: ${{ needs.changes.outputs.js_clients == 'true' }}
     name: JS Client
     needs: [changes, generate_clients]
     uses: ./.github/workflows/test-js-client.yml
@@ -134,7 +135,7 @@ jobs:
       client_matrix: ${{ needs.changes.outputs.js_client_matrix }}
 
   test_rust:
-    if: ${{ needs.changes.outputs.clients == 'true' }}
+    if: ${{ needs.changes.outputs.rust_clients == 'true' }}
     name: Rust Client
     needs: [changes, generate_clients]
     uses: ./.github/workflows/test-rust-client.yml
@@ -143,7 +144,7 @@ jobs:
       client_matrix: ${{ needs.changes.outputs.rust_client_matrix }}
 
   build_rust:
-    if: ${{ needs.changes.outputs.clients == 'true' }}
+    if: ${{ needs.changes.outputs.rust_clients == 'true' }}
     name: Rust Client
     needs: [changes, generate_clients]
     uses: ./.github/workflows/build-rust-client.yml
