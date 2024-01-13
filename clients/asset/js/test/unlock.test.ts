@@ -197,3 +197,39 @@ test('it can unlock an asset as a holder', async (t) => {
     state: State.Unlocked,
   });
 });
+
+test('it can unlock an asset that is unlocked', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = generateSigner(umi);
+  const holder = generateSigner(umi);
+
+  // And we create a new asset.
+  await create(umi, {
+    asset,
+    holder: holder.publicKey,
+    payer: umi.identity,
+    name: 'Digital Asset',
+  }).sendAndConfirm(umi);
+
+  // And we set a delegate that can lock the asset.
+  const authority = generateSigner(umi);
+  await delegate(umi, {
+    asset: asset.publicKey,
+    holder,
+    delegate: authority.publicKey,
+    args: [DelegateRole.Lock],
+  }).sendAndConfirm(umi);
+
+  // When we unlock an unlocked asset.
+  await unlock(umi, {
+    asset: asset.publicKey,
+    authority,
+  }).sendAndConfirm(umi);
+
+  // Then the asset is (still) unlocked.
+  const account = await fetchAsset(umi, asset.publicKey);
+  t.like(account, <Asset>{
+    state: State.Unlocked,
+  });
+});
