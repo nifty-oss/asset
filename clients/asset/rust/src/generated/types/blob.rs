@@ -8,9 +8,11 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use kaigan::types::RemainderVec;
+use kaigan::types::U8PrefixString;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Image {
+pub struct Blob {
+    pub content_type: U8PrefixString,
     pub data: RemainderVec<u8>,
 }

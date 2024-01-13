@@ -3,23 +3,23 @@ import {
   Attributes,
   Creators,
   ExtensionType,
-  Image,
+  Blob,
   Links,
   getAttributesSerializer,
   getCreatorsSerializer,
-  getImageSerializer,
+  getBlobSerializer,
   getLinksSerializer,
 } from '../generated';
 
 export * from './attributes';
 export * from './creators';
-export * from './image';
+export * from './blob';
 export * from './links';
 
 export type Extension =
   | ({ type: ExtensionType.Attributes } & Attributes)
+  | ({ type: ExtensionType.Blob } & Blob)
   | ({ type: ExtensionType.Creators } & Creators)
-  | ({ type: ExtensionType.Image } & Image)
   | ({ type: ExtensionType.Links } & Links);
 
 export const getExtensionSerializerFromType = <T extends Extension>(
@@ -29,10 +29,10 @@ export const getExtensionSerializerFromType = <T extends Extension>(
     switch (type) {
       case ExtensionType.Attributes:
         return getAttributesSerializer();
+      case ExtensionType.Blob:
+        return getBlobSerializer();
       case ExtensionType.Creators:
         return getCreatorsSerializer();
-      case ExtensionType.Image:
-        return getImageSerializer();
       case ExtensionType.Links:
         return getLinksSerializer();
       default:

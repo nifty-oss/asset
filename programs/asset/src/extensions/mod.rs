@@ -1,11 +1,11 @@
 mod attributes;
+mod blob;
 mod creators;
-mod image;
 mod links;
 
 pub use attributes::*;
+pub use blob::*;
 pub use creators::*;
-pub use image::*;
 pub use links::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -86,8 +86,8 @@ pub trait ExtensionDataMut<'a> {
 pub enum ExtensionType {
     None,
     Attributes,
+    Blob,
     Creators,
-    Image,
     Links,
 }
 
@@ -96,8 +96,8 @@ impl From<u32> for ExtensionType {
         match value {
             0 => ExtensionType::None,
             1 => ExtensionType::Attributes,
-            2 => ExtensionType::Creators,
-            3 => ExtensionType::Image,
+            2 => ExtensionType::Blob,
+            3 => ExtensionType::Creators,
             4 => ExtensionType::Links,
             _ => panic!("invalid extension value: {value}"),
         }
@@ -109,8 +109,8 @@ impl From<ExtensionType> for u32 {
         match value {
             ExtensionType::None => 0,
             ExtensionType::Attributes => 1,
-            ExtensionType::Creators => 2,
-            ExtensionType::Image => 3,
+            ExtensionType::Blob => 2,
+            ExtensionType::Creators => 3,
             ExtensionType::Links => 4,
         }
     }

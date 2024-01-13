@@ -143,10 +143,16 @@ kAsset.update(
                 }),
               ]),
             }),
-            // image
+            // blob
             k.definedTypeNode({
-              name: "image",
+              name: "blob",
               data: k.structTypeNode([
+                k.structFieldTypeNode({
+                  name: "contentType",
+                  child: k.stringTypeNode({
+                    size: k.prefixedSize(k.numberTypeNode("u8")),
+                  }),
+                }),
                 k.structFieldTypeNode({
                   name: "data",
                   child: k.arrayTypeNode(k.numberTypeNode("u8"), {

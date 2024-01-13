@@ -7,13 +7,13 @@
  */
 
 export * from './attributes';
+export * from './blob';
 export * from './creator';
 export * from './creators';
 export * from './delegate';
 export * from './delegateRole';
 export * from './discriminator';
 export * from './extensionType';
-export * from './image';
 export * from './link';
 export * from './links';
 export * from './standard';

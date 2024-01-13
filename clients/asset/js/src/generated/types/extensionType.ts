@@ -11,8 +11,8 @@ import { Serializer, scalarEnum } from '@metaplex-foundation/umi/serializers';
 export enum ExtensionType {
   None,
   Attributes,
+  Blob,
   Creators,
-  Image,
   Links,
 }
 

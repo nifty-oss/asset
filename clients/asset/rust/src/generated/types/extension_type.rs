@@ -13,7 +13,7 @@ use borsh::BorshSerialize;
 pub enum ExtensionType {
     None,
     Attributes,
+    Blob,
     Creators,
-    Image,
     Links,
 }

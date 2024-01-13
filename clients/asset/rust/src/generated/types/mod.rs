@@ -6,13 +6,13 @@
 //!
 
 pub(crate) mod r#attributes;
+pub(crate) mod r#blob;
 pub(crate) mod r#creator;
 pub(crate) mod r#creators;
 pub(crate) mod r#delegate;
 pub(crate) mod r#delegate_role;
 pub(crate) mod r#discriminator;
 pub(crate) mod r#extension_type;
-pub(crate) mod r#image;
 pub(crate) mod r#link;
 pub(crate) mod r#links;
 pub(crate) mod r#standard;
@@ -20,13 +20,13 @@ pub(crate) mod r#state;
 pub(crate) mod r#trait;
 
 pub use self::r#attributes::*;
+pub use self::r#blob::*;
 pub use self::r#creator::*;
 pub use self::r#creators::*;
 pub use self::r#delegate::*;
 pub use self::r#delegate_role::*;
 pub use self::r#discriminator::*;
 pub use self::r#extension_type::*;
-pub use self::r#image::*;
 pub use self::r#link::*;
 pub use self::r#links::*;
 pub use self::r#standard::*;
