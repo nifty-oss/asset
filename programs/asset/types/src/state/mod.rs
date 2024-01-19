@@ -4,16 +4,15 @@ mod delegate;
 use std::ops::{Deref, DerefMut};
 
 pub use asset::*;
+use borsh::{BorshDeserialize, BorshSerialize};
 pub use delegate::*;
 
-use borsh::{BorshDeserialize, BorshSerialize};
 use bytemuck::{Pod, Zeroable};
 use podded::pod::Nullable;
-use shank::ShankType;
 use solana_program::pubkey::Pubkey;
 
 #[repr(u8)]
-#[derive(Clone, Copy, Debug, Default, PartialEq, ShankType)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub enum Discriminator {
     #[default]
     Uninitialized,
@@ -45,7 +44,7 @@ unsafe impl Zeroable for Discriminator {}
 
 /// Defines the standard of an asset.
 #[repr(u8)]
-#[derive(BorshSerialize, BorshDeserialize, Clone, Copy, Debug, Default, PartialEq, ShankType)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, Copy, Debug, Default, PartialEq)]
 pub enum Standard {
     /// A unique (one-of-a-kind) asset.
     #[default]
@@ -82,7 +81,7 @@ unsafe impl Pod for Standard {}
 unsafe impl Zeroable for Standard {}
 
 #[repr(u8)]
-#[derive(Clone, Copy, Debug, Default, PartialEq, ShankType)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub enum State {
     #[default]
     Unlocked,

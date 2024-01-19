@@ -1,3 +1,4 @@
+use nifty_asset_types::state::{Asset, DelegateRole, Discriminator};
 use podded::ZeroCopy;
 use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pubkey::Pubkey};
 
@@ -5,7 +6,6 @@ use crate::{
     error::AssetError,
     instruction::accounts::{BurnAccounts, Context},
     require,
-    state::{Asset, DelegateRole, Discriminator},
     utils::{assert_delegate, close_program_account},
 };
 

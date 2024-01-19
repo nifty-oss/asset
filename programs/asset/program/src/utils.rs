@@ -1,12 +1,9 @@
+use nifty_asset_types::state::{Asset, DelegateRole};
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, pubkey::Pubkey, system_program,
 };
 
-use crate::{
-    error::AssetError,
-    require,
-    state::{Asset, DelegateRole},
-};
+use crate::{error::AssetError, require};
 
 pub fn close_program_account<'a>(
     account_info: &AccountInfo<'a>,

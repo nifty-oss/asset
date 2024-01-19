@@ -1,3 +1,7 @@
+use nifty_asset_types::{
+    extensions::Extension,
+    state::{Asset, Discriminator},
+};
 use podded::ZeroCopy;
 use solana_program::{
     entrypoint::ProgramResult, msg, program::invoke, program_error::ProgramError,
@@ -7,18 +11,14 @@ use solana_program::{
 
 use crate::{
     error::AssetError,
-    instruction::{
-        accounts::{AllocateAccounts, Context},
-        Extension,
-    },
+    instruction::accounts::{AllocateAccounts, Context},
     require,
-    state::{Asset, Discriminator},
 };
 
 pub fn process_allocate(
     program_id: &Pubkey,
     ctx: Context<AllocateAccounts>,
-    args: Extension,
+    args: crate::instruction::Extension,
 ) -> ProgramResult {
     // account validation
 
@@ -153,19 +153,19 @@ pub fn process_allocate(
 
 fn save_extension_data(
     ctx: &Context<AllocateAccounts>,
-    args: &Extension,
+    args: &crate::instruction::Extension,
     offset: usize,
     data: &[u8],
 ) -> ProgramResult {
     // make sure the allocated extension maintains the 8-bytes alignment
     let boundary = std::alloc::Layout::from_size_align(
-        offset + crate::extensions::Extension::LEN + args.length as usize,
+        offset + Extension::LEN + args.length as usize,
         std::mem::size_of::<u64>(),
     )
     .map_err(|_| AssetError::InvalidAlignment)?
     .pad_to_align()
     .size();
-    let extended = offset + crate::extensions::Extension::LEN + data.len();
+    let extended = offset + Extension::LEN + data.len();
 
     if extended > ctx.accounts.asset.data_len() {
         let mut required_rent = Rent::get()?.minimum_balance(extended);
@@ -223,20 +223,14 @@ fn save_extension_data(
     }
 
     let asset_data = &mut (*ctx.accounts.asset.data).borrow_mut();
-    let extension = crate::extensions::Extension::load_mut(
-        &mut asset_data[offset..offset + crate::extensions::Extension::LEN],
-    );
+    let extension = Extension::load_mut(&mut asset_data[offset..offset + Extension::LEN]);
 
     extension.set_extension_type(args.extension_type);
     extension.set_length(args.length);
     extension.set_boundary(boundary as u32);
 
     if !data.is_empty() {
-        sol_memcpy(
-            &mut asset_data[offset + crate::extensions::Extension::LEN..],
-            data,
-            data.len(),
-        );
+        sol_memcpy(&mut asset_data[offset + Extension::LEN..], data, data.len());
     }
 
     Ok(())

@@ -9,13 +9,19 @@
 import { PublicKey } from '@metaplex-foundation/umi';
 import {
   Serializer,
-  array,
+  bool,
+  bytes,
   publicKey as publicKeySerializer,
   struct,
   u8,
 } from '@metaplex-foundation/umi/serializers';
 
-export type Creator = { address: PublicKey; data: Array<number> };
+export type Creator = {
+  address: PublicKey;
+  verified: boolean;
+  share: number;
+  padding: Uint8Array;
+};
 
 export type CreatorArgs = Creator;
 
@@ -23,7 +29,9 @@ export function getCreatorSerializer(): Serializer<CreatorArgs, Creator> {
   return struct<Creator>(
     [
       ['address', publicKeySerializer()],
-      ['data', array(u8(), { size: 8 })],
+      ['verified', bool()],
+      ['share', u8()],
+      ['padding', bytes({ size: 6 })],
     ],
     { description: 'Creator' }
   ) as Serializer<CreatorArgs, Creator>;

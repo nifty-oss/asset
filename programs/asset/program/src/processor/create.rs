@@ -1,3 +1,4 @@
+use nifty_asset_types::state::{Asset, Discriminator};
 use podded::ZeroCopy;
 use solana_program::{
     entrypoint::ProgramResult, msg, program::invoke, program_error::ProgramError, pubkey::Pubkey,
@@ -11,7 +12,6 @@ use crate::{
         Metadata,
     },
     require,
-    state::{Asset, Discriminator},
 };
 
 pub fn process_create(

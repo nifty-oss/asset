@@ -1,3 +1,14 @@
+//! Extensions are used to add additional data to an asset.
+//!
+//! It is possible to attach additional data to an asset using extensions. The `Extension`
+//! struct provides the "header" information for the extension, and stores the type of the
+//! extension, the length of the extension data, and the boundary of the extension on the
+//! account data buffer.
+//!
+//! The type and length are determined by the extension itself. The boundary is used internally
+//! to make sure that each extensions data is aligned to a 8-byte boundary. This is required to
+//! support extensions that store their data using bytemuck's `Pod` trait.
+
 mod attributes;
 mod blob;
 mod creators;
@@ -82,7 +93,7 @@ pub trait ExtensionDataMut<'a> {
     fn length(&self) -> usize;
 }
 
-#[derive(Clone, Copy, BorshDeserialize, BorshSerialize, Debug, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, Copy, Debug, PartialEq)]
 pub enum ExtensionType {
     None,
     Attributes,
@@ -114,4 +125,15 @@ impl From<ExtensionType> for u32 {
             ExtensionType::Links => 4,
         }
     }
+}
+
+/// Trait for building an extension.
+///
+/// The `ExtensionBuilder` encapsulates the logic for building an extension by allocating the
+/// necessary memory and writing the extension data to the buffer. The `build` method can then
+/// be used to get the extension data.
+pub trait ExtensionBuilder: Default {
+    const TYPE: ExtensionType;
+
+    fn build(&mut self) -> Vec<u8>;
 }

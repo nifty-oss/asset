@@ -1,3 +1,4 @@
+use nifty_asset_types::state::{Asset, Discriminator};
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program::invoke,
     program_error::ProgramError, program_memory::sol_memcpy, pubkey::Pubkey, rent::Rent,
@@ -12,7 +13,6 @@ use crate::{
         Data,
     },
     require,
-    state::{Asset, Discriminator},
 };
 
 pub(crate) fn process_write(

@@ -11,7 +11,7 @@ generateIdl({
   programId: "AssetGtQBTSgm5s91d1RAQod5JmaZiJDxqsgtqrZud73",
   idlDir,
   binaryInstallDir,
-  programDir: path.join(programDir, "asset"),
+  programDir: path.join(programDir, "asset", "program"),
 });
 
 generateIdl({

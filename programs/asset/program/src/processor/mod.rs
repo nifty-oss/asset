@@ -8,6 +8,7 @@ mod unlock;
 mod write;
 
 use borsh::BorshDeserialize;
+use nifty_asset_types::state::{Discriminator, State};
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
     pubkey::Pubkey,
@@ -23,7 +24,6 @@ use crate::{
         },
         Instruction,
     },
-    state::{Discriminator, State},
 };
 
 pub fn process_instruction<'a>(

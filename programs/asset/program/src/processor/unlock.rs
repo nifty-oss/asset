@@ -1,22 +1,22 @@
+use nifty_asset_types::state::{Asset, DelegateRole, Discriminator, State};
 use podded::ZeroCopy;
 use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
     err,
     error::AssetError,
-    instruction::accounts::{Context, LockAccounts},
+    instruction::accounts::{Context, UnlockAccounts},
     require,
-    state::{Asset, DelegateRole, Discriminator, State},
     utils::assert_delegate,
 };
 
-pub fn process_lock(program_id: &Pubkey, ctx: Context<LockAccounts>) -> ProgramResult {
+pub fn process_unlock(program_id: &Pubkey, ctx: Context<UnlockAccounts>) -> ProgramResult {
     // account validation
 
     require!(
         ctx.accounts.authority.is_signer,
         ProgramError::MissingRequiredSignature,
-        "authority"
+        "delegate"
     );
 
     require!(
@@ -33,10 +33,7 @@ pub fn process_lock(program_id: &Pubkey, ctx: Context<LockAccounts>) -> ProgramR
         "asset"
     );
 
-    // locks the asset
-    //
-    // if the asset has a delegate, the authority must be the delegate;
-    // otherwise, the authority must be the holder
+    // unlocks the asset
 
     let asset = Asset::load_mut(&mut data);
 
@@ -46,7 +43,7 @@ pub fn process_lock(program_id: &Pubkey, ctx: Context<LockAccounts>) -> ProgramR
         return err!(AssetError::InvalidAuthority);
     }
 
-    asset.state = State::Locked;
+    asset.state = State::Unlocked;
 
     Ok(())
 }

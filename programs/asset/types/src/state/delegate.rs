@@ -1,7 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use bytemuck::{Pod, Zeroable};
 use podded::pod::PodOption;
-use shank::ShankType;
 
 use super::{Nullable, NullablePubkey};
 
@@ -43,7 +42,7 @@ impl From<Delegate> for PodOption<Delegate> {
 }
 
 #[repr(u8)]
-#[derive(BorshDeserialize, BorshSerialize, Clone, Copy, Debug, Default, PartialEq, ShankType)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, Copy, Debug, Default, PartialEq)]
 pub enum DelegateRole {
     #[default]
     None,
@@ -53,7 +52,7 @@ pub enum DelegateRole {
 }
 
 impl DelegateRole {
-    pub(crate) fn mask(&self) -> u8 {
+    pub fn mask(&self) -> u8 {
         0b1u8 << ((*self as u8) - 1)
     }
 }

@@ -2097,6 +2097,7 @@ dependencies = [
  "assert_matches",
  "borsh 0.10.3",
  "kaigan",
+ "nifty-asset-types",
  "num-derive 0.3.3",
  "num-traits",
  "serde",
@@ -2105,6 +2106,16 @@ dependencies = [
  "solana-program-test",
  "solana-sdk",
  "thiserror",
+]
+
+[[package]]
+name = "nifty-asset-types"
+version = "0.0.1"
+dependencies = [
+ "borsh 0.10.3",
+ "bytemuck",
+ "podded",
+ "solana-program",
 ]
 
 [[package]]
@@ -2507,6 +2518,15 @@ name = "plain"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b4596b6d070b27117e987119b4dac604f3c58cfb0b191112e24771b2faeac1a6"
+
+[[package]]
+name = "podded"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "239a0770c3a1948fc3ac671d5d92a5126c630baf51962d5982e43a378ce4025d"
+dependencies = [
+ "bytemuck",
+]
 
 [[package]]
 name = "polyval"

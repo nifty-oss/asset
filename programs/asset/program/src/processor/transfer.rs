@@ -1,3 +1,4 @@
+use nifty_asset_types::state::{Asset, Delegate, DelegateRole, Discriminator};
 use podded::{pod::PodOption, ZeroCopy};
 use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pubkey::Pubkey};
 
@@ -5,7 +6,6 @@ use crate::{
     error::AssetError,
     instruction::accounts::{Context, TransferAccounts},
     require,
-    state::{Asset, Delegate, DelegateRole, Discriminator},
     utils::assert_delegate,
 };
 

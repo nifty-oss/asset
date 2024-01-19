@@ -1,10 +1,9 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use shank::{ShankContext, ShankInstruction};
-
-use crate::{
+use nifty_asset_types::{
     extensions::ExtensionType,
     state::{DelegateRole, Standard},
 };
+use shank::{ShankContext, ShankInstruction};
 
 #[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankContext, ShankInstruction)]
 #[rustfmt::skip]

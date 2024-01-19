@@ -76,6 +76,57 @@ kAsset.update(
           ],
           definedTypes: [
             ...node.definedTypes,
+            // discriminator
+            k.definedTypeNodeFromIdl({
+              name: "discriminator",
+              type: {
+                kind: "enum",
+                variants: [{ name: "Uninitialized" }, { name: "Asset" }],
+              },
+            }),
+            // standard
+            k.definedTypeNodeFromIdl({
+              name: "standard",
+              type: {
+                kind: "enum",
+                variants: [{ name: "NonFungible" }, { name: "Subscription" }],
+              },
+            }),
+            // state
+            k.definedTypeNodeFromIdl({
+              name: "state",
+              type: {
+                kind: "enum",
+                variants: [{ name: "Unlocked" }, { name: "Locked" }],
+              },
+            }),
+            // delegate role
+            k.definedTypeNodeFromIdl({
+              name: "delegateRole",
+              type: {
+                kind: "enum",
+                variants: [
+                  { name: "None" },
+                  { name: "Transfer" },
+                  { name: "Lock" },
+                  { name: "Burn" },
+                ],
+              },
+            }),
+            // extension type
+            k.definedTypeNodeFromIdl({
+              name: "extensionType",
+              type: {
+                kind: "enum",
+                variants: [
+                  { name: "None" },
+                  { name: "Attributes" },
+                  { name: "Blob" },
+                  { name: "Creators" },
+                  { name: "Links" },
+                ],
+              },
+            }),
             // delegate
             k.definedTypeNode({
               name: "delegate",
@@ -125,7 +176,7 @@ kAsset.update(
                 }),
               ]),
             }),
-            // link
+            // trait
             k.definedTypeNode({
               name: "trait",
               data: k.structTypeNode([
@@ -188,6 +239,40 @@ kAsset.update(
                   child: k.stringTypeNode({
                     size: k.prefixedSize(k.numberTypeNode("u8")),
                   }),
+                }),
+              ]),
+            }),
+            // creators
+            k.definedTypeNode({
+              name: "creators",
+              data: k.structTypeNode([
+                k.structFieldTypeNode({
+                  name: "creators",
+                  child: k.arrayTypeNode(k.linkTypeNode("creator"), {
+                    size: k.fixedSize(5),
+                  }),
+                }),
+              ]),
+            }),
+            // creator
+            k.definedTypeNode({
+              name: "creator",
+              data: k.structTypeNode([
+                k.structFieldTypeNode({
+                  name: "address",
+                  child: k.publicKeyTypeNode(),
+                }),
+                k.structFieldTypeNode({
+                  name: "verified",
+                  child: k.boolTypeNode(),
+                }),
+                k.structFieldTypeNode({
+                  name: "share",
+                  child: k.numberTypeNode("u8"),
+                }),
+                k.structFieldTypeNode({
+                  name: "padding",
+                  child: k.bytesTypeNode(k.fixedSize(6)),
                 }),
               ]),
             }),
