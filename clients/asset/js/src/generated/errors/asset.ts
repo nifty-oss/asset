@@ -197,6 +197,19 @@ export class InvalidAuthorityError extends ProgramError {
 codeToErrorMap.set(0xd, InvalidAuthorityError);
 nameToErrorMap.set('InvalidAuthority', InvalidAuthorityError);
 
+/** CannotTransferSoulbound: Soulbound assets are non-transferable */
+export class CannotTransferSoulboundError extends ProgramError {
+  override readonly name: string = 'CannotTransferSoulbound';
+
+  readonly code: number = 0xe; // 14
+
+  constructor(program: Program, cause?: Error) {
+    super('Soulbound assets are non-transferable', program, cause);
+  }
+}
+codeToErrorMap.set(0xe, CannotTransferSoulboundError);
+nameToErrorMap.set('CannotTransferSoulbound', CannotTransferSoulboundError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

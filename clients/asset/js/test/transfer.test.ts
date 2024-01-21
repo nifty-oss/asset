@@ -1,6 +1,13 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
-import { DelegateRole, create, delegate, fetchAsset, transfer } from '../src';
+import {
+  DelegateRole,
+  Standard,
+  create,
+  delegate,
+  fetchAsset,
+  transfer,
+} from '../src';
 import { createUmi } from './_setup';
 
 test('it can transfer an asset as a holder', async (t) => {
@@ -233,4 +240,37 @@ test('self-transfer does not clear delegate', async (t) => {
 
   // and the delegate still exists.
   asset.delegate.address === delegateSigner.publicKey;
+});
+
+test('it cannot transfer a soulbound asset', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const assetSigner = generateSigner(umi);
+  const holderSigner = generateSigner(umi);
+
+  // When we create a new asset.
+  await create(umi, {
+    asset: assetSigner,
+    holder: holderSigner.publicKey,
+    payer: umi.identity,
+    name: 'Soulbound Asset',
+    standard: Standard.Soulbound,
+  }).sendAndConfirm(umi);
+
+  // Holder is correct.
+  let asset = await fetchAsset(umi, assetSigner.publicKey);
+  t.true(asset.holder === holderSigner.publicKey);
+
+  // When we try to transfer the asset.
+  const recipient = generateSigner(umi).publicKey;
+  const promise = transfer(umi, {
+    asset: assetSigner.publicKey,
+    signer: holderSigner,
+    recipient,
+  }).sendAndConfirm(umi);
+
+  // Then we expect an error.
+  await t.throwsAsync(promise, {
+    message: /Soulbound assets are non-transferable/,
+  });
 });

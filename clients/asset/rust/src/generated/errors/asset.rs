@@ -52,6 +52,9 @@ pub enum AssetError {
     /// 13 (0xD) - Invalid authority
     #[error("Invalid authority")]
     InvalidAuthority,
+    /// 14 (0xE) - Soulbound assets are non-transferable
+    #[error("Soulbound assets are non-transferable")]
+    CannotTransferSoulbound,
 }
 
 impl solana_program::program_error::PrintProgramError for AssetError {

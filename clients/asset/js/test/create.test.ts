@@ -151,3 +151,29 @@ test('it can create a new asset with multiple extensions', async (t) => {
     ],
   });
 });
+
+test('it can create a soulbound asset', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = generateSigner(umi);
+  const holder = generateSigner(umi);
+
+  // When we create a new asset.
+  await create(umi, {
+    asset,
+    holder: holder.publicKey,
+    payer: umi.identity,
+    name: 'Soulbound Asset',
+    standard: Standard.Soulbound,
+  }).sendAndConfirm(umi);
+
+  // Then an asset was created with the correct data.
+  t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
+    discriminator: Discriminator.Asset,
+    state: State.Unlocked,
+    standard: Standard.Soulbound,
+    holder: holder.publicKey,
+    authority: umi.identity.publicKey,
+    name: 'Soulbound Asset',
+  });
+});

@@ -11,6 +11,7 @@ import { Serializer, scalarEnum } from '@metaplex-foundation/umi/serializers';
 export enum Standard {
   NonFungible,
   Subscription,
+  Soulbound,
 }
 
 export type StandardArgs = Standard;

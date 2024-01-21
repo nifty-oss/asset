@@ -1,4 +1,4 @@
-use nifty_asset_types::state::{Asset, Delegate, DelegateRole, Discriminator};
+use nifty_asset_types::state::{Asset, Delegate, DelegateRole, Discriminator, Standard};
 use podded::{pod::PodOption, ZeroCopy};
 use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pubkey::Pubkey};
 
@@ -33,6 +33,13 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
     );
 
     let asset = Asset::load_mut(&mut data);
+
+    // Cannot transfer soulbound assets.
+    require!(
+        asset.standard != Standard::Soulbound,
+        AssetError::CannotTransferSoulbound,
+        "soulbound asset"
+    );
 
     let is_holder = asset.holder == *ctx.accounts.signer.key;
 

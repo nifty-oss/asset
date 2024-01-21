@@ -89,7 +89,11 @@ kAsset.update(
               name: "standard",
               type: {
                 kind: "enum",
-                variants: [{ name: "NonFungible" }, { name: "Subscription" }],
+                variants: [
+                  { name: "NonFungible" },
+                  { name: "Subscription" },
+                  { name: "Soulbound" },
+                ],
               },
             }),
             // state

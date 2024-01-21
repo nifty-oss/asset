@@ -55,6 +55,9 @@ pub enum Standard {
     /// Holding this asset grants the holder access to a service, but does not
     /// grant permanent ownership rights.
     Subscription,
+
+    /// A unique non-transferable asset.
+    Soulbound,
 }
 
 impl From<u8> for Standard {
@@ -62,6 +65,7 @@ impl From<u8> for Standard {
         match value {
             0 => Standard::NonFungible,
             1 => Standard::Subscription,
+            2 => Standard::Soulbound,
             _ => panic!("invalid standard value: {value}"),
         }
     }
@@ -72,6 +76,7 @@ impl From<Standard> for u8 {
         match value {
             Standard::NonFungible => 0,
             Standard::Subscription => 1,
+            Standard::Soulbound => 2,
         }
     }
 }

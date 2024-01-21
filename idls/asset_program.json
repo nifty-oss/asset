@@ -444,6 +444,11 @@
       "code": 13,
       "name": "InvalidAuthority",
       "msg": "Invalid authority"
+    },
+    {
+      "code": 14,
+      "name": "CannotTransferSoulbound",
+      "msg": "Soulbound assets are non-transferable"
     }
   ],
   "metadata": {
