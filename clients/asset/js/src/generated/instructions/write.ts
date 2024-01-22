@@ -64,7 +64,7 @@ export function getWriteInstructionDataSerializer(): Serializer<
       ],
       { description: 'WriteInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 8 })
+    (value) => ({ ...value, discriminator: 9 })
   ) as Serializer<WriteInstructionDataArgs, WriteInstructionData>;
 }
 

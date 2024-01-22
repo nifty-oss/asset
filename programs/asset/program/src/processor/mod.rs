@@ -1,5 +1,6 @@
 mod allocate;
 mod burn;
+mod close;
 mod create;
 mod delegate;
 mod lock;
@@ -11,8 +12,14 @@ mod write;
 use borsh::BorshDeserialize;
 use nifty_asset_types::state::{Discriminator, State};
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program::invoke,
-    program_error::ProgramError, pubkey::Pubkey, rent::Rent, system_instruction, system_program,
+    account_info::AccountInfo,
+    entrypoint::{ProgramResult, MAX_PERMITTED_DATA_INCREASE},
+    msg,
+    program::invoke,
+    program_error::ProgramError,
+    pubkey::Pubkey,
+    rent::Rent,
+    system_instruction, system_program,
     sysvar::Sysvar,
 };
 
@@ -21,8 +28,8 @@ use crate::{
     error::AssetError,
     instruction::{
         accounts::{
-            AllocateAccounts, BurnAccounts, CreateAccounts, DelegateAccounts, LockAccounts,
-            TransferAccounts, UnlockAccounts, UpdateAccounts, WriteAccounts,
+            AllocateAccounts, BurnAccounts, CloseAccounts, CreateAccounts, DelegateAccounts,
+            LockAccounts, TransferAccounts, UnlockAccounts, UpdateAccounts, WriteAccounts,
         },
         Instruction,
     },
@@ -44,9 +51,17 @@ pub fn process_instruction<'a>(
     }
 
     match instruction {
+        Instruction::Allocate(args) => {
+            msg!("Instruction: Allocate");
+            allocate::process_allocate(program_id, AllocateAccounts::context(accounts)?, args)
+        }
         Instruction::Burn => {
             msg!("Instruction: Burn");
             burn::process_burn(program_id, BurnAccounts::context(accounts)?)
+        }
+        Instruction::Close => {
+            msg!("Instruction: Close");
+            close::process_close(program_id, CloseAccounts::context(accounts)?)
         }
         Instruction::Create(args) => {
             msg!("Instruction: Create");
@@ -55,10 +70,6 @@ pub fn process_instruction<'a>(
         Instruction::Delegate(args) => {
             msg!("Instruction: Delegate");
             delegate::process_delegate(program_id, DelegateAccounts::context(accounts)?, args)
-        }
-        Instruction::Allocate(args) => {
-            msg!("Instruction: Allocate");
-            allocate::process_allocate(program_id, AllocateAccounts::context(accounts)?, args)
         }
         Instruction::Lock => {
             msg!("Instruction: Lock");
@@ -128,6 +139,14 @@ fn resize<'a>(
         **payer.try_borrow_mut_lamports()? += delta;
         **account.try_borrow_mut_lamports()? -= delta;
     } else {
+        if size.saturating_sub(account.data_len()) > MAX_PERMITTED_DATA_INCREASE {
+            return err!(
+                ProgramError::AccountDataTooSmall,
+                "Cannot increase data size by {} bytes",
+                size.saturating_sub(account.data_len())
+            );
+        }
+
         let delta = required.saturating_sub(account.lamports());
 
         if delta > 0 {

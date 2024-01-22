@@ -13,8 +13,10 @@ use borsh::BorshSerialize;
 pub struct Update {
     /// Asset account
     pub asset: solana_program::pubkey::Pubkey,
-    /// Delegate ot holder account
+    /// The authority of the asset
     pub authority: solana_program::pubkey::Pubkey,
+    /// Extension (asset) buffer account
+    pub buffer: Option<solana_program::pubkey::Pubkey>,
     /// The account paying for the storage fees
     pub payer: Option<solana_program::pubkey::Pubkey>,
     /// The system program
@@ -34,7 +36,7 @@ impl Update {
         args: UpdateInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(4 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.asset, false,
         ));
@@ -42,6 +44,14 @@ impl Update {
             self.authority,
             true,
         ));
+        if let Some(buffer) = self.buffer {
+            accounts.push(solana_program::instruction::AccountMeta::new(buffer, false));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::ASSET_ID,
+                false,
+            ));
+        }
         if let Some(payer) = self.payer {
             accounts.push(solana_program::instruction::AccountMeta::new(payer, true));
         } else {
@@ -81,7 +91,7 @@ struct UpdateInstructionData {
 
 impl UpdateInstructionData {
     fn new() -> Self {
-        Self { discriminator: 7 }
+        Self { discriminator: 8 }
     }
 }
 
@@ -99,12 +109,14 @@ pub struct UpdateInstructionArgs {
 ///
 ///   0. `[writable]` asset
 ///   1. `[signer]` authority
-///   2. `[writable, signer, optional]` payer
-///   3. `[optional]` system_program
+///   2. `[writable, optional]` buffer
+///   3. `[writable, signer, optional]` payer
+///   4. `[optional]` system_program
 #[derive(Default)]
 pub struct UpdateBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
     authority: Option<solana_program::pubkey::Pubkey>,
+    buffer: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     name: Option<String>,
@@ -123,10 +135,17 @@ impl UpdateBuilder {
         self.asset = Some(asset);
         self
     }
-    /// Delegate ot holder account
+    /// The authority of the asset
     #[inline(always)]
     pub fn authority(&mut self, authority: solana_program::pubkey::Pubkey) -> &mut Self {
         self.authority = Some(authority);
+        self
+    }
+    /// `[optional account]`
+    /// Extension (asset) buffer account
+    #[inline(always)]
+    pub fn buffer(&mut self, buffer: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
+        self.buffer = buffer;
         self
     }
     /// `[optional account]`
@@ -187,6 +206,7 @@ impl UpdateBuilder {
         let accounts = Update {
             asset: self.asset.expect("asset is not set"),
             authority: self.authority.expect("authority is not set"),
+            buffer: self.buffer,
             payer: self.payer,
             system_program: self.system_program,
         };
@@ -204,8 +224,10 @@ impl UpdateBuilder {
 pub struct UpdateCpiAccounts<'a, 'b> {
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
-    /// Delegate ot holder account
+    /// The authority of the asset
     pub authority: &'b solana_program::account_info::AccountInfo<'a>,
+    /// Extension (asset) buffer account
+    pub buffer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
@@ -218,8 +240,10 @@ pub struct UpdateCpi<'a, 'b> {
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
-    /// Delegate ot holder account
+    /// The authority of the asset
     pub authority: &'b solana_program::account_info::AccountInfo<'a>,
+    /// Extension (asset) buffer account
+    pub buffer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
@@ -238,6 +262,7 @@ impl<'a, 'b> UpdateCpi<'a, 'b> {
             __program: program,
             asset: accounts.asset,
             authority: accounts.authority,
+            buffer: accounts.buffer,
             payer: accounts.payer,
             system_program: accounts.system_program,
             __args: args,
@@ -276,7 +301,7 @@ impl<'a, 'b> UpdateCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(4 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.asset.key,
             false,
@@ -285,6 +310,17 @@ impl<'a, 'b> UpdateCpi<'a, 'b> {
             *self.authority.key,
             true,
         ));
+        if let Some(buffer) = self.buffer {
+            accounts.push(solana_program::instruction::AccountMeta::new(
+                *buffer.key,
+                false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::ASSET_ID,
+                false,
+            ));
+        }
         if let Some(payer) = self.payer {
             accounts.push(solana_program::instruction::AccountMeta::new(
                 *payer.key, true,
@@ -322,10 +358,13 @@ impl<'a, 'b> UpdateCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(4 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(5 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset.clone());
         account_infos.push(self.authority.clone());
+        if let Some(buffer) = self.buffer {
+            account_infos.push(buffer.clone());
+        }
         if let Some(payer) = self.payer {
             account_infos.push(payer.clone());
         }
@@ -350,8 +389,9 @@ impl<'a, 'b> UpdateCpi<'a, 'b> {
 ///
 ///   0. `[writable]` asset
 ///   1. `[signer]` authority
-///   2. `[writable, signer, optional]` payer
-///   3. `[optional]` system_program
+///   2. `[writable, optional]` buffer
+///   3. `[writable, signer, optional]` payer
+///   4. `[optional]` system_program
 pub struct UpdateCpiBuilder<'a, 'b> {
     instruction: Box<UpdateCpiBuilderInstruction<'a, 'b>>,
 }
@@ -362,6 +402,7 @@ impl<'a, 'b> UpdateCpiBuilder<'a, 'b> {
             __program: program,
             asset: None,
             authority: None,
+            buffer: None,
             payer: None,
             system_program: None,
             name: None,
@@ -377,13 +418,23 @@ impl<'a, 'b> UpdateCpiBuilder<'a, 'b> {
         self.instruction.asset = Some(asset);
         self
     }
-    /// Delegate ot holder account
+    /// The authority of the asset
     #[inline(always)]
     pub fn authority(
         &mut self,
         authority: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.authority = Some(authority);
+        self
+    }
+    /// `[optional account]`
+    /// Extension (asset) buffer account
+    #[inline(always)]
+    pub fn buffer(
+        &mut self,
+        buffer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    ) -> &mut Self {
+        self.instruction.buffer = buffer;
         self
     }
     /// `[optional account]`
@@ -477,6 +528,8 @@ impl<'a, 'b> UpdateCpiBuilder<'a, 'b> {
 
             authority: self.instruction.authority.expect("authority is not set"),
 
+            buffer: self.instruction.buffer,
+
             payer: self.instruction.payer,
 
             system_program: self.instruction.system_program,
@@ -493,6 +546,7 @@ struct UpdateCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    buffer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     name: Option<String>,

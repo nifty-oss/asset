@@ -57,6 +57,11 @@ copy_from_chain() {
     fi
 }
 
+SHA256="sha256"
+if [ "$(command -v $SHA)" = "" ]; then
+    SHA256="shasum -a 256"
+fi
+
 # dump external programs binaries if needed
 for i in ${!EXTERNAL_ID[@]}; do
     if [ ! -f "${OUTPUT}/${EXTERNAL_SO[$i]}" ]; then
@@ -64,8 +69,8 @@ for i in ${!EXTERNAL_ID[@]}; do
     else
         copy_from_chain "${EXTERNAL_SO[$i]}" "onchain-"
 
-        ON_CHAIN=`sha256sum -b ${OUTPUT}/onchain-${EXTERNAL_SO[$i]} | cut -d ' ' -f 1`
-        LOCAL=`sha256sum -b ${OUTPUT}/${EXTERNAL_SO[$i]} | cut -d ' ' -f 1`
+        ON_CHAIN=`${SHA256} -b ${OUTPUT}/onchain-${EXTERNAL_SO[$i]} | cut -d ' ' -f 1`
+        LOCAL=`${SHA256} -b ${OUTPUT}/${EXTERNAL_SO[$i]} | cut -d ' ' -f 1`
 
         if [ "$ON_CHAIN" != "$LOCAL" ]; then
             echo $(YLW "[ WARNING ] on-chain and local binaries are different for '${EXTERNAL_SO[$i]}'")

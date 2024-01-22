@@ -51,7 +51,7 @@ struct LockInstructionData {
 
 impl LockInstructionData {
     fn new() -> Self {
-        Self { discriminator: 4 }
+        Self { discriminator: 5 }
     }
 }
 

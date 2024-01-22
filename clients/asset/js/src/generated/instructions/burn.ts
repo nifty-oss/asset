@@ -49,7 +49,7 @@ export function getBurnInstructionDataSerializer(): Serializer<
     struct<BurnInstructionData>([['discriminator', u8()]], {
       description: 'BurnInstructionData',
     }),
-    (value) => ({ ...value, discriminator: 0 })
+    (value) => ({ ...value, discriminator: 1 })
   ) as Serializer<BurnInstructionDataArgs, BurnInstructionData>;
 }
 

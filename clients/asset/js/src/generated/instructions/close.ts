@@ -27,40 +27,34 @@ import {
 } from '../shared';
 
 // Accounts.
-export type TransferInstructionAccounts = {
-  /** Asset account */
-  asset: PublicKey | Pda;
-  /** Current holder of the asset or transfer delegate */
-  signer: Signer;
-  /** The recipient of the asset */
-  recipient: PublicKey | Pda;
+export type CloseInstructionAccounts = {
+  /** The unitialized buffer account */
+  buffer: Signer;
+  /** The account receiving refunded rent */
+  destination: PublicKey | Pda;
 };
 
 // Data.
-export type TransferInstructionData = { discriminator: number };
+export type CloseInstructionData = { discriminator: number };
 
-export type TransferInstructionDataArgs = {};
+export type CloseInstructionDataArgs = {};
 
-export function getTransferInstructionDataSerializer(): Serializer<
-  TransferInstructionDataArgs,
-  TransferInstructionData
+export function getCloseInstructionDataSerializer(): Serializer<
+  CloseInstructionDataArgs,
+  CloseInstructionData
 > {
-  return mapSerializer<
-    TransferInstructionDataArgs,
-    any,
-    TransferInstructionData
-  >(
-    struct<TransferInstructionData>([['discriminator', u8()]], {
-      description: 'TransferInstructionData',
+  return mapSerializer<CloseInstructionDataArgs, any, CloseInstructionData>(
+    struct<CloseInstructionData>([['discriminator', u8()]], {
+      description: 'CloseInstructionData',
     }),
-    (value) => ({ ...value, discriminator: 6 })
-  ) as Serializer<TransferInstructionDataArgs, TransferInstructionData>;
+    (value) => ({ ...value, discriminator: 0 })
+  ) as Serializer<CloseInstructionDataArgs, CloseInstructionData>;
 }
 
 // Instruction.
-export function transfer(
+export function close(
   context: Pick<Context, 'programs'>,
-  input: TransferInstructionAccounts
+  input: CloseInstructionAccounts
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -70,20 +64,15 @@ export function transfer(
 
   // Accounts.
   const resolvedAccounts = {
-    asset: {
+    buffer: {
       index: 0,
       isWritable: true as boolean,
-      value: input.asset ?? null,
+      value: input.buffer ?? null,
     },
-    signer: {
+    destination: {
       index: 1,
-      isWritable: false as boolean,
-      value: input.signer ?? null,
-    },
-    recipient: {
-      index: 2,
-      isWritable: false as boolean,
-      value: input.recipient ?? null,
+      isWritable: true as boolean,
+      value: input.destination ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
 
@@ -100,7 +89,7 @@ export function transfer(
   );
 
   // Data.
-  const data = getTransferInstructionDataSerializer().serialize({});
+  const data = getCloseInstructionDataSerializer().serialize({});
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

@@ -5,14 +5,17 @@ import {
   Asset,
   ExtensionType,
   attributes,
+  blob,
   create,
   fetchAsset,
   getExtensionSerializerFromType,
   initialize,
   links,
   update,
+  updateWithBuffer,
 } from '../src';
 import { createUmi } from './_setup';
+import { httpDownloader } from '@metaplex-foundation/umi-downloader-http';
 
 test('it can update the name of an asset', async (t) => {
   // Given a Umi instance and a new signer.
@@ -322,4 +325,68 @@ test('it can extend the length of an extension', async (t) => {
       },
     ],
   });
+});
+
+test('it can update an asset with a buffer', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = (await createUmi()).use(httpDownloader());
+  const asset = generateSigner(umi);
+  const holder = generateSigner(umi);
+
+  // And we initialize an asset with a blob (image) extension.
+  let image = (
+    await umi.downloader.download([
+      'https://arweave.net/Y8MBS8tqo9XJ_Z1l9V6BIMvhknWxhzP0UxSNBk1OXSs',
+    ])
+  )[0];
+
+  // And we initialize an image extension.
+  await initialize(umi, {
+    asset,
+    payer: umi.identity,
+    extension: blob(image.contentType ?? 'image/png', image.buffer),
+  }).sendAndConfirm(umi);
+
+  t.true(await umi.rpc.accountExists(asset.publicKey), 'asset exists');
+
+  // And we create the asset with a blob (image) extension.
+  await create(umi, {
+    asset,
+    holder: holder.publicKey,
+    name: 'Blob Asset',
+  }).sendAndConfirm(umi);
+
+  let assetAccount = await fetchAsset(umi, asset.publicKey);
+  let extension = assetAccount.extensions[0];
+  t.true(extension.type === ExtensionType.Blob);
+
+  if (extension.type === ExtensionType.Blob) {
+    t.is(extension.contentType, image.contentType ?? 'image/png');
+    t.is(extension.data.length, image.buffer.length);
+    t.deepEqual(extension.data, Array.from(image.buffer));
+  }
+
+  // When we update the asset with a buffer.
+  image = (
+    await umi.downloader.download([
+      'https://arweave.net/jq15kbD89BMQyc1YIH7PD5RWfFqnxRhVzjt0UZNgDu8',
+    ])
+  )[0];
+
+  await updateWithBuffer(umi, {
+    asset: asset.publicKey,
+    payer: umi.identity,
+    extension: blob(image.contentType ?? 'image/gif', image.buffer),
+  }).sendAndConfirm(umi);
+
+  // Then the asset was updated correctly.
+  assetAccount = await fetchAsset(umi, asset.publicKey);
+  extension = assetAccount.extensions[0];
+  t.true(extension.type === ExtensionType.Blob);
+
+  if (extension.type === ExtensionType.Blob) {
+    t.is(extension.contentType, image.contentType ?? 'image/gif');
+    t.is(extension.data.length, image.buffer.length);
+    t.deepEqual(extension.data, Array.from(image.buffer));
+  }
 });

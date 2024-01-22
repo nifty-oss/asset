@@ -8,6 +8,7 @@
 
 export * from './allocate';
 export * from './burn';
+export * from './close';
 export * from './create';
 export * from './delegate';
 export * from './lock';

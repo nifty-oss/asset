@@ -37,8 +37,10 @@ import { Extension, ExtensionArgs, getExtensionSerializer } from '../types';
 export type UpdateInstructionAccounts = {
   /** Asset account */
   asset: PublicKey | Pda;
-  /** Delegate ot holder account */
+  /** The authority of the asset */
   authority?: Signer;
+  /** Extension (asset) buffer account */
+  buffer?: PublicKey | Pda;
   /** The account paying for the storage fees */
   payer?: Signer;
   /** The system program */
@@ -75,7 +77,7 @@ export function getUpdateInstructionDataSerializer(): Serializer<
     ),
     (value) => ({
       ...value,
-      discriminator: 7,
+      discriminator: 8,
       name: value.name ?? none(),
       mutable: value.mutable ?? none(),
       extension: value.extension ?? none(),
@@ -109,13 +111,18 @@ export function update(
       isWritable: false as boolean,
       value: input.authority ?? null,
     },
-    payer: {
+    buffer: {
       index: 2,
+      isWritable: true as boolean,
+      value: input.buffer ?? null,
+    },
+    payer: {
+      index: 3,
       isWritable: true as boolean,
       value: input.payer ?? null,
     },
     systemProgram: {
-      index: 3,
+      index: 4,
       isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },

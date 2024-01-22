@@ -8,14 +8,12 @@ use shank::{ShankContext, ShankInstruction};
 #[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankContext, ShankInstruction)]
 #[rustfmt::skip]
 pub enum Instruction {
-    /*
-    /// Closes an extension data buffer.
+    /// Closes an uninitialized asset (buffer) account.
     /// 
-    /// You can only close the asset account if it has not being created.
-    #[account(0, signer, writable, name="asset", desc = "Asset account")]
-    #[account(1, signer, writable, name="payer", desc = "The account paying for the storage fees")]
+    /// You can only close the buffer account if it has not been used to create an asset.
+    #[account(0, signer, writable, name="buffer", desc = "The unitialized buffer account")]
+    #[account(1, writable, name="destination", desc = "The account receiving refunded rent")]
     Close,
-    */
 
     /// Burns an asset.
     #[account(0, writable, name="asset", desc = "Asset account")]
@@ -37,7 +35,7 @@ pub enum Instruction {
     #[account(2, name="delegate", desc = "The delegate account")]
     Delegate(Vec<DelegateRole>),
 
-    /// Allocates an extension.
+    /// Allocates an extension into an uninitialized asset (buffer) account.
     #[account(0, signer, writable, name="asset", desc = "Asset account")]
     #[account(1, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
     #[account(2, optional, name="system_program", desc = "The system program")]
@@ -61,9 +59,10 @@ pub enum Instruction {
 
     /// Updates an asset.
     #[account(0, writable, name="asset", desc = "Asset account")]
-    #[account(1, signer, name="authority", desc = "Delegate ot holder account")]
-    #[account(2, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
-    #[account(3, optional, name="system_program", desc = "The system program")]
+    #[account(1, signer, name="authority", desc = "The authority of the asset")]
+    #[account(2, optional, writable, name="buffer", desc = "Extension (asset) buffer account")]
+    #[account(3, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
+    #[account(4, optional, name="system_program", desc = "The system program")]
     Update(UpdateData),
 
     /// Writes data to an extension.

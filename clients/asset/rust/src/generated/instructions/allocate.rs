@@ -75,7 +75,7 @@ struct AllocateInstructionData {
 
 impl AllocateInstructionData {
     fn new() -> Self {
-        Self { discriminator: 3 }
+        Self { discriminator: 4 }
     }
 }
 

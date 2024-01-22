@@ -47,7 +47,7 @@ export function getUnlockInstructionDataSerializer(): Serializer<
     struct<UnlockInstructionData>([['discriminator', u8()]], {
       description: 'UnlockInstructionData',
     }),
-    (value) => ({ ...value, discriminator: 6 })
+    (value) => ({ ...value, discriminator: 7 })
   ) as Serializer<UnlockInstructionDataArgs, UnlockInstructionData>;
 }
 

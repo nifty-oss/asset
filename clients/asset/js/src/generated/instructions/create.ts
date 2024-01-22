@@ -73,7 +73,7 @@ export function getCreateInstructionDataSerializer(): Serializer<
     ),
     (value) => ({
       ...value,
-      discriminator: 1,
+      discriminator: 2,
       standard: value.standard ?? Standard.NonFungible,
       mutable: value.mutable ?? true,
     })

@@ -5,49 +5,37 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::DelegateRole;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 /// Accounts.
-pub struct Delegate {
-    /// Asset account
-    pub asset: solana_program::pubkey::Pubkey,
-    /// The holder of the asset
-    pub holder: solana_program::pubkey::Pubkey,
-    /// The delegate account
-    pub delegate: solana_program::pubkey::Pubkey,
+pub struct Close {
+    /// The unitialized buffer account
+    pub buffer: solana_program::pubkey::Pubkey,
+    /// The account receiving refunded rent
+    pub destination: solana_program::pubkey::Pubkey,
 }
 
-impl Delegate {
-    pub fn instruction(
-        &self,
-        args: DelegateInstructionArgs,
-    ) -> solana_program::instruction::Instruction {
-        self.instruction_with_remaining_accounts(args, &[])
+impl Close {
+    pub fn instruction(&self) -> solana_program::instruction::Instruction {
+        self.instruction_with_remaining_accounts(&[])
     }
     #[allow(clippy::vec_init_then_push)]
     pub fn instruction_with_remaining_accounts(
         &self,
-        args: DelegateInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(2 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.asset, false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.holder,
+            self.buffer,
             true,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.delegate,
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            self.destination,
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = DelegateInstructionData::new().try_to_vec().unwrap();
-        let mut args = args.try_to_vec().unwrap();
-        data.append(&mut args);
+        let data = CloseInstructionData::new().try_to_vec().unwrap();
 
         solana_program::instruction::Instruction {
             program_id: crate::ASSET_ID,
@@ -58,63 +46,43 @@ impl Delegate {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct DelegateInstructionData {
+struct CloseInstructionData {
     discriminator: u8,
 }
 
-impl DelegateInstructionData {
+impl CloseInstructionData {
     fn new() -> Self {
-        Self { discriminator: 3 }
+        Self { discriminator: 0 }
     }
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct DelegateInstructionArgs {
-    pub args: Vec<DelegateRole>,
-}
-
-/// Instruction builder for `Delegate`.
+/// Instruction builder for `Close`.
 ///
 /// ### Accounts:
 ///
-///   0. `[writable]` asset
-///   1. `[signer]` holder
-///   2. `[]` delegate
+///   0. `[writable, signer]` buffer
+///   1. `[writable]` destination
 #[derive(Default)]
-pub struct DelegateBuilder {
-    asset: Option<solana_program::pubkey::Pubkey>,
-    holder: Option<solana_program::pubkey::Pubkey>,
-    delegate: Option<solana_program::pubkey::Pubkey>,
-    args: Option<Vec<DelegateRole>>,
+pub struct CloseBuilder {
+    buffer: Option<solana_program::pubkey::Pubkey>,
+    destination: Option<solana_program::pubkey::Pubkey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
-impl DelegateBuilder {
+impl CloseBuilder {
     pub fn new() -> Self {
         Self::default()
     }
-    /// Asset account
+    /// The unitialized buffer account
     #[inline(always)]
-    pub fn asset(&mut self, asset: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.asset = Some(asset);
+    pub fn buffer(&mut self, buffer: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.buffer = Some(buffer);
         self
     }
-    /// The holder of the asset
+    /// The account receiving refunded rent
     #[inline(always)]
-    pub fn holder(&mut self, holder: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.holder = Some(holder);
-        self
-    }
-    /// The delegate account
-    #[inline(always)]
-    pub fn delegate(&mut self, delegate: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.delegate = Some(delegate);
-        self
-    }
-    #[inline(always)]
-    pub fn args(&mut self, args: Vec<DelegateRole>) -> &mut Self {
-        self.args = Some(args);
+    pub fn destination(&mut self, destination: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.destination = Some(destination);
         self
     }
     /// Add an aditional account to the instruction.
@@ -137,55 +105,42 @@ impl DelegateBuilder {
     }
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        let accounts = Delegate {
-            asset: self.asset.expect("asset is not set"),
-            holder: self.holder.expect("holder is not set"),
-            delegate: self.delegate.expect("delegate is not set"),
-        };
-        let args = DelegateInstructionArgs {
-            args: self.args.clone().expect("args is not set"),
+        let accounts = Close {
+            buffer: self.buffer.expect("buffer is not set"),
+            destination: self.destination.expect("destination is not set"),
         };
 
-        accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
+        accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
     }
 }
 
-/// `delegate` CPI accounts.
-pub struct DelegateCpiAccounts<'a, 'b> {
-    /// Asset account
-    pub asset: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The holder of the asset
-    pub holder: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The delegate account
-    pub delegate: &'b solana_program::account_info::AccountInfo<'a>,
+/// `close` CPI accounts.
+pub struct CloseCpiAccounts<'a, 'b> {
+    /// The unitialized buffer account
+    pub buffer: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The account receiving refunded rent
+    pub destination: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
-/// `delegate` CPI instruction.
-pub struct DelegateCpi<'a, 'b> {
+/// `close` CPI instruction.
+pub struct CloseCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
-    /// Asset account
-    pub asset: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The holder of the asset
-    pub holder: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The delegate account
-    pub delegate: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The arguments for the instruction.
-    pub __args: DelegateInstructionArgs,
+    /// The unitialized buffer account
+    pub buffer: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The account receiving refunded rent
+    pub destination: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
-impl<'a, 'b> DelegateCpi<'a, 'b> {
+impl<'a, 'b> CloseCpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
-        accounts: DelegateCpiAccounts<'a, 'b>,
-        args: DelegateInstructionArgs,
+        accounts: CloseCpiAccounts<'a, 'b>,
     ) -> Self {
         Self {
             __program: program,
-            asset: accounts.asset,
-            holder: accounts.holder,
-            delegate: accounts.delegate,
-            __args: args,
+            buffer: accounts.buffer,
+            destination: accounts.destination,
         }
     }
     #[inline(always)]
@@ -221,17 +176,13 @@ impl<'a, 'b> DelegateCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(2 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.asset.key,
-            false,
-        ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.holder.key,
+            *self.buffer.key,
             true,
         ));
-        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.delegate.key,
+        accounts.push(solana_program::instruction::AccountMeta::new(
+            *self.destination.key,
             false,
         ));
         remaining_accounts.iter().for_each(|remaining_account| {
@@ -241,20 +192,17 @@ impl<'a, 'b> DelegateCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let mut data = DelegateInstructionData::new().try_to_vec().unwrap();
-        let mut args = self.__args.try_to_vec().unwrap();
-        data.append(&mut args);
+        let data = CloseInstructionData::new().try_to_vec().unwrap();
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::ASSET_ID,
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(3 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(2 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
-        account_infos.push(self.asset.clone());
-        account_infos.push(self.holder.clone());
-        account_infos.push(self.delegate.clone());
+        account_infos.push(self.buffer.clone());
+        account_infos.push(self.destination.clone());
         remaining_accounts
             .iter()
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
@@ -267,56 +215,42 @@ impl<'a, 'b> DelegateCpi<'a, 'b> {
     }
 }
 
-/// Instruction builder for `Delegate` via CPI.
+/// Instruction builder for `Close` via CPI.
 ///
 /// ### Accounts:
 ///
-///   0. `[writable]` asset
-///   1. `[signer]` holder
-///   2. `[]` delegate
-pub struct DelegateCpiBuilder<'a, 'b> {
-    instruction: Box<DelegateCpiBuilderInstruction<'a, 'b>>,
+///   0. `[writable, signer]` buffer
+///   1. `[writable]` destination
+pub struct CloseCpiBuilder<'a, 'b> {
+    instruction: Box<CloseCpiBuilderInstruction<'a, 'b>>,
 }
 
-impl<'a, 'b> DelegateCpiBuilder<'a, 'b> {
+impl<'a, 'b> CloseCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
-        let instruction = Box::new(DelegateCpiBuilderInstruction {
+        let instruction = Box::new(CloseCpiBuilderInstruction {
             __program: program,
-            asset: None,
-            holder: None,
-            delegate: None,
-            args: None,
+            buffer: None,
+            destination: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
     }
-    /// Asset account
+    /// The unitialized buffer account
     #[inline(always)]
-    pub fn asset(&mut self, asset: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-        self.instruction.asset = Some(asset);
-        self
-    }
-    /// The holder of the asset
-    #[inline(always)]
-    pub fn holder(
+    pub fn buffer(
         &mut self,
-        holder: &'b solana_program::account_info::AccountInfo<'a>,
+        buffer: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.holder = Some(holder);
+        self.instruction.buffer = Some(buffer);
         self
     }
-    /// The delegate account
+    /// The account receiving refunded rent
     #[inline(always)]
-    pub fn delegate(
+    pub fn destination(
         &mut self,
-        delegate: &'b solana_program::account_info::AccountInfo<'a>,
+        destination: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.delegate = Some(delegate);
-        self
-    }
-    #[inline(always)]
-    pub fn args(&mut self, args: Vec<DelegateRole>) -> &mut Self {
-        self.instruction.args = Some(args);
+        self.instruction.destination = Some(destination);
         self
     }
     /// Add an additional account to the instruction.
@@ -360,18 +294,15 @@ impl<'a, 'b> DelegateCpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
-        let args = DelegateInstructionArgs {
-            args: self.instruction.args.clone().expect("args is not set"),
-        };
-        let instruction = DelegateCpi {
+        let instruction = CloseCpi {
             __program: self.instruction.__program,
 
-            asset: self.instruction.asset.expect("asset is not set"),
+            buffer: self.instruction.buffer.expect("buffer is not set"),
 
-            holder: self.instruction.holder.expect("holder is not set"),
-
-            delegate: self.instruction.delegate.expect("delegate is not set"),
-            __args: args,
+            destination: self
+                .instruction
+                .destination
+                .expect("destination is not set"),
         };
         instruction.invoke_signed_with_remaining_accounts(
             signers_seeds,
@@ -380,12 +311,10 @@ impl<'a, 'b> DelegateCpiBuilder<'a, 'b> {
     }
 }
 
-struct DelegateCpiBuilderInstruction<'a, 'b> {
+struct CloseCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
-    asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    holder: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    delegate: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    args: Option<Vec<DelegateRole>>,
+    buffer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    destination: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,
