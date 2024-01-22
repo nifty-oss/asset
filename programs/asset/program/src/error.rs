@@ -64,7 +64,11 @@ pub enum AssetError {
     #[error("Invalid authority")]
     InvalidAuthority,
 
-    /// 14 - Soulbound assets are non-transferable.
+    /// 14 - Immutable asset.
+    #[error("Immutable asset")]
+    ImmutableAsset,
+
+    /// 15 - Soulbound assets are non-transferable.
     #[error("Soulbound assets are non-transferable")]
     CannotTransferSoulbound,
 }

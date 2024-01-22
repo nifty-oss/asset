@@ -71,6 +71,7 @@ impl Debug for Trait<'_> {
 }
 
 /// Builder for an `Attributes` extension.
+#[derive(Default)]
 pub struct AttributesBuilder(Vec<u8>);
 
 impl AttributesBuilder {
@@ -94,13 +95,7 @@ impl ExtensionBuilder for AttributesBuilder {
     const TYPE: ExtensionType = ExtensionType::Attributes;
 
     fn build(&mut self) -> Vec<u8> {
-        std::mem::replace(&mut self.0, Vec::new())
-    }
-}
-
-impl Default for AttributesBuilder {
-    fn default() -> Self {
-        Self(Vec::new())
+        std::mem::take(&mut self.0)
     }
 }
 

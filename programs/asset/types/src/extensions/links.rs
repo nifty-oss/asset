@@ -72,6 +72,7 @@ impl Debug for Link<'_> {
 }
 
 /// Builder for a `Links` extension.
+#[derive(Default)]
 pub struct LinksBuilder(Vec<u8>);
 
 impl LinksBuilder {
@@ -95,13 +96,7 @@ impl ExtensionBuilder for LinksBuilder {
     const TYPE: ExtensionType = ExtensionType::Links;
 
     fn build(&mut self) -> Vec<u8> {
-        std::mem::replace(&mut self.0, Vec::new())
-    }
-}
-
-impl Default for LinksBuilder {
-    fn default() -> Self {
-        Self(Vec::new())
+        std::mem::take(&mut self.0)
     }
 }
 

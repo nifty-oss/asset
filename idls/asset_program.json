@@ -269,6 +269,57 @@
       }
     },
     {
+      "name": "Update",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Asset account"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Delegate ot holder account"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The system program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "updateData",
+          "type": {
+            "defined": "UpdateData"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 7
+      }
+    },
+    {
       "name": "Write",
       "accounts": [
         {
@@ -306,7 +357,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 7
+        "value": 8
       }
     }
   ],
@@ -369,6 +420,34 @@
           {
             "name": "bytes",
             "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "mutable",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "extension",
+            "type": {
+              "option": {
+                "defined": "Extension"
+              }
+            }
           }
         ]
       }
@@ -447,6 +526,11 @@
     },
     {
       "code": 14,
+      "name": "ImmutableAsset",
+      "msg": "Immutable asset"
+    },
+    {
+      "code": 15,
       "name": "CannotTransferSoulbound",
       "msg": "Soulbound assets are non-transferable"
     }

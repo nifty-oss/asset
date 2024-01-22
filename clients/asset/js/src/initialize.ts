@@ -4,7 +4,7 @@ import {
   some,
   transactionBuilderGroup,
 } from '@metaplex-foundation/umi';
-import { Extension, getExtensionSerializerFromType } from './extensions';
+import { TypedExtension, getExtensionSerializerFromType } from './extensions';
 import { AllocateInstructionAccounts, allocate } from './generated';
 import { DEFAULT_CHUNK_SIZE, write } from './write';
 
@@ -13,7 +13,7 @@ export function initialize(
     Context,
     'eddsa' | 'identity' | 'payer' | 'programs' | 'transactions'
   >,
-  input: AllocateInstructionAccounts & { extension: Extension }
+  input: AllocateInstructionAccounts & { extension: TypedExtension }
 ): TransactionBuilderGroup {
   const data = getExtensionSerializerFromType(input.extension.type).serialize(
     input.extension
@@ -23,9 +23,11 @@ export function initialize(
 
   const builder = allocate(context, {
     ...input,
-    extensionType: input.extension.type,
-    length: data.length,
-    data: chunked ? null : some(data),
+    extension: {
+      extensionType: input.extension.type,
+      length: data.length,
+      data: chunked ? null : some(data),
+    },
   });
 
   if (chunked) {

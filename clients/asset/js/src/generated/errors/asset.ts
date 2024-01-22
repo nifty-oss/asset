@@ -197,17 +197,30 @@ export class InvalidAuthorityError extends ProgramError {
 codeToErrorMap.set(0xd, InvalidAuthorityError);
 nameToErrorMap.set('InvalidAuthority', InvalidAuthorityError);
 
+/** ImmutableAsset: Immutable asset */
+export class ImmutableAssetError extends ProgramError {
+  override readonly name: string = 'ImmutableAsset';
+
+  readonly code: number = 0xe; // 14
+
+  constructor(program: Program, cause?: Error) {
+    super('Immutable asset', program, cause);
+  }
+}
+codeToErrorMap.set(0xe, ImmutableAssetError);
+nameToErrorMap.set('ImmutableAsset', ImmutableAssetError);
+
 /** CannotTransferSoulbound: Soulbound assets are non-transferable */
 export class CannotTransferSoulboundError extends ProgramError {
   override readonly name: string = 'CannotTransferSoulbound';
 
-  readonly code: number = 0xe; // 14
+  readonly code: number = 0xf; // 15
 
   constructor(program: Program, cause?: Error) {
     super('Soulbound assets are non-transferable', program, cause);
   }
 }
-codeToErrorMap.set(0xe, CannotTransferSoulboundError);
+codeToErrorMap.set(0xf, CannotTransferSoulboundError);
 nameToErrorMap.set('CannotTransferSoulbound', CannotTransferSoulboundError);
 
 /**

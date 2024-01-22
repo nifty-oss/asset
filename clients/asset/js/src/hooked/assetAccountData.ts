@@ -6,14 +6,14 @@ import {
 } from '../generated/types/assetAccountData';
 import { Discriminator, ExtensionType } from '../generated';
 import { getExtensionHeaderSerializer } from '../generated/types/extensionHeader';
-import { Extension, getExtensionSerializerFromType } from '../extensions';
+import { TypedExtension, getExtensionSerializerFromType } from '../extensions';
 
 export type AssetAccountData = BaseAssetAccountData & {
-  extensions: Extension[];
+  extensions: TypedExtension[];
 };
 
 export type AssetAccountDataArgs = BaseAssetAccountDataArgs & {
-  extensions: Extension[];
+  extensions: TypedExtension[];
 };
 
 export const getAssetAccountDataSerializer = (): Serializer<
@@ -37,7 +37,7 @@ export const getAssetAccountDataSerializer = (): Serializer<
     }
 
     let finalOffset = assetOffset;
-    const extensions: Extension[] = [];
+    const extensions: TypedExtension[] = [];
 
     // Extensions.
     while (finalOffset < buffer.length) {
@@ -49,7 +49,7 @@ export const getAssetAccountDataSerializer = (): Serializer<
       const [extension] = getExtensionSerializerFromType(type).deserialize(
         buffer.subarray(headerOffset, headerOffset + header.length)
       );
-      extensions.push({ ...extension, type } as Extension);
+      extensions.push({ ...extension, type } as TypedExtension);
 
       finalOffset = header.boundary;
     }

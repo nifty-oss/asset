@@ -8,8 +8,6 @@
 
 import {
   Context,
-  Option,
-  OptionOrNullable,
   Pda,
   PublicKey,
   Signer,
@@ -18,11 +16,8 @@ import {
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
-  bytes,
   mapSerializer,
-  option,
   struct,
-  u32,
   u8,
 } from '@metaplex-foundation/umi/serializers';
 import {
@@ -30,11 +25,7 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
-import {
-  ExtensionType,
-  ExtensionTypeArgs,
-  getExtensionTypeSerializer,
-} from '../types';
+import { Extension, ExtensionArgs, getExtensionSerializer } from '../types';
 
 // Accounts.
 export type AllocateInstructionAccounts = {
@@ -49,16 +40,10 @@ export type AllocateInstructionAccounts = {
 // Data.
 export type AllocateInstructionData = {
   discriminator: number;
-  extensionType: ExtensionType;
-  length: number;
-  data: Option<Uint8Array>;
+  extension: Extension;
 };
 
-export type AllocateInstructionDataArgs = {
-  extensionType: ExtensionTypeArgs;
-  length: number;
-  data: OptionOrNullable<Uint8Array>;
-};
+export type AllocateInstructionDataArgs = { extension: ExtensionArgs };
 
 export function getAllocateInstructionDataSerializer(): Serializer<
   AllocateInstructionDataArgs,
@@ -72,9 +57,7 @@ export function getAllocateInstructionDataSerializer(): Serializer<
     struct<AllocateInstructionData>(
       [
         ['discriminator', u8()],
-        ['extensionType', getExtensionTypeSerializer()],
-        ['length', u32()],
-        ['data', option(bytes({ size: u32() }))],
+        ['extension', getExtensionSerializer()],
       ],
       { description: 'AllocateInstructionData' }
     ),

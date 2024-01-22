@@ -16,13 +16,13 @@ export * from './creators';
 export * from './blob';
 export * from './links';
 
-export type Extension =
+export type TypedExtension =
   | ({ type: ExtensionType.Attributes } & Attributes)
   | ({ type: ExtensionType.Blob } & Blob)
   | ({ type: ExtensionType.Creators } & Creators)
   | ({ type: ExtensionType.Links } & Links);
 
-export const getExtensionSerializerFromType = <T extends Extension>(
+export const getExtensionSerializerFromType = <T extends TypedExtension>(
   type: ExtensionType
 ): Serializer<T> =>
   ((): Serializer<any> => {

@@ -13,4 +13,5 @@ export * from './delegate';
 export * from './lock';
 export * from './transfer';
 export * from './unlock';
+export * from './update';
 export * from './write';

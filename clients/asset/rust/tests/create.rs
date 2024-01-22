@@ -4,7 +4,7 @@ use nifty_asset::{
     extensions::{Attributes, AttributesBuilder, ExtensionBuilder},
     instructions::{AllocateBuilder, CreateBuilder},
     state::{Asset, Discriminator, Standard, State},
-    types::ExtensionType,
+    types::{Extension, ExtensionType},
     ZeroCopy,
 };
 use solana_program::system_program;
@@ -58,7 +58,7 @@ mod create {
         let account = account.unwrap();
 
         let account_data = account.data.as_ref();
-        let asset = Asset::load(&account_data);
+        let asset = Asset::load(account_data);
 
         assert_eq!(asset.discriminator, Discriminator::Asset);
         assert_eq!(asset.state, State::Unlocked);
@@ -66,7 +66,7 @@ mod create {
         assert_eq!(asset.authority, context.payer.pubkey());
         assert_eq!(asset.holder, context.payer.pubkey());
         // we are not expecting any extension on the account
-        assert!(Asset::get_extensions(&account_data).is_empty());
+        assert!(Asset::get_extensions(account_data).is_empty());
     }
 
     #[tokio::test]
@@ -89,9 +89,11 @@ mod create {
             .asset(asset.pubkey())
             .payer(Some(context.payer.pubkey()))
             .system_program(Some(system_program::id()))
-            .extension_type(ExtensionType::Attributes)
-            .length(data.len() as u32)
-            .data(data)
+            .extension(Extension {
+                extension_type: ExtensionType::Attributes,
+                length: data.len() as u32,
+                data: Some(data),
+            })
             .instruction();
 
         let tx = Transaction::new_signed_with_payer(
@@ -132,7 +134,7 @@ mod create {
         let account = account.unwrap();
 
         let account_data = account.data.as_ref();
-        let asset = Asset::load(&account_data);
+        let asset = Asset::load(account_data);
 
         assert_eq!(asset.discriminator, Discriminator::Asset);
         assert_eq!(asset.state, State::Unlocked);
@@ -142,8 +144,8 @@ mod create {
 
         // And we are expecting an extension on the account.
 
-        assert!(Asset::get_extensions(&account_data).len() == 1);
-        let attributes = Asset::get::<Attributes>(&account_data).unwrap();
+        assert!(Asset::get_extensions(account_data).len() == 1);
+        let attributes = Asset::get::<Attributes>(account_data).unwrap();
 
         assert_eq!(attributes.traits.len(), 1);
         assert_eq!(attributes.traits[0].name.as_str(), "hat");

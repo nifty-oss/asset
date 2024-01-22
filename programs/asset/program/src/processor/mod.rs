@@ -5,13 +5,15 @@ mod delegate;
 mod lock;
 mod transfer;
 mod unlock;
+mod update;
 mod write;
 
 use borsh::BorshDeserialize;
 use nifty_asset_types::state::{Discriminator, State};
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
-    pubkey::Pubkey,
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program::invoke,
+    program_error::ProgramError, pubkey::Pubkey, rent::Rent, system_instruction, system_program,
+    sysvar::Sysvar,
 };
 
 use crate::{
@@ -20,7 +22,7 @@ use crate::{
     instruction::{
         accounts::{
             AllocateAccounts, BurnAccounts, CreateAccounts, DelegateAccounts, LockAccounts,
-            TransferAccounts, UnlockAccounts, WriteAccounts,
+            TransferAccounts, UnlockAccounts, UpdateAccounts, WriteAccounts,
         },
         Instruction,
     },
@@ -70,6 +72,10 @@ pub fn process_instruction<'a>(
             msg!("Instruction: Unlock");
             unlock::process_unlock(program_id, UnlockAccounts::context(accounts)?)
         }
+        Instruction::Update(args) => {
+            msg!("Instruction: Update");
+            update::process_update(program_id, UpdateAccounts::context(accounts)?, args)
+        }
         Instruction::Write(args) => {
             msg!("Instruction: Write");
             write::process_write(program_id, WriteAccounts::context(accounts)?, args)
@@ -98,6 +104,73 @@ fn is_locked<'a>(program_id: &Pubkey, accounts: &'a [AccountInfo]) -> Option<&'a
     }
 
     None
+}
+
+#[inline(always)]
+fn resize<'a>(
+    size: usize,
+    account: &'a AccountInfo<'a>,
+    payer: Option<&'a AccountInfo<'a>>,
+    system_program: Option<&'a AccountInfo<'a>>,
+) -> ProgramResult {
+    let required = Rent::get()?.minimum_balance(size);
+
+    if account.data_len() > size {
+        let delta = account
+            .lamports()
+            .saturating_sub(if size == 0 { 0 } else { required });
+
+        let payer = payer.ok_or_else(|| {
+            msg!("Missing payer account");
+            ProgramError::NotEnoughAccountKeys
+        })?;
+
+        **payer.try_borrow_mut_lamports()? += delta;
+        **account.try_borrow_mut_lamports()? -= delta;
+    } else {
+        let delta = required.saturating_sub(account.lamports());
+
+        if delta > 0 {
+            msg!("Funding {} lamports for account resize", delta);
+
+            let payer = payer.ok_or_else(|| {
+                msg!("Missing payer account");
+                ProgramError::NotEnoughAccountKeys
+            })?;
+
+            let system_program = system_program.ok_or_else(|| {
+                msg!("Missing system program account");
+                ProgramError::NotEnoughAccountKeys
+            })?;
+
+            crate::require!(
+                payer.is_signer,
+                ProgramError::MissingRequiredSignature,
+                "payer"
+            );
+
+            crate::require!(
+                system_program.key == &system_program::ID,
+                ProgramError::IncorrectProgramId,
+                "system_program"
+            );
+
+            invoke(
+                &system_instruction::transfer(payer.key, account.key, delta),
+                &[account.clone(), payer.clone()],
+            )?;
+        }
+    }
+
+    msg!(
+        "Resizing account from {} to {} bytes",
+        account.data_len(),
+        size
+    );
+
+    account.realloc(size, false)?;
+
+    Ok(())
 }
 
 #[macro_export]

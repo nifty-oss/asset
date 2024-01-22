@@ -13,6 +13,7 @@ export * from './creators';
 export * from './delegate';
 export * from './delegateRole';
 export * from './discriminator';
+export * from './extension';
 export * from './extensionType';
 export * from './link';
 export * from './links';

@@ -29,6 +29,7 @@ impl<'a> ExtensionData<'a> for Blob<'a> {
 }
 
 /// Builder for a `Blob` extension.
+#[derive(Default)]
 pub struct BlobBuilder(Vec<u8>);
 
 impl BlobBuilder {
@@ -52,13 +53,7 @@ impl ExtensionBuilder for BlobBuilder {
     const TYPE: ExtensionType = ExtensionType::Blob;
 
     fn build(&mut self) -> Vec<u8> {
-        std::mem::replace(&mut self.0, Vec::new())
-    }
-}
-
-impl Default for BlobBuilder {
-    fn default() -> Self {
-        Self(Vec::new())
+        std::mem::take(&mut self.0)
     }
 }
 

@@ -8,19 +8,22 @@
 
 import {
   Context,
+  Option,
+  OptionOrNullable,
   Pda,
   PublicKey,
   Signer,
   TransactionBuilder,
+  none,
   transactionBuilder,
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
   bool,
-  bytes,
   mapSerializer,
+  option,
+  string,
   struct,
-  u32,
   u8,
 } from '@metaplex-foundation/umi/serializers';
 import {
@@ -28,11 +31,14 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
+import { Extension, ExtensionArgs, getExtensionSerializer } from '../types';
 
 // Accounts.
-export type WriteInstructionAccounts = {
+export type UpdateInstructionAccounts = {
   /** Asset account */
-  asset: Signer;
+  asset: PublicKey | Pda;
+  /** Delegate ot holder account */
+  authority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
   /** The system program */
@@ -40,41 +46,50 @@ export type WriteInstructionAccounts = {
 };
 
 // Data.
-export type WriteInstructionData = {
+export type UpdateInstructionData = {
   discriminator: number;
-  overwrite: boolean;
-  bytes: Uint8Array;
+  name: Option<string>;
+  mutable: Option<boolean>;
+  extension: Option<Extension>;
 };
 
-export type WriteInstructionDataArgs = {
-  overwrite: boolean;
-  bytes: Uint8Array;
+export type UpdateInstructionDataArgs = {
+  name?: OptionOrNullable<string>;
+  mutable?: OptionOrNullable<boolean>;
+  extension?: OptionOrNullable<ExtensionArgs>;
 };
 
-export function getWriteInstructionDataSerializer(): Serializer<
-  WriteInstructionDataArgs,
-  WriteInstructionData
+export function getUpdateInstructionDataSerializer(): Serializer<
+  UpdateInstructionDataArgs,
+  UpdateInstructionData
 > {
-  return mapSerializer<WriteInstructionDataArgs, any, WriteInstructionData>(
-    struct<WriteInstructionData>(
+  return mapSerializer<UpdateInstructionDataArgs, any, UpdateInstructionData>(
+    struct<UpdateInstructionData>(
       [
         ['discriminator', u8()],
-        ['overwrite', bool()],
-        ['bytes', bytes({ size: u32() })],
+        ['name', option(string())],
+        ['mutable', option(bool())],
+        ['extension', option(getExtensionSerializer())],
       ],
-      { description: 'WriteInstructionData' }
+      { description: 'UpdateInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 8 })
-  ) as Serializer<WriteInstructionDataArgs, WriteInstructionData>;
+    (value) => ({
+      ...value,
+      discriminator: 7,
+      name: value.name ?? none(),
+      mutable: value.mutable ?? none(),
+      extension: value.extension ?? none(),
+    })
+  ) as Serializer<UpdateInstructionDataArgs, UpdateInstructionData>;
 }
 
 // Args.
-export type WriteInstructionArgs = WriteInstructionDataArgs;
+export type UpdateInstructionArgs = UpdateInstructionDataArgs;
 
 // Instruction.
-export function write(
-  context: Pick<Context, 'payer' | 'programs'>,
-  input: WriteInstructionAccounts & WriteInstructionArgs
+export function update(
+  context: Pick<Context, 'identity' | 'programs'>,
+  input: UpdateInstructionAccounts & UpdateInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -89,31 +104,29 @@ export function write(
       isWritable: true as boolean,
       value: input.asset ?? null,
     },
-    payer: {
+    authority: {
       index: 1,
+      isWritable: false as boolean,
+      value: input.authority ?? null,
+    },
+    payer: {
+      index: 2,
       isWritable: true as boolean,
       value: input.payer ?? null,
     },
     systemProgram: {
-      index: 2,
+      index: 3,
       isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
 
   // Arguments.
-  const resolvedArgs: WriteInstructionArgs = { ...input };
+  const resolvedArgs: UpdateInstructionArgs = { ...input };
 
   // Default values.
-  if (!resolvedAccounts.payer.value) {
-    resolvedAccounts.payer.value = context.payer;
-  }
-  if (!resolvedAccounts.systemProgram.value) {
-    resolvedAccounts.systemProgram.value = context.programs.getPublicKey(
-      'splSystem',
-      '11111111111111111111111111111111'
-    );
-    resolvedAccounts.systemProgram.isWritable = false;
+  if (!resolvedAccounts.authority.value) {
+    resolvedAccounts.authority.value = context.identity;
   }
 
   // Accounts in order.
@@ -129,8 +142,8 @@ export function write(
   );
 
   // Data.
-  const data = getWriteInstructionDataSerializer().serialize(
-    resolvedArgs as WriteInstructionDataArgs
+  const data = getUpdateInstructionDataSerializer().serialize(
+    resolvedArgs as UpdateInstructionDataArgs
   );
 
   // Bytes Created On Chain.

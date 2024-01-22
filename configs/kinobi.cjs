@@ -328,6 +328,11 @@ kAsset.update(
       standard: k.vEnum("Standard", "NonFungible"),
       mutable: k.vScalar(true),
     },
+    UpdateInstructionData: {
+      name: k.vNone(),
+      mutable: k.vNone(),
+      extension: k.vNone(),
+    },
   })
 );
 

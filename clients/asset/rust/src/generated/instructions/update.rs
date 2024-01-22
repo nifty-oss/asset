@@ -10,31 +10,37 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 /// Accounts.
-pub struct Allocate {
+pub struct Update {
     /// Asset account
     pub asset: solana_program::pubkey::Pubkey,
+    /// Delegate ot holder account
+    pub authority: solana_program::pubkey::Pubkey,
     /// The account paying for the storage fees
     pub payer: Option<solana_program::pubkey::Pubkey>,
     /// The system program
     pub system_program: Option<solana_program::pubkey::Pubkey>,
 }
 
-impl Allocate {
+impl Update {
     pub fn instruction(
         &self,
-        args: AllocateInstructionArgs,
+        args: UpdateInstructionArgs,
     ) -> solana_program::instruction::Instruction {
         self.instruction_with_remaining_accounts(args, &[])
     }
     #[allow(clippy::vec_init_then_push)]
     pub fn instruction_with_remaining_accounts(
         &self,
-        args: AllocateInstructionArgs,
+        args: UpdateInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(4 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.asset, true,
+            self.asset, false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.authority,
+            true,
         ));
         if let Some(payer) = self.payer {
             accounts.push(solana_program::instruction::AccountMeta::new(payer, true));
@@ -56,7 +62,7 @@ impl Allocate {
             ));
         }
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = AllocateInstructionData::new().try_to_vec().unwrap();
+        let mut data = UpdateInstructionData::new().try_to_vec().unwrap();
         let mut args = args.try_to_vec().unwrap();
         data.append(&mut args);
 
@@ -69,39 +75,45 @@ impl Allocate {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct AllocateInstructionData {
+struct UpdateInstructionData {
     discriminator: u8,
 }
 
-impl AllocateInstructionData {
+impl UpdateInstructionData {
     fn new() -> Self {
-        Self { discriminator: 3 }
+        Self { discriminator: 7 }
     }
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct AllocateInstructionArgs {
-    pub extension: Extension,
+pub struct UpdateInstructionArgs {
+    pub name: Option<String>,
+    pub mutable: Option<bool>,
+    pub extension: Option<Extension>,
 }
 
-/// Instruction builder for `Allocate`.
+/// Instruction builder for `Update`.
 ///
 /// ### Accounts:
 ///
-///   0. `[writable, signer]` asset
-///   1. `[writable, signer, optional]` payer
-///   2. `[optional]` system_program
+///   0. `[writable]` asset
+///   1. `[signer]` authority
+///   2. `[writable, signer, optional]` payer
+///   3. `[optional]` system_program
 #[derive(Default)]
-pub struct AllocateBuilder {
+pub struct UpdateBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
+    authority: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
+    name: Option<String>,
+    mutable: Option<bool>,
     extension: Option<Extension>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
-impl AllocateBuilder {
+impl UpdateBuilder {
     pub fn new() -> Self {
         Self::default()
     }
@@ -109,6 +121,12 @@ impl AllocateBuilder {
     #[inline(always)]
     pub fn asset(&mut self, asset: solana_program::pubkey::Pubkey) -> &mut Self {
         self.asset = Some(asset);
+        self
+    }
+    /// Delegate ot holder account
+    #[inline(always)]
+    pub fn authority(&mut self, authority: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.authority = Some(authority);
         self
     }
     /// `[optional account]`
@@ -128,6 +146,19 @@ impl AllocateBuilder {
         self.system_program = system_program;
         self
     }
+    /// `[optional argument]`
+    #[inline(always)]
+    pub fn name(&mut self, name: String) -> &mut Self {
+        self.name = Some(name);
+        self
+    }
+    /// `[optional argument]`
+    #[inline(always)]
+    pub fn mutable(&mut self, mutable: bool) -> &mut Self {
+        self.mutable = Some(mutable);
+        self
+    }
+    /// `[optional argument]`
     #[inline(always)]
     pub fn extension(&mut self, extension: Extension) -> &mut Self {
         self.extension = Some(extension);
@@ -153,52 +184,60 @@ impl AllocateBuilder {
     }
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        let accounts = Allocate {
+        let accounts = Update {
             asset: self.asset.expect("asset is not set"),
+            authority: self.authority.expect("authority is not set"),
             payer: self.payer,
             system_program: self.system_program,
         };
-        let args = AllocateInstructionArgs {
-            extension: self.extension.clone().expect("extension is not set"),
+        let args = UpdateInstructionArgs {
+            name: self.name.clone(),
+            mutable: self.mutable.clone(),
+            extension: self.extension.clone(),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
     }
 }
 
-/// `allocate` CPI accounts.
-pub struct AllocateCpiAccounts<'a, 'b> {
+/// `update` CPI accounts.
+pub struct UpdateCpiAccounts<'a, 'b> {
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
+    /// Delegate ot holder account
+    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
-/// `allocate` CPI instruction.
-pub struct AllocateCpi<'a, 'b> {
+/// `update` CPI instruction.
+pub struct UpdateCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
+    /// Delegate ot holder account
+    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The arguments for the instruction.
-    pub __args: AllocateInstructionArgs,
+    pub __args: UpdateInstructionArgs,
 }
 
-impl<'a, 'b> AllocateCpi<'a, 'b> {
+impl<'a, 'b> UpdateCpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
-        accounts: AllocateCpiAccounts<'a, 'b>,
-        args: AllocateInstructionArgs,
+        accounts: UpdateCpiAccounts<'a, 'b>,
+        args: UpdateInstructionArgs,
     ) -> Self {
         Self {
             __program: program,
             asset: accounts.asset,
+            authority: accounts.authority,
             payer: accounts.payer,
             system_program: accounts.system_program,
             __args: args,
@@ -237,9 +276,13 @@ impl<'a, 'b> AllocateCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(4 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.asset.key,
+            false,
+        ));
+        accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.authority.key,
             true,
         ));
         if let Some(payer) = self.payer {
@@ -270,7 +313,7 @@ impl<'a, 'b> AllocateCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let mut data = AllocateInstructionData::new().try_to_vec().unwrap();
+        let mut data = UpdateInstructionData::new().try_to_vec().unwrap();
         let mut args = self.__args.try_to_vec().unwrap();
         data.append(&mut args);
 
@@ -279,9 +322,10 @@ impl<'a, 'b> AllocateCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(3 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(4 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset.clone());
+        account_infos.push(self.authority.clone());
         if let Some(payer) = self.payer {
             account_infos.push(payer.clone());
         }
@@ -300,24 +344,28 @@ impl<'a, 'b> AllocateCpi<'a, 'b> {
     }
 }
 
-/// Instruction builder for `Allocate` via CPI.
+/// Instruction builder for `Update` via CPI.
 ///
 /// ### Accounts:
 ///
-///   0. `[writable, signer]` asset
-///   1. `[writable, signer, optional]` payer
-///   2. `[optional]` system_program
-pub struct AllocateCpiBuilder<'a, 'b> {
-    instruction: Box<AllocateCpiBuilderInstruction<'a, 'b>>,
+///   0. `[writable]` asset
+///   1. `[signer]` authority
+///   2. `[writable, signer, optional]` payer
+///   3. `[optional]` system_program
+pub struct UpdateCpiBuilder<'a, 'b> {
+    instruction: Box<UpdateCpiBuilderInstruction<'a, 'b>>,
 }
 
-impl<'a, 'b> AllocateCpiBuilder<'a, 'b> {
+impl<'a, 'b> UpdateCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
-        let instruction = Box::new(AllocateCpiBuilderInstruction {
+        let instruction = Box::new(UpdateCpiBuilderInstruction {
             __program: program,
             asset: None,
+            authority: None,
             payer: None,
             system_program: None,
+            name: None,
+            mutable: None,
             extension: None,
             __remaining_accounts: Vec::new(),
         });
@@ -327,6 +375,15 @@ impl<'a, 'b> AllocateCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn asset(&mut self, asset: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.asset = Some(asset);
+        self
+    }
+    /// Delegate ot holder account
+    #[inline(always)]
+    pub fn authority(
+        &mut self,
+        authority: &'b solana_program::account_info::AccountInfo<'a>,
+    ) -> &mut Self {
+        self.instruction.authority = Some(authority);
         self
     }
     /// `[optional account]`
@@ -349,6 +406,19 @@ impl<'a, 'b> AllocateCpiBuilder<'a, 'b> {
         self.instruction.system_program = system_program;
         self
     }
+    /// `[optional argument]`
+    #[inline(always)]
+    pub fn name(&mut self, name: String) -> &mut Self {
+        self.instruction.name = Some(name);
+        self
+    }
+    /// `[optional argument]`
+    #[inline(always)]
+    pub fn mutable(&mut self, mutable: bool) -> &mut Self {
+        self.instruction.mutable = Some(mutable);
+        self
+    }
+    /// `[optional argument]`
     #[inline(always)]
     pub fn extension(&mut self, extension: Extension) -> &mut Self {
         self.instruction.extension = Some(extension);
@@ -395,17 +465,17 @@ impl<'a, 'b> AllocateCpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
-        let args = AllocateInstructionArgs {
-            extension: self
-                .instruction
-                .extension
-                .clone()
-                .expect("extension is not set"),
+        let args = UpdateInstructionArgs {
+            name: self.instruction.name.clone(),
+            mutable: self.instruction.mutable.clone(),
+            extension: self.instruction.extension.clone(),
         };
-        let instruction = AllocateCpi {
+        let instruction = UpdateCpi {
             __program: self.instruction.__program,
 
             asset: self.instruction.asset.expect("asset is not set"),
+
+            authority: self.instruction.authority.expect("authority is not set"),
 
             payer: self.instruction.payer,
 
@@ -419,11 +489,14 @@ impl<'a, 'b> AllocateCpiBuilder<'a, 'b> {
     }
 }
 
-struct AllocateCpiBuilderInstruction<'a, 'b> {
+struct UpdateCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    name: Option<String>,
+    mutable: Option<bool>,
     extension: Option<Extension>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(

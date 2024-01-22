@@ -19,7 +19,7 @@ impl<'a> ExtensionData<'a> for Creators<'a> {
     }
 
     fn length(&self) -> usize {
-        self.creators.len() * std::mem::size_of::<Creator>()
+        std::mem::size_of_val(self.creators)
     }
 }
 
@@ -57,6 +57,7 @@ impl Creator {
 impl ZeroCopy<'_, Creator> for Creator {}
 
 /// Builder for a `Creators` extension.
+#[derive(Default)]
 pub struct CreatorsBuilder {
     /// The current number of creators.
     ///
@@ -87,16 +88,7 @@ impl ExtensionBuilder for CreatorsBuilder {
     const TYPE: ExtensionType = ExtensionType::Creators;
 
     fn build(&mut self) -> Vec<u8> {
-        std::mem::replace(&mut self.data, Vec::new())
-    }
-}
-
-impl Default for CreatorsBuilder {
-    fn default() -> Self {
-        Self {
-            count: 0,
-            data: Vec::new(),
-        }
+        std::mem::take(&mut self.data)
     }
 }
 
@@ -129,7 +121,7 @@ mod tests {
             list.creators[0].address,
             pubkey!("AssetGtQBTSgm5s91d1RAQod5JmaZiJDxqsgtqrZud73")
         );
-        assert_eq!(list.creators[0].verified(), true);
+        assert!(list.creators[0].verified());
         assert_eq!(list.creators[0].share(), 100);
     }
 }

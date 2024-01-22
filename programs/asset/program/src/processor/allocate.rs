@@ -12,9 +12,11 @@ use solana_program::{
 use crate::{
     error::AssetError,
     instruction::accounts::{AllocateAccounts, Context},
+    processor::resize,
     require,
 };
 
+#[inline(always)]
 pub fn process_allocate(
     program_id: &Pubkey,
     ctx: Context<AllocateAccounts>,
@@ -165,61 +167,21 @@ fn save_extension_data(
     .map_err(|_| AssetError::InvalidAlignment)?
     .pad_to_align()
     .size();
-    let extended = offset + Extension::LEN + data.len();
+    // if the instruction data length is the same as the extension length,
+    // then we can use the extension boundary as the account length
+    let extended = if args.length == data.len() as u32 {
+        boundary
+    } else {
+        offset + Extension::LEN + data.len()
+    };
 
     if extended > ctx.accounts.asset.data_len() {
-        let mut required_rent = Rent::get()?.minimum_balance(extended);
-
-        if required_rent > ctx.accounts.asset.lamports() {
-            required_rent = required_rent.saturating_sub(ctx.accounts.asset.lamports());
-
-            msg!("Funding {} lamports for account resize", required_rent);
-
-            let payer = {
-                require!(
-                    ctx.accounts.payer.is_some(),
-                    ProgramError::NotEnoughAccountKeys,
-                    "payer"
-                );
-
-                ctx.accounts.payer.unwrap()
-            };
-
-            require!(
-                payer.is_signer,
-                ProgramError::MissingRequiredSignature,
-                "payer"
-            );
-
-            let system_program = {
-                require!(
-                    ctx.accounts.system_program.is_some(),
-                    ProgramError::NotEnoughAccountKeys,
-                    "system_program"
-                );
-
-                ctx.accounts.system_program.unwrap()
-            };
-
-            require!(
-                system_program.key == &system_program::ID,
-                ProgramError::IncorrectProgramId,
-                "system_program"
-            );
-
-            invoke(
-                &system_instruction::transfer(payer.key, ctx.accounts.asset.key, required_rent),
-                &[payer.clone(), ctx.accounts.asset.clone()],
-            )?;
-        }
-
-        msg!(
-            "Resizing account from {} to {} bytes",
-            ctx.accounts.asset.data_len(),
-            extended
-        );
-
-        ctx.accounts.asset.realloc(extended, false)?;
+        resize(
+            extended,
+            ctx.accounts.asset,
+            ctx.accounts.payer,
+            ctx.accounts.system_program,
+        )?;
     }
 
     let asset_data = &mut (*ctx.accounts.asset.data).borrow_mut();

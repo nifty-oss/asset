@@ -59,6 +59,13 @@ pub enum Instruction {
     #[account(1, signer, name="authority", desc = "Delegate ot holder account")]
     Unlock,
 
+    /// Updates an asset.
+    #[account(0, writable, name="asset", desc = "Asset account")]
+    #[account(1, signer, name="authority", desc = "Delegate ot holder account")]
+    #[account(2, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, optional, name="system_program", desc = "The system program")]
+    Update(UpdateData),
+
     /// Writes data to an extension.
     #[account(0, signer, writable, name="asset", desc = "Asset account")]
     #[account(1, signer, writable, name="payer", desc = "The account paying for the storage fees")]
@@ -100,4 +107,19 @@ pub struct Data {
 
     /// Extension data.
     pub bytes: Vec<u8>,
+}
+
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
+pub struct UpdateData {
+    /// The updated name of the asset.
+    pub name: Option<String>,
+
+    /// Updates whether the asset is mutable or not.
+    ///
+    /// Once an asset is immutable, it cannot be made mutable.
+    pub mutable: Option<bool>,
+
+    /// Extension to be updated.
+    pub extension: Option<Extension>,
 }

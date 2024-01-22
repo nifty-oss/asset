@@ -1,8 +1,7 @@
 use nifty_asset_types::state::{Asset, Discriminator};
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program::invoke,
-    program_error::ProgramError, program_memory::sol_memcpy, pubkey::Pubkey, rent::Rent,
-    system_instruction, system_program, sysvar::Sysvar,
+    entrypoint::ProgramResult, msg, program_error::ProgramError, program_memory::sol_memcpy,
+    pubkey::Pubkey, system_program,
 };
 
 use crate::{
@@ -12,6 +11,7 @@ use crate::{
         accounts::{Context, WriteAccounts},
         Data,
     },
+    processor::resize,
     require,
 };
 
@@ -66,6 +66,7 @@ pub(crate) fn process_write(
         Asset::last_extension(&asset_data).ok_or(AssetError::ExtensionNotFound)?;
     let current = extension.extension_type();
     let expected = offset.saturating_add(extension.length() as usize);
+    let boundary = extension.boundary();
     // the length of the account cannot be larger than the current extension length,
     // otherwise we would be writting data to an extension that does not exist
     if expected < asset_data.len() {
@@ -77,19 +78,27 @@ pub(crate) fn process_write(
     let offset = if data.overwrite {
         msg!("Overwriting extension data");
         resize(
-            ctx.accounts.asset,
-            ctx.accounts.payer,
             offset.saturating_add(data.bytes.len()),
+            ctx.accounts.asset,
+            Some(ctx.accounts.payer),
+            Some(ctx.accounts.system_program),
         )?;
         // when overwriting, we start from the beginning of the offset
         offset
     } else {
         msg!("Appending extension data");
         let offset = ctx.accounts.asset.data_len();
+        let mut extended = offset.saturating_add(data.bytes.len());
+
+        if extended == expected {
+            extended = boundary as usize;
+        }
+
         resize(
+            extended,
             ctx.accounts.asset,
-            ctx.accounts.payer,
-            offset.saturating_add(data.bytes.len()),
+            Some(ctx.accounts.payer),
+            Some(ctx.accounts.system_program),
         )?;
         // the offset is the end of the account
         offset
@@ -112,32 +121,6 @@ pub(crate) fn process_write(
     } else {
         msg!("Extension [{:?}] initialized", current);
     }
-
-    Ok(())
-}
-
-fn resize<'a>(
-    account: &'a AccountInfo<'a>,
-    payer: &'a AccountInfo<'a>,
-    size: usize,
-) -> ProgramResult {
-    let required = Rent::get()?.minimum_balance(size);
-
-    if account.data_len() > size {
-        let delta = account
-            .lamports()
-            .saturating_sub(if size == 0 { 0 } else { required });
-        **payer.try_borrow_mut_lamports()? += delta;
-        **account.try_borrow_mut_lamports()? -= delta;
-    } else {
-        let delta = required.saturating_sub(account.lamports());
-        invoke(
-            &system_instruction::transfer(payer.key, account.key, delta),
-            &[account.clone(), payer.clone()],
-        )?;
-    }
-
-    account.realloc(size, false)?;
 
     Ok(())
 }
