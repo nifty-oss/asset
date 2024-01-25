@@ -19,7 +19,7 @@ export type CreatorsArgs = { creators: Array<CreatorArgs> };
 
 export function getCreatorsSerializer(): Serializer<CreatorsArgs, Creators> {
   return struct<Creators>(
-    [['creators', array(getCreatorSerializer(), { size: 5 })]],
+    [['creators', array(getCreatorSerializer(), { size: 'remainder' })]],
     { description: 'Creators' }
   ) as Serializer<CreatorsArgs, Creators>;
 }

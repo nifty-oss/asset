@@ -253,7 +253,7 @@ kAsset.update(
                 k.structFieldTypeNode({
                   name: "creators",
                   child: k.arrayTypeNode(k.linkTypeNode("creator"), {
-                    size: k.fixedSize(5),
+                    size: k.remainderSize(),
                   }),
                 }),
               ]),

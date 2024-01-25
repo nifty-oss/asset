@@ -8,9 +8,10 @@
 use crate::generated::types::Creator;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
+use kaigan::types::RemainderVec;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Creators {
-    pub creators: [Creator; 5],
+    pub creators: RemainderVec<Creator>,
 }

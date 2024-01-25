@@ -6,9 +6,9 @@ import {
   Blob,
   Links,
   getAttributesSerializer,
-  getCreatorsSerializer,
   getBlobSerializer,
   getLinksSerializer,
+  getCreatorsSerializer,
 } from '../generated';
 
 export * from './attributes';
