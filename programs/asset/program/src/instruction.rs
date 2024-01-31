@@ -46,6 +46,11 @@ pub enum Instruction {
     #[account(1, signer, name="authority", desc = "Delegate or holder account")]
     Lock,
 
+    /// Revokes a delegate.
+    #[account(0, writable, name="asset", desc = "Asset account")]
+    #[account(1, signer, name="signer", desc = "Current holder of the asset or delegate")]
+    Revoke,
+
     /// Transfers ownership of the aseet to a new public key.
     #[account(0, writable, name="asset", desc = "Asset account")]
     #[account(1, signer, name="signer", desc = "Current holder of the asset or transfer delegate")]

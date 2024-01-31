@@ -4,6 +4,7 @@ mod close;
 mod create;
 mod delegate;
 mod lock;
+mod revoke;
 mod transfer;
 mod unlock;
 mod update;
@@ -29,7 +30,8 @@ use crate::{
     instruction::{
         accounts::{
             AllocateAccounts, BurnAccounts, CloseAccounts, CreateAccounts, DelegateAccounts,
-            LockAccounts, TransferAccounts, UnlockAccounts, UpdateAccounts, WriteAccounts,
+            LockAccounts, RevokeAccounts, TransferAccounts, UnlockAccounts, UpdateAccounts,
+            WriteAccounts,
         },
         Instruction,
     },
@@ -74,6 +76,10 @@ pub fn process_instruction<'a>(
         Instruction::Lock => {
             msg!("Instruction: Lock");
             lock::process_lock(program_id, LockAccounts::context(accounts)?)
+        }
+        Instruction::Revoke => {
+            msg!("Instruction: Revoke");
+            revoke::process_revoke(program_id, RevokeAccounts::context(accounts)?)
         }
         Instruction::Transfer => {
             msg!("Instruction: Transfer");

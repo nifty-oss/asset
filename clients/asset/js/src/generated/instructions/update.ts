@@ -77,7 +77,7 @@ export function getUpdateInstructionDataSerializer(): Serializer<
     ),
     (value) => ({
       ...value,
-      discriminator: 8,
+      discriminator: 9,
       name: value.name ?? none(),
       mutable: value.mutable ?? none(),
       extension: value.extension ?? none(),

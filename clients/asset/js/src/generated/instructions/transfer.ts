@@ -53,7 +53,7 @@ export function getTransferInstructionDataSerializer(): Serializer<
     struct<TransferInstructionData>([['discriminator', u8()]], {
       description: 'TransferInstructionData',
     }),
-    (value) => ({ ...value, discriminator: 6 })
+    (value) => ({ ...value, discriminator: 7 })
   ) as Serializer<TransferInstructionDataArgs, TransferInstructionData>;
 }
 

@@ -12,6 +12,7 @@ export * from './close';
 export * from './create';
 export * from './delegate';
 export * from './lock';
+export * from './revoke';
 export * from './transfer';
 export * from './unlock';
 export * from './update';

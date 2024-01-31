@@ -27,34 +27,34 @@ import {
 } from '../shared';
 
 // Accounts.
-export type UnlockInstructionAccounts = {
+export type RevokeInstructionAccounts = {
   /** Asset account */
   asset: PublicKey | Pda;
-  /** Delegate ot holder account */
-  authority?: Signer;
+  /** Current holder of the asset or delegate */
+  signer: Signer;
 };
 
 // Data.
-export type UnlockInstructionData = { discriminator: number };
+export type RevokeInstructionData = { discriminator: number };
 
-export type UnlockInstructionDataArgs = {};
+export type RevokeInstructionDataArgs = {};
 
-export function getUnlockInstructionDataSerializer(): Serializer<
-  UnlockInstructionDataArgs,
-  UnlockInstructionData
+export function getRevokeInstructionDataSerializer(): Serializer<
+  RevokeInstructionDataArgs,
+  RevokeInstructionData
 > {
-  return mapSerializer<UnlockInstructionDataArgs, any, UnlockInstructionData>(
-    struct<UnlockInstructionData>([['discriminator', u8()]], {
-      description: 'UnlockInstructionData',
+  return mapSerializer<RevokeInstructionDataArgs, any, RevokeInstructionData>(
+    struct<RevokeInstructionData>([['discriminator', u8()]], {
+      description: 'RevokeInstructionData',
     }),
-    (value) => ({ ...value, discriminator: 8 })
-  ) as Serializer<UnlockInstructionDataArgs, UnlockInstructionData>;
+    (value) => ({ ...value, discriminator: 6 })
+  ) as Serializer<RevokeInstructionDataArgs, RevokeInstructionData>;
 }
 
 // Instruction.
-export function unlock(
-  context: Pick<Context, 'identity' | 'programs'>,
-  input: UnlockInstructionAccounts
+export function revoke(
+  context: Pick<Context, 'programs'>,
+  input: RevokeInstructionAccounts
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -69,17 +69,12 @@ export function unlock(
       isWritable: true as boolean,
       value: input.asset ?? null,
     },
-    authority: {
+    signer: {
       index: 1,
       isWritable: false as boolean,
-      value: input.authority ?? null,
+      value: input.signer ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
-
-  // Default values.
-  if (!resolvedAccounts.authority.value) {
-    resolvedAccounts.authority.value = context.identity;
-  }
 
   // Accounts in order.
   const orderedAccounts: ResolvedAccount[] = Object.values(
@@ -94,7 +89,7 @@ export function unlock(
   );
 
   // Data.
-  const data = getUnlockInstructionDataSerializer().serialize({});
+  const data = getRevokeInstructionDataSerializer().serialize({});
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

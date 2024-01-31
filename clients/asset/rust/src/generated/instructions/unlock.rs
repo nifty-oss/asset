@@ -51,7 +51,7 @@ struct UnlockInstructionData {
 
 impl UnlockInstructionData {
     fn new() -> Self {
-        Self { discriminator: 7 }
+        Self { discriminator: 8 }
     }
 }
 
