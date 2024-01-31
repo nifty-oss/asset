@@ -145,6 +145,30 @@ impl Asset {
 
         last
     }
+
+    /// Returns the extension given its type.
+    ///
+    /// This function will return a tuple containing the extension type and the
+    /// offset of the extension data. If the account does not contain any extension,
+    /// `None` is returned.
+    pub fn get_extension(
+        extension_type: ExtensionType,
+        data: &[u8],
+    ) -> Option<(&Extension, usize)> {
+        let mut cursor = Asset::LEN;
+
+        while cursor < data.len() {
+            let extension = Extension::load(&data[cursor..]);
+
+            if extension.extension_type() == extension_type {
+                return Some((extension, cursor + Extension::LEN));
+            }
+
+            cursor = extension.boundary() as usize;
+        }
+
+        None
+    }
 }
 
 impl<'a> ZeroCopy<'a, Asset> for Asset {}

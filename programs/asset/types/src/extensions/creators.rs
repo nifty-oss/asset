@@ -4,6 +4,7 @@ use solana_program::pubkey::Pubkey;
 use std::ops::Deref;
 
 use super::{ExtensionBuilder, ExtensionData, ExtensionType};
+use crate::validation::{Validatable, ValidationError};
 
 /// Extension to add a list of creators.
 pub struct Creators<'a> {
@@ -20,6 +21,25 @@ impl<'a> ExtensionData<'a> for Creators<'a> {
 
     fn length(&self) -> usize {
         std::mem::size_of_val(self.creators)
+    }
+}
+
+/// Validatable implementation for `Creators`.
+///
+/// The total share of royalties must be 100.
+impl Validatable for Creators<'_> {
+    fn validate(&self) -> Result<(), ValidationError> {
+        let mut total = 0;
+
+        for creator in self.creators {
+            total += creator.share();
+        }
+
+        if total != 100 {
+            Err(ValidationError::InvalidShareTotal)
+        } else {
+            Ok(())
+        }
     }
 }
 

@@ -58,6 +58,9 @@ pub enum AssetError {
     /// 15 (0xF) - Soulbound assets are non-transferable
     #[error("Soulbound assets are non-transferable")]
     CannotTransferSoulbound,
+    /// 16 (0x10) - Extension data invalid
+    #[error("Extension data invalid")]
+    ExtensionDataInvalid,
 }
 
 impl solana_program::program_error::PrintProgramError for AssetError {

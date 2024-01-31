@@ -1,5 +1,5 @@
 use nifty_asset_types::{
-    extensions::Extension,
+    extensions::{validate, Extension},
     state::{Asset, Discriminator},
 };
 use podded::{pod::PodBool, ZeroCopy};
@@ -228,22 +228,33 @@ pub fn process_update(
 
         // copy the updated extension data
         if extension_length > 0 {
+            let offset = offset + Extension::LEN;
+
             if let Some(buffer) = ctx.accounts.buffer {
                 let extension_data = (*buffer.data).borrow();
                 let slice = Asset::LEN + Extension::LEN;
 
                 sol_memcpy(
-                    &mut account_data[offset + Extension::LEN..],
+                    &mut account_data[offset..],
                     &extension_data[slice..slice + extension_length],
                     extension_length,
                 );
             } else if let Some(extension_data) = args.data {
                 sol_memcpy(
-                    &mut account_data[offset + Extension::LEN..],
+                    &mut account_data[offset..],
                     &extension_data,
                     extension_length,
                 );
             }
+
+            validate(
+                args.extension_type,
+                &account_data[offset..offset + extension_length],
+            )
+            .map_err(|error| {
+                msg!("Validation error: {:?}", error);
+                AssetError::ExtensionDataInvalid
+            })?;
         }
     }
 

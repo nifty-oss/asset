@@ -568,6 +568,11 @@
       "code": 15,
       "name": "CannotTransferSoulbound",
       "msg": "Soulbound assets are non-transferable"
+    },
+    {
+      "code": 16,
+      "name": "ExtensionDataInvalid",
+      "msg": "Extension data invalid"
     }
   ],
   "metadata": {

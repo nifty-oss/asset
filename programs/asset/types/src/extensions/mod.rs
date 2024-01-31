@@ -1,13 +1,17 @@
 //! Extensions are used to add additional data to an asset.
 //!
 //! It is possible to attach additional data to an asset using extensions. The `Extension`
-//! struct provides the "header" information for the extension, and stores the type of the
-//! extension, the length of the extension data, and the boundary of the extension on the
+//! struct provides the "header" information for the extension, and stores (1) the type of the
+//! extension, (2) the length of the extension data, and (3) the boundary of the extension on the
 //! account data buffer.
 //!
 //! The type and length are determined by the extension itself. The boundary is used internally
 //! to make sure that each extensions data is aligned to a 8-byte boundary. This is required to
 //! support extensions that store their data using bytemuck's `Pod` trait.
+//!
+//! Note that is it possible to have extensions without any data, i.e., no `ExtensionData`.
+//! In this case, the extension is a "marker" – a particular behaviour can be derived by the
+//! presence/absence of the extension.
 
 mod attributes;
 mod blob;
@@ -23,6 +27,12 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use bytemuck::{Pod, Zeroable};
 use podded::ZeroCopy;
 
+use crate::validation::Validatable;
+
+/// The `Extension` struct is used to store the "header" information for an extension.
+///
+/// This information is added at the start of each extension data and it is used to determine
+/// the type of extension and the length of the extension data.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default, Pod, Zeroable)]
 pub struct Extension {
@@ -75,9 +85,14 @@ impl Extension {
     }
 }
 
+/// Default implementation for zero-copy trait.
 impl<'a> ZeroCopy<'a, Extension> for Extension {}
 
-pub trait ExtensionData<'a> {
+/// Trait for extension data.
+///
+/// The `ExtensionData` defines the data of a particular extension. To implement this trait,
+/// a type also
+pub trait ExtensionData<'a>: Validatable {
     const TYPE: ExtensionType;
 
     fn from_bytes(bytes: &'a [u8]) -> Self;
@@ -130,10 +145,31 @@ impl From<ExtensionType> for u32 {
 /// Trait for building an extension.
 ///
 /// The `ExtensionBuilder` encapsulates the logic for building an extension by allocating the
-/// necessary memory and writing the extension data to the buffer. The `build` method can then
-/// be used to get the extension data.
+/// necessary memory and writing the extension data to a buffer. The `build` method can then
+/// be used to get retrieve the data buffer.
 pub trait ExtensionBuilder: Default {
     const TYPE: ExtensionType;
 
     fn build(&mut self) -> Vec<u8>;
 }
+
+/// Defines a "generic" validate function.
+///
+/// This macro is used to generate a helper validate function that can validate any extension type.
+macro_rules! validate_extension_type {
+    ($($member:tt),+ $(,)?) => {
+        pub fn validate(
+            extension_type: ExtensionType,
+            data: &[u8],
+        ) -> Result<(), $crate::validation::ValidationError>{
+            match extension_type {
+                $(
+                    ExtensionType::$member => $member::from_bytes(data).validate(),
+                )+
+                ExtensionType::None => Ok(()),
+            }
+        }
+    };
+}
+
+validate_extension_type!(Attributes, Blob, Creators, Links,);

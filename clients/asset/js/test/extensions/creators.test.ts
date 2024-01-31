@@ -109,3 +109,24 @@ test('it can create a new asset with multiple creators', async (t) => {
     ],
   });
 });
+
+test("it cannot create an asset with invalid creators' total share", async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = (await createUmi()).use(httpDownloader());
+  const asset = generateSigner(umi);
+
+  // And a list of creators with a total share of 99.
+  const addresses = new Array(9)
+    .fill(0)
+    .map(() => ({ address: generateSigner(umi).publicKey, share: 10 }));
+
+  // And we try to initialize an asset with a creators extension.
+  const promise = initialize(umi, {
+    asset,
+    payer: umi.identity,
+    extension: creators(addresses),
+  }).sendAndConfirm(umi);
+
+  // Then we expect an error.
+  await t.throwsAsync(promise, { message: /Extension data invalid/ });
+});

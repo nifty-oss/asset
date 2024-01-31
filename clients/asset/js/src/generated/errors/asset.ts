@@ -223,6 +223,19 @@ export class CannotTransferSoulboundError extends ProgramError {
 codeToErrorMap.set(0xf, CannotTransferSoulboundError);
 nameToErrorMap.set('CannotTransferSoulbound', CannotTransferSoulboundError);
 
+/** ExtensionDataInvalid: Extension data invalid */
+export class ExtensionDataInvalidError extends ProgramError {
+  override readonly name: string = 'ExtensionDataInvalid';
+
+  readonly code: number = 0x10; // 16
+
+  constructor(program: Program, cause?: Error) {
+    super('Extension data invalid', program, cause);
+  }
+}
+codeToErrorMap.set(0x10, ExtensionDataInvalidError);
+nameToErrorMap.set('ExtensionDataInvalid', ExtensionDataInvalidError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

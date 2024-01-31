@@ -71,6 +71,10 @@ pub enum AssetError {
     /// 15 - Soulbound assets are non-transferable.
     #[error("Soulbound assets are non-transferable")]
     CannotTransferSoulbound,
+
+    /// 16 - Extension data invalid.
+    #[error("Extension data invalid")]
+    ExtensionDataInvalid,
 }
 
 impl PrintProgramError for AssetError {

@@ -1,5 +1,5 @@
 use nifty_asset_types::{
-    extensions::Extension,
+    extensions::{validate, Extension},
     state::{Asset, Discriminator},
 };
 use podded::ZeroCopy;
@@ -147,6 +147,19 @@ pub fn process_allocate(
             length
         );
     } else {
+        let asset_data = &(*ctx.accounts.asset.data).borrow();
+        let (extension, offset) =
+            Asset::last_extension(asset_data).ok_or(AssetError::ExtensionNotFound)?;
+
+        validate(
+            args.extension_type,
+            &asset_data[offset..offset + extension.length() as usize],
+        )
+        .map_err(|error| {
+            msg!("Validation error: {:?}", error);
+            AssetError::ExtensionDataInvalid
+        })?;
+
         msg!("Extension [{:?}] initialized", args.extension_type);
     }
 

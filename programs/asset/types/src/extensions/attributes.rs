@@ -2,6 +2,7 @@ use podded::types::{U8PrefixStr, U8PrefixStrMut};
 use std::{fmt::Debug, ops::Deref};
 
 use super::{ExtensionBuilder, ExtensionData, ExtensionType};
+use crate::validation::Validatable;
 
 /// Extension to add attributes (traits) to an asset – e.g., `"head": "bald"`.
 ///
@@ -39,6 +40,8 @@ impl Debug for Attributes<'_> {
             .finish()
     }
 }
+
+impl Validatable for Attributes<'_> {}
 
 /// Trait information.
 pub struct Trait<'a> {
