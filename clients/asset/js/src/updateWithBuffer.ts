@@ -30,12 +30,12 @@ export function updateWithBuffer(
   if (chunked) {
     const buffer = generateSigner(context);
 
-    return transactionBuilderGroup([
-      ...write(context, {
-        ...input,
-        asset: buffer,
-        data,
-      }).append(
+    return write(context, {
+      ...input,
+      asset: buffer,
+      data,
+    })
+      .prepend(
         allocate(context, {
           ...input,
           asset: buffer,
@@ -45,18 +45,19 @@ export function updateWithBuffer(
             data: null,
           },
         })
-      ).builders,
-      update(context, {
-        ...input,
-        buffer: buffer.publicKey,
-        systemProgram: getSplSystemProgramId(context),
-        extension: {
-          extensionType: input.extension.type,
-          length: data.length,
-          data: chunked ? null : data,
-        },
-      }),
-    ]);
+      )
+      .append(
+        update(context, {
+          ...input,
+          buffer: buffer.publicKey,
+          systemProgram: getSplSystemProgramId(context),
+          extension: {
+            extensionType: input.extension.type,
+            length: data.length,
+            data: chunked ? null : data,
+          },
+        })
+      );
   }
 
   return transactionBuilderGroup([
