@@ -3,6 +3,7 @@ mod create;
 mod decode;
 mod delegate;
 mod lock;
+mod mint;
 mod transfer;
 mod unlock;
 
@@ -12,6 +13,7 @@ pub use create::*;
 pub use decode::*;
 pub use delegate::*;
 pub use lock::*;
+pub use mint::*;
 pub use transfer::*;
 pub use unlock::*;
 
@@ -27,6 +29,7 @@ pub use {
     nifty_asset::{
         accounts::Asset,
         instructions::{Burn, Create, CreateInstructionArgs, Transfer},
+        mint,
         types::Standard,
     },
     solana_program::system_program,

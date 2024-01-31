@@ -1881,6 +1881,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e623cca1f0e2a0919032c1bdabbf81dd9aa34658d5066aca7bb90d608317ab91"
 dependencies = [
  "borsh 0.10.3",
+ "serde",
 ]
 
 [[package]]
@@ -2071,6 +2072,8 @@ dependencies = [
  "nifty-asset-types",
  "num-derive 0.3.3",
  "num-traits",
+ "serde",
+ "serde_with 3.4.0",
  "solana-program",
  "thiserror",
 ]
@@ -2095,6 +2098,8 @@ dependencies = [
  "dirs",
  "indexmap 2.1.0",
  "nifty-asset",
+ "nifty-asset-types",
+ "podded",
  "retry",
  "serde",
  "serde_json",
@@ -2104,6 +2109,7 @@ dependencies = [
  "solana-logger",
  "solana-program",
  "solana-sdk",
+ "tokio",
 ]
 
 [[package]]

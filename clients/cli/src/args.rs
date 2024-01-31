@@ -28,6 +28,9 @@ pub enum Commands {
         /// The recipient to receive reclaimed rent. Defaults to the signer.
         recipient: Option<Pubkey>,
     },
+    Mint {
+        asset_file_path: PathBuf,
+    },
     /// Create an asset.
     Create {
         /// The name of the asset.

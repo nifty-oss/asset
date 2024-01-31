@@ -1,3 +1,12 @@
+use nifty_asset::{
+    extensions::{Blob, Links},
+    JsonCreator,
+};
+use nifty_asset_types::{
+    extensions::{Attributes, Extension, ExtensionData, ExtensionType},
+    ZeroCopy,
+};
+
 use super::*;
 
 pub struct DecodeArgs {
@@ -5,6 +14,8 @@ pub struct DecodeArgs {
     pub asset: Pubkey,
     pub field: Option<String>,
 }
+
+const ASSET_LEN: usize = 168;
 
 pub fn handle_decode(args: DecodeArgs) -> Result<()> {
     let config = CliConfig::new(None, args.rpc_url)?;
@@ -45,8 +56,56 @@ pub fn handle_decode(args: DecodeArgs) -> Result<()> {
                 println!("Unknown field: {}", field);
             }
         }
+        return Ok(());
     } else {
         println!("Asset: {:#?}", asset);
+    }
+
+    let mut cursor = ASSET_LEN;
+
+    // Decode extensions.
+    while cursor < data.len() {
+        let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
+        let extension_type = extension.extension_type();
+        let extension_length = extension.length();
+
+        let start = cursor + Extension::LEN;
+        let end = start + extension_length as usize;
+
+        let extension_data = &data[start..end];
+
+        match extension_type {
+            ExtensionType::Attributes => {
+                let attributes: Attributes = Attributes::from_bytes(extension_data);
+                println!("{attributes:#?}");
+            }
+            ExtensionType::Blob => {
+                let blob: Blob = Blob::from_bytes(extension_data);
+                println!("Blob: {:?}", blob.content_type.as_str());
+                // write to a file based on the content type
+                let extension = blob.content_type.as_str().split('/').last().unwrap();
+                let filename = format!("blob.{}", extension);
+                std::fs::write(filename, blob.data).unwrap();
+
+                println!("Blob placeholder");
+            }
+            ExtensionType::Creators => {
+                let creators: Vec<JsonCreator> = extension_data
+                    .chunks(40)
+                    .map(JsonCreator::from_data)
+                    .collect();
+                println!("{creators:#?}");
+            }
+            ExtensionType::Links => {
+                let links: Links = Links::from_bytes(extension_data);
+                println!("{links:#?}");
+            }
+            ExtensionType::None => {
+                println!("None");
+            }
+        }
+
+        cursor = extension.boundary() as usize;
     }
 
     Ok(())

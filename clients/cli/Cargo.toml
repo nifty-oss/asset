@@ -13,7 +13,9 @@ borsh = { version = "0.9.3" }
 clap = { version = "4.4.10", features = ["derive"] }
 dirs = "5.0.1"
 indexmap = { version = "2.1.0", features = ["serde"] }
-nifty-asset = { path = "../asset/rust" }
+nifty-asset = { path = "../asset/rust", features = ["serde"] }
+nifty-asset-types = { path = "../../programs/asset/types" }
+podded = "0.4.0"
 retry = "2.0.0"
 serde = "1.0.193"
 serde_json = "1.0.108"
@@ -23,3 +25,4 @@ solana-client = "~1.16"
 solana-logger = "~1.16"
 solana-program = "~1.16"
 solana-sdk = "~1.16"
+tokio = "1.35.1"

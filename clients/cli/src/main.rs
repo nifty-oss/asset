@@ -6,7 +6,8 @@ use nifty_cli::{
     commands::*,
 };
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     solana_logger::setup_with_default("solana=error");
 
     let args = Args::parse();
@@ -59,6 +60,14 @@ fn main() -> Result<()> {
             asset,
             authority_keypair_path,
         }),
+        Commands::Mint { asset_file_path } => {
+            handle_mint(MintArgs {
+                keypair_path,
+                rpc_url,
+                asset_file_path,
+            })
+            .await
+        }
         Commands::Transfer { asset, recipient } => handle_transfer(TransferArgs {
             keypair_path,
             rpc_url,
