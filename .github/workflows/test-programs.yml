@@ -12,7 +12,7 @@ env:
 jobs:
   test_programs:
     name: Test
-    runs-on: buildjet-16vcpu-ubuntu-2204
+    runs-on: buildjet-8vcpu-ubuntu-2204
     strategy:
       matrix:
         program: ${{ fromJson(inputs.program_matrix) }}
@@ -52,7 +52,8 @@ jobs:
         with:
           command: clippy
           args:
-            --all-targets --all-features --no-deps --manifest-path ./programs/${{ matrix.program}}/Cargo.toml
+            --all-targets --all-features --no-deps --manifest-path ./programs/${{
+            matrix.program}}/Cargo.toml
 
       - name: Run tests
         shell: bash

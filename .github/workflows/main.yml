@@ -12,7 +12,7 @@ env:
 jobs:
   changes:
     name: Detect changes
-    runs-on: buildjet-16vcpu-ubuntu-2204
+    runs-on: buildjet-8vcpu-ubuntu-2204
     outputs:
       any: ${{ steps.changes.outputs.any }}
       programs: ${{ steps.changes.outputs.programs }}
@@ -79,7 +79,7 @@ jobs:
     name: Generate clients
     if: ${{ needs.changes.outputs.any == 'true' }}
     needs: [changes, build_programs]
-    runs-on: buildjet-16vcpu-ubuntu-2204
+    runs-on: buildjet-8vcpu-ubuntu-2204
     steps:
       - name: Git checkout
         uses: actions/checkout@v3

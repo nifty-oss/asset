@@ -11,7 +11,7 @@
     "generate": "pnpm generate:idls && pnpm generate:clients",
     "generate:idls": "node ./configs/shank.cjs",
     "generate:clients": "node ./configs/kinobi.cjs",
-    "validator": "CI=1 amman start --config ./configs/validator.cjs && solana airdrop 100",
+    "validator": "CI=1 amman start --config ./configs/validator.cjs",
     "validator:debug": "amman start --config ./configs/validator.cjs",
     "validator:logs": "CI=1 amman logs",
     "validator:stop": "amman stop"

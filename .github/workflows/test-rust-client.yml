@@ -12,7 +12,7 @@ env:
 jobs:
   test_sdk:
     name: Test
-    runs-on: buildjet-16vcpu-ubuntu-2204
+    runs-on: buildjet-8vcpu-ubuntu-2204
     strategy:
       matrix:
         client: ${{ fromJson(inputs.client_matrix) }}

@@ -26,7 +26,7 @@ env:
 jobs:
   build_programs:
     name: Build
-    runs-on: buildjet-16vcpu-ubuntu-2204
+    runs-on: buildjet-8vcpu-ubuntu-2204
     steps:
       - name: Git checkout
         uses: actions/checkout@v3

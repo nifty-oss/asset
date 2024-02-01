@@ -44,7 +44,7 @@ jobs:
 
   publish_js:
     name: JS client / Publish
-    runs-on: buildjet-16vcpu-ubuntu-2204
+    runs-on: buildjet-8vcpu-ubuntu-2204
     needs: test_js
     permissions:
       contents: write
@@ -106,7 +106,7 @@ jobs:
 
   deploy_js_docs:
     name: JS client / Deploy docs
-    runs-on: buildjet-16vcpu-ubuntu-2204
+    runs-on: buildjet-8vcpu-ubuntu-2204
     needs: publish_js
     environment:
       name: js-client-documentation
