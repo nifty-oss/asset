@@ -1,4 +1,4 @@
-import { defaultPublicKey, generateSigner } from '@metaplex-foundation/umi';
+import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
   Asset,
@@ -47,9 +47,7 @@ test('a holder can revoke a delegate', async (t) => {
 
   // Then the delegate is removed.
   t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
-    delegate: {
-      address: defaultPublicKey(),
-    },
+    delegate: null,
   });
 });
 
@@ -90,9 +88,7 @@ test('a delegate can revoke itself', async (t) => {
 
   // Then the delegate is removed.
   t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
-    delegate: {
-      address: defaultPublicKey(),
-    },
+    delegate: null,
   });
 });
 

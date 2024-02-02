@@ -1,13 +1,6 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
-import {
-  Asset,
-  DelegateRole,
-  create,
-  approve,
-  fetchAsset,
-  isActive,
-} from '../src';
+import { Asset, DelegateRole, create, approve, fetchAsset } from '../src';
 import { createUmi } from './_setup';
 
 test('it can set a delegate with a single role', async (t) => {
@@ -38,10 +31,9 @@ test('it can set a delegate with a single role', async (t) => {
   t.like(account, <Asset>{
     delegate: {
       address: authority,
+      roles: [DelegateRole.Transfer],
     },
   });
-
-  t.true(isActive(account.delegate, DelegateRole.Transfer));
 });
 
 test('it can set a delegate with multiple role', async (t) => {
@@ -74,14 +66,9 @@ test('it can set a delegate with multiple role', async (t) => {
   t.like(account, <Asset>{
     delegate: {
       address: authority,
+      roles: [DelegateRole.Transfer, DelegateRole.Burn],
     },
   });
-
-  t.true(
-    args
-      .map((role) => isActive(account.delegate, role))
-      .reduce((previous, current) => previous && current)
-  );
 });
 
 test('it can set a new role to an existing delegate', async (t) => {
@@ -111,11 +98,9 @@ test('it can set a new role to an existing delegate', async (t) => {
   t.like(account, <Asset>{
     delegate: {
       address: authority,
+      roles: [DelegateRole.Transfer],
     },
   });
-
-  t.true(isActive(account.delegate, DelegateRole.Transfer));
-  t.false(isActive(account.delegate, DelegateRole.Burn));
 
   // When we set a new role to an existing delegate.
   await approve(umi, {
@@ -130,9 +115,7 @@ test('it can set a new role to an existing delegate', async (t) => {
   t.like(account, <Asset>{
     delegate: {
       address: authority,
+      roles: [DelegateRole.Transfer, DelegateRole.Burn],
     },
   });
-
-  t.true(isActive(account.delegate, DelegateRole.Transfer));
-  t.true(isActive(account.delegate, DelegateRole.Burn));
 });

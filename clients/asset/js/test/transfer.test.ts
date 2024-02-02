@@ -1,6 +1,7 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
+  Asset,
   DelegateRole,
   Standard,
   create,
@@ -234,12 +235,13 @@ test('self-transfer does not clear delegate', async (t) => {
     recipient: holderSigner.publicKey,
   }).sendAndConfirm(umi);
 
-  // It was transferred
-  asset = await fetchAsset(umi, assetSigner.publicKey);
-  t.true(asset.holder === holderSigner.publicKey);
-
-  // and the delegate still exists.
-  asset.delegate.address === delegateSigner.publicKey;
+  // It was transferred and the delegate is still set.
+  t.like(await fetchAsset(umi, assetSigner.publicKey), <Asset>{
+    holder: holderSigner.publicKey,
+    delegate: {
+      address: delegateSigner.publicKey,
+    },
+  });
 });
 
 test('it cannot transfer a soulbound asset', async (t) => {

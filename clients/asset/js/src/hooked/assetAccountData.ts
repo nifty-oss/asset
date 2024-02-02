@@ -1,18 +1,35 @@
+import { PublicKey, defaultPublicKey } from '@metaplex-foundation/umi';
 import { Serializer } from '@metaplex-foundation/umi/serializers';
+import { TypedExtension, getExtensionSerializerFromType } from '../extensions';
+import {
+  Delegate,
+  DelegateRole,
+  Discriminator,
+  ExtensionType,
+} from '../generated';
 import {
   AssetAccountData as BaseAssetAccountData,
   AssetAccountDataArgs as BaseAssetAccountDataArgs,
   getAssetAccountDataSerializer as getBaseAssetAccountDataSerializer,
 } from '../generated/types/assetAccountData';
-import { Discriminator, ExtensionType } from '../generated';
 import { getExtensionHeaderSerializer } from '../generated/types/extensionHeader';
-import { TypedExtension, getExtensionSerializerFromType } from '../extensions';
+import { isActive } from '../types';
 
-export type AssetAccountData = BaseAssetAccountData & {
+export type AssetAccountData = Omit<
+  BaseAssetAccountData,
+  'group' | 'delegate'
+> & {
+  group: PublicKey | null;
+  delegate: (Omit<Delegate, 'roles'> & { roles: DelegateRole[] }) | null;
   extensions: TypedExtension[];
 };
 
-export type AssetAccountDataArgs = BaseAssetAccountDataArgs & {
+export type AssetAccountDataArgs = Omit<
+  BaseAssetAccountDataArgs,
+  'group' | 'delegate'
+> & {
+  group: PublicKey | null;
+  delegate: (Omit<Delegate, 'roles'> & { roles: DelegateRole[] }) | null;
   extensions: TypedExtension[];
 };
 
@@ -54,9 +71,27 @@ export const getAssetAccountDataSerializer = (): Serializer<
       finalOffset = header.boundary;
     }
 
+    // Delegate.
+    const address =
+      asset.delegate.address !== defaultPublicKey()
+        ? asset.delegate.address
+        : null;
+    let roles: DelegateRole[] = [];
+
+    if (address) {
+      roles = Object.keys(DelegateRole)
+        .filter((key): key is keyof typeof DelegateRole =>
+          Number.isNaN(Number(key))
+        )
+        .map((key) => DelegateRole[key])
+        .filter((value) => isActive(asset.delegate, value));
+    }
+
     return [
       {
         ...asset,
+        group: asset.group !== defaultPublicKey() ? asset.group : null,
+        delegate: address ? { address, roles } : null,
         extensions,
       },
       finalOffset,
