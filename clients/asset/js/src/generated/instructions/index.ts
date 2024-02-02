@@ -7,10 +7,10 @@
  */
 
 export * from './allocate';
+export * from './approve';
 export * from './burn';
 export * from './close';
 export * from './create';
-export * from './delegate';
 export * from './lock';
 export * from './revoke';
 export * from './transfer';

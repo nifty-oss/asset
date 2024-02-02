@@ -6,10 +6,10 @@
 //!
 
 pub(crate) mod r#allocate;
+pub(crate) mod r#approve;
 pub(crate) mod r#burn;
 pub(crate) mod r#close;
 pub(crate) mod r#create;
-pub(crate) mod r#delegate;
 pub(crate) mod r#lock;
 pub(crate) mod r#revoke;
 pub(crate) mod r#transfer;
@@ -18,10 +18,10 @@ pub(crate) mod r#update;
 pub(crate) mod r#write;
 
 pub use self::r#allocate::*;
+pub use self::r#approve::*;
 pub use self::r#burn::*;
 pub use self::r#close::*;
 pub use self::r#create::*;
-pub use self::r#delegate::*;
 pub use self::r#lock::*;
 pub use self::r#revoke::*;
 pub use self::r#transfer::*;

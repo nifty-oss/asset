@@ -4,13 +4,13 @@ use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pub
 
 use crate::{
     error::AssetError,
-    instruction::accounts::{Context, DelegateAccounts},
+    instruction::accounts::{ApproveAccounts, Context},
     require,
 };
 
-pub fn process_delegate(
+pub fn process_approve(
     program_id: &Pubkey,
-    ctx: Context<DelegateAccounts>,
+    ctx: Context<ApproveAccounts>,
     roles: Vec<DelegateRole>,
 ) -> ProgramResult {
     // account validation

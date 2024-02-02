@@ -10,7 +10,7 @@ use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
 /// Accounts.
-pub struct Delegate {
+pub struct Approve {
     /// Asset account
     pub asset: solana_program::pubkey::Pubkey,
     /// The holder of the asset
@@ -19,17 +19,17 @@ pub struct Delegate {
     pub delegate: solana_program::pubkey::Pubkey,
 }
 
-impl Delegate {
+impl Approve {
     pub fn instruction(
         &self,
-        args: DelegateInstructionArgs,
+        args: ApproveInstructionArgs,
     ) -> solana_program::instruction::Instruction {
         self.instruction_with_remaining_accounts(args, &[])
     }
     #[allow(clippy::vec_init_then_push)]
     pub fn instruction_with_remaining_accounts(
         &self,
-        args: DelegateInstructionArgs,
+        args: ApproveInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
         let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
@@ -45,7 +45,7 @@ impl Delegate {
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = DelegateInstructionData::new().try_to_vec().unwrap();
+        let mut data = ApproveInstructionData::new().try_to_vec().unwrap();
         let mut args = args.try_to_vec().unwrap();
         data.append(&mut args);
 
@@ -58,11 +58,11 @@ impl Delegate {
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct DelegateInstructionData {
+struct ApproveInstructionData {
     discriminator: u8,
 }
 
-impl DelegateInstructionData {
+impl ApproveInstructionData {
     fn new() -> Self {
         Self { discriminator: 3 }
     }
@@ -70,11 +70,11 @@ impl DelegateInstructionData {
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct DelegateInstructionArgs {
+pub struct ApproveInstructionArgs {
     pub args: Vec<DelegateRole>,
 }
 
-/// Instruction builder for `Delegate`.
+/// Instruction builder for `Approve`.
 ///
 /// ### Accounts:
 ///
@@ -82,7 +82,7 @@ pub struct DelegateInstructionArgs {
 ///   1. `[signer]` holder
 ///   2. `[]` delegate
 #[derive(Default)]
-pub struct DelegateBuilder {
+pub struct ApproveBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
     holder: Option<solana_program::pubkey::Pubkey>,
     delegate: Option<solana_program::pubkey::Pubkey>,
@@ -90,7 +90,7 @@ pub struct DelegateBuilder {
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
-impl DelegateBuilder {
+impl ApproveBuilder {
     pub fn new() -> Self {
         Self::default()
     }
@@ -137,12 +137,12 @@ impl DelegateBuilder {
     }
     #[allow(clippy::clone_on_copy)]
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        let accounts = Delegate {
+        let accounts = Approve {
             asset: self.asset.expect("asset is not set"),
             holder: self.holder.expect("holder is not set"),
             delegate: self.delegate.expect("delegate is not set"),
         };
-        let args = DelegateInstructionArgs {
+        let args = ApproveInstructionArgs {
             args: self.args.clone().expect("args is not set"),
         };
 
@@ -150,8 +150,8 @@ impl DelegateBuilder {
     }
 }
 
-/// `delegate` CPI accounts.
-pub struct DelegateCpiAccounts<'a, 'b> {
+/// `approve` CPI accounts.
+pub struct ApproveCpiAccounts<'a, 'b> {
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// The holder of the asset
@@ -160,8 +160,8 @@ pub struct DelegateCpiAccounts<'a, 'b> {
     pub delegate: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
-/// `delegate` CPI instruction.
-pub struct DelegateCpi<'a, 'b> {
+/// `approve` CPI instruction.
+pub struct ApproveCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// Asset account
@@ -171,14 +171,14 @@ pub struct DelegateCpi<'a, 'b> {
     /// The delegate account
     pub delegate: &'b solana_program::account_info::AccountInfo<'a>,
     /// The arguments for the instruction.
-    pub __args: DelegateInstructionArgs,
+    pub __args: ApproveInstructionArgs,
 }
 
-impl<'a, 'b> DelegateCpi<'a, 'b> {
+impl<'a, 'b> ApproveCpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
-        accounts: DelegateCpiAccounts<'a, 'b>,
-        args: DelegateInstructionArgs,
+        accounts: ApproveCpiAccounts<'a, 'b>,
+        args: ApproveInstructionArgs,
     ) -> Self {
         Self {
             __program: program,
@@ -241,7 +241,7 @@ impl<'a, 'b> DelegateCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let mut data = DelegateInstructionData::new().try_to_vec().unwrap();
+        let mut data = ApproveInstructionData::new().try_to_vec().unwrap();
         let mut args = self.__args.try_to_vec().unwrap();
         data.append(&mut args);
 
@@ -267,20 +267,20 @@ impl<'a, 'b> DelegateCpi<'a, 'b> {
     }
 }
 
-/// Instruction builder for `Delegate` via CPI.
+/// Instruction builder for `Approve` via CPI.
 ///
 /// ### Accounts:
 ///
 ///   0. `[writable]` asset
 ///   1. `[signer]` holder
 ///   2. `[]` delegate
-pub struct DelegateCpiBuilder<'a, 'b> {
-    instruction: Box<DelegateCpiBuilderInstruction<'a, 'b>>,
+pub struct ApproveCpiBuilder<'a, 'b> {
+    instruction: Box<ApproveCpiBuilderInstruction<'a, 'b>>,
 }
 
-impl<'a, 'b> DelegateCpiBuilder<'a, 'b> {
+impl<'a, 'b> ApproveCpiBuilder<'a, 'b> {
     pub fn new(program: &'b solana_program::account_info::AccountInfo<'a>) -> Self {
-        let instruction = Box::new(DelegateCpiBuilderInstruction {
+        let instruction = Box::new(ApproveCpiBuilderInstruction {
             __program: program,
             asset: None,
             holder: None,
@@ -360,10 +360,10 @@ impl<'a, 'b> DelegateCpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
-        let args = DelegateInstructionArgs {
+        let args = ApproveInstructionArgs {
             args: self.instruction.args.clone().expect("args is not set"),
         };
-        let instruction = DelegateCpi {
+        let instruction = ApproveCpi {
             __program: self.instruction.__program,
 
             asset: self.instruction.asset.expect("asset is not set"),
@@ -380,7 +380,7 @@ impl<'a, 'b> DelegateCpiBuilder<'a, 'b> {
     }
 }
 
-struct DelegateCpiBuilderInstruction<'a, 'b> {
+struct ApproveCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     holder: Option<&'b solana_program::account_info::AccountInfo<'a>>,

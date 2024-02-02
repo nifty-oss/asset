@@ -8,7 +8,7 @@ import {
   State,
   burn,
   create,
-  delegate,
+  approve,
   fetchAsset,
 } from '../src';
 import { createUmi } from './_setup';
@@ -66,7 +66,7 @@ test('it can burn an asset as a delegate', async (t) => {
   t.true(asset.holder === holderSigner.publicKey);
 
   // Now we delegate burn authority of the asset
-  await delegate(umi, {
+  await approve(umi, {
     asset: assetSigner.publicKey,
     holder: holderSigner,
     delegate: delegateSigner.publicKey,

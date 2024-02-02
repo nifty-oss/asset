@@ -44,7 +44,7 @@ async fn main() -> Result<()> {
             asset,
             delegate,
             role,
-        } => handle_delegate(DelegateArgs {
+        } => handle_approve(ApproveArgs {
             keypair_path,
             rpc_url,
             asset,

@@ -5,7 +5,7 @@ import {
   DelegateRole,
   State,
   create,
-  delegate,
+  approve,
   fetchAsset,
   lock,
   unlock,
@@ -28,7 +28,7 @@ test('it can unlock an asset', async (t) => {
 
   // And we set a delegate that can lock the asset.
   const authority = generateSigner(umi);
-  await delegate(umi, {
+  await approve(umi, {
     asset: asset.publicKey,
     holder,
     delegate: authority.publicKey,
@@ -75,7 +75,7 @@ test('it cannot unlock an asset with an invalid delegate', async (t) => {
 
   // And we set a delegate that can lock the asset.
   const authority = generateSigner(umi);
-  await delegate(umi, {
+  await approve(umi, {
     asset: asset.publicKey,
     holder,
     delegate: authority.publicKey,
@@ -126,7 +126,7 @@ test('it cannot unlock an asset locked with a delegate as a holder', async (t) =
 
   // And we set a delegate that can lock the asset.
   const authority = generateSigner(umi);
-  await delegate(umi, {
+  await approve(umi, {
     asset: asset.publicKey,
     holder,
     delegate: authority.publicKey,
@@ -214,7 +214,7 @@ test('it can unlock an asset that is unlocked', async (t) => {
 
   // And we set a delegate that can lock the asset.
   const authority = generateSigner(umi);
-  await delegate(umi, {
+  await approve(umi, {
     asset: asset.publicKey,
     holder,
     delegate: authority.publicKey,

@@ -4,7 +4,7 @@ import {
   Asset,
   DelegateRole,
   create,
-  delegate,
+  approve,
   fetchAsset,
   revoke,
 } from '../src';
@@ -26,7 +26,7 @@ test('a holder can revoke a delegate', async (t) => {
 
   // And set a delegate on it.
   const authority = generateSigner(umi).publicKey;
-  await delegate(umi, {
+  await approve(umi, {
     asset: asset.publicKey,
     holder,
     delegate: authority,
@@ -69,7 +69,7 @@ test('a delegate can revoke itself', async (t) => {
 
   // And set a delegate on it.
   const authority = generateSigner(umi);
-  await delegate(umi, {
+  await approve(umi, {
     asset: asset.publicKey,
     holder,
     delegate: authority.publicKey,
@@ -112,7 +112,7 @@ test('a random signer cannot revoke the delegate', async (t) => {
 
   // And set a delegate on it.
   const authority = generateSigner(umi);
-  await delegate(umi, {
+  await approve(umi, {
     asset: asset.publicKey,
     holder,
     delegate: authority.publicKey,

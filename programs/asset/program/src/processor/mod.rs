@@ -1,8 +1,8 @@
 mod allocate;
+mod approve;
 mod burn;
 mod close;
 mod create;
-mod delegate;
 mod lock;
 mod revoke;
 mod transfer;
@@ -29,7 +29,7 @@ use crate::{
     error::AssetError,
     instruction::{
         accounts::{
-            AllocateAccounts, BurnAccounts, CloseAccounts, CreateAccounts, DelegateAccounts,
+            AllocateAccounts, ApproveAccounts, BurnAccounts, CloseAccounts, CreateAccounts,
             LockAccounts, RevokeAccounts, TransferAccounts, UnlockAccounts, UpdateAccounts,
             WriteAccounts,
         },
@@ -57,6 +57,10 @@ pub fn process_instruction<'a>(
             msg!("Instruction: Allocate");
             allocate::process_allocate(program_id, AllocateAccounts::context(accounts)?, args)
         }
+        Instruction::Approve(args) => {
+            msg!("Instruction: Approve");
+            approve::process_approve(program_id, ApproveAccounts::context(accounts)?, args)
+        }
         Instruction::Burn => {
             msg!("Instruction: Burn");
             burn::process_burn(program_id, BurnAccounts::context(accounts)?)
@@ -68,10 +72,6 @@ pub fn process_instruction<'a>(
         Instruction::Create(args) => {
             msg!("Instruction: Create");
             create::process_create(program_id, CreateAccounts::context(accounts)?, args)
-        }
-        Instruction::Delegate(args) => {
-            msg!("Instruction: Delegate");
-            delegate::process_delegate(program_id, DelegateAccounts::context(accounts)?, args)
         }
         Instruction::Lock => {
             msg!("Instruction: Lock");

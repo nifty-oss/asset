@@ -1,11 +1,11 @@
 use nifty_asset::{
-    instructions::{Delegate, DelegateInstructionArgs},
+    instructions::{Approve, ApproveInstructionArgs},
     types::DelegateRole,
 };
 
 use super::*;
 
-pub struct DelegateArgs {
+pub struct ApproveArgs {
     pub keypair_path: Option<PathBuf>,
     pub rpc_url: Option<String>,
     pub asset: Pubkey,
@@ -13,7 +13,7 @@ pub struct DelegateArgs {
     pub role: Vec<String>,
 }
 
-pub fn handle_delegate(args: DelegateArgs) -> Result<()> {
+pub fn handle_approve(args: ApproveArgs) -> Result<()> {
     let config = CliConfig::new(args.keypair_path, args.rpc_url)?;
 
     let holder_sk = config.keypair;
@@ -33,9 +33,9 @@ pub fn handle_delegate(args: DelegateArgs) -> Result<()> {
         })
         .collect();
 
-    let args = DelegateInstructionArgs { args: roles };
+    let args = ApproveInstructionArgs { args: roles };
 
-    let ix = Delegate {
+    let ix = Approve {
         asset,
         holder,
         delegate,

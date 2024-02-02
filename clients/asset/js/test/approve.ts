@@ -4,7 +4,7 @@ import {
   Asset,
   DelegateRole,
   create,
-  delegate,
+  approve,
   fetchAsset,
   isActive,
 } from '../src';
@@ -24,9 +24,9 @@ test('it can set a delegate with a single role', async (t) => {
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
-  // When we set a delegate.
+  // When we approve a delegate.
   const authority = generateSigner(umi).publicKey;
-  await delegate(umi, {
+  await approve(umi, {
     asset: asset.publicKey,
     holder,
     delegate: authority,
@@ -60,9 +60,9 @@ test('it can set a delegate with multiple role', async (t) => {
 
   const args = [DelegateRole.Transfer, DelegateRole.Burn];
 
-  // When we set a delegate.
+  // When we approve a delegate.
   const authority = generateSigner(umi).publicKey;
-  await delegate(umi, {
+  await approve(umi, {
     asset: asset.publicKey,
     holder,
     delegate: authority,
@@ -98,9 +98,9 @@ test('it can set a new role to an existing delegate', async (t) => {
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
-  // And we set a delegate with a single role.
+  // And we approve a delegate with a single role.
   const authority = generateSigner(umi).publicKey;
-  await delegate(umi, {
+  await approve(umi, {
     asset: asset.publicKey,
     holder,
     delegate: authority,
@@ -118,7 +118,7 @@ test('it can set a new role to an existing delegate', async (t) => {
   t.false(isActive(account.delegate, DelegateRole.Burn));
 
   // When we set a new role to an existing delegate.
-  await delegate(umi, {
+  await approve(umi, {
     asset: asset.publicKey,
     holder,
     delegate: authority,

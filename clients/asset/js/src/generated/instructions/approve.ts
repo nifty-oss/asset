@@ -33,7 +33,7 @@ import {
 } from '../types';
 
 // Accounts.
-export type DelegateInstructionAccounts = {
+export type ApproveInstructionAccounts = {
   /** Asset account */
   asset: PublicKey | Pda;
   /** The holder of the asset */
@@ -43,40 +43,36 @@ export type DelegateInstructionAccounts = {
 };
 
 // Data.
-export type DelegateInstructionData = {
+export type ApproveInstructionData = {
   discriminator: number;
   args: Array<DelegateRole>;
 };
 
-export type DelegateInstructionDataArgs = { args: Array<DelegateRoleArgs> };
+export type ApproveInstructionDataArgs = { args: Array<DelegateRoleArgs> };
 
-export function getDelegateInstructionDataSerializer(): Serializer<
-  DelegateInstructionDataArgs,
-  DelegateInstructionData
+export function getApproveInstructionDataSerializer(): Serializer<
+  ApproveInstructionDataArgs,
+  ApproveInstructionData
 > {
-  return mapSerializer<
-    DelegateInstructionDataArgs,
-    any,
-    DelegateInstructionData
-  >(
-    struct<DelegateInstructionData>(
+  return mapSerializer<ApproveInstructionDataArgs, any, ApproveInstructionData>(
+    struct<ApproveInstructionData>(
       [
         ['discriminator', u8()],
         ['args', array(getDelegateRoleSerializer())],
       ],
-      { description: 'DelegateInstructionData' }
+      { description: 'ApproveInstructionData' }
     ),
     (value) => ({ ...value, discriminator: 3 })
-  ) as Serializer<DelegateInstructionDataArgs, DelegateInstructionData>;
+  ) as Serializer<ApproveInstructionDataArgs, ApproveInstructionData>;
 }
 
 // Args.
-export type DelegateInstructionArgs = DelegateInstructionDataArgs;
+export type ApproveInstructionArgs = ApproveInstructionDataArgs;
 
 // Instruction.
-export function delegate(
+export function approve(
   context: Pick<Context, 'programs'>,
-  input: DelegateInstructionAccounts & DelegateInstructionArgs
+  input: ApproveInstructionAccounts & ApproveInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -104,7 +100,7 @@ export function delegate(
   } satisfies ResolvedAccountsWithIndices;
 
   // Arguments.
-  const resolvedArgs: DelegateInstructionArgs = { ...input };
+  const resolvedArgs: ApproveInstructionArgs = { ...input };
 
   // Accounts in order.
   const orderedAccounts: ResolvedAccount[] = Object.values(
@@ -119,8 +115,8 @@ export function delegate(
   );
 
   // Data.
-  const data = getDelegateInstructionDataSerializer().serialize(
-    resolvedArgs as DelegateInstructionDataArgs
+  const data = getApproveInstructionDataSerializer().serialize(
+    resolvedArgs as ApproveInstructionDataArgs
   );
 
   // Bytes Created On Chain.

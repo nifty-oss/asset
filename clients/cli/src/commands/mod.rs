@@ -1,17 +1,17 @@
+mod approve;
 mod burn;
 mod create;
 mod decode;
-mod delegate;
 mod lock;
 mod mint;
 mod transfer;
 mod unlock;
 
 // Rexport internal module types.
+pub use approve::*;
 pub use burn::*;
 pub use create::*;
 pub use decode::*;
-pub use delegate::*;
 pub use lock::*;
 pub use mint::*;
 pub use transfer::*;

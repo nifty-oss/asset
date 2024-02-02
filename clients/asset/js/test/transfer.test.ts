@@ -4,7 +4,7 @@ import {
   DelegateRole,
   Standard,
   create,
-  delegate,
+  approve,
   fetchAsset,
   transfer,
 } from '../src';
@@ -62,7 +62,7 @@ test('it can transfer an asset as a delegate', async (t) => {
   t.true(asset.holder === holderSigner.publicKey);
 
   // Now we delegate transfer authority of the asset
-  await delegate(umi, {
+  await approve(umi, {
     asset: assetSigner.publicKey,
     holder: holderSigner,
     delegate: delegateSigner.publicKey,
@@ -135,7 +135,7 @@ test('holder transfer clears delegate', async (t) => {
   t.true(asset.holder === holderSigner.publicKey);
 
   // Now we set a delegate on the asset
-  await delegate(umi, {
+  await approve(umi, {
     asset: assetSigner.publicKey,
     holder: holderSigner,
     delegate: delegateSigner.publicKey,
@@ -178,7 +178,7 @@ test('delegate transfer clears delegate', async (t) => {
   t.true(asset.holder === holderSigner.publicKey);
 
   // Now we set a delegate on the asset
-  await delegate(umi, {
+  await approve(umi, {
     asset: assetSigner.publicKey,
     holder: holderSigner,
     delegate: delegateSigner.publicKey,
@@ -220,7 +220,7 @@ test('self-transfer does not clear delegate', async (t) => {
   t.true(asset.holder === holderSigner.publicKey);
 
   // Now we set a delegate on the asset
-  await delegate(umi, {
+  await approve(umi, {
     asset: assetSigner.publicKey,
     holder: holderSigner,
     delegate: delegateSigner.publicKey,
