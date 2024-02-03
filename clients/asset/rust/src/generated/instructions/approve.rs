@@ -5,7 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::DelegateRole;
+use crate::generated::types::DelegateInput;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -71,7 +71,7 @@ impl ApproveInstructionData {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ApproveInstructionArgs {
-    pub args: Vec<DelegateRole>,
+    pub delegate_input: DelegateInput,
 }
 
 /// Instruction builder for `Approve`.
@@ -86,7 +86,7 @@ pub struct ApproveBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
     holder: Option<solana_program::pubkey::Pubkey>,
     delegate: Option<solana_program::pubkey::Pubkey>,
-    args: Option<Vec<DelegateRole>>,
+    delegate_input: Option<DelegateInput>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -113,8 +113,8 @@ impl ApproveBuilder {
         self
     }
     #[inline(always)]
-    pub fn args(&mut self, args: Vec<DelegateRole>) -> &mut Self {
-        self.args = Some(args);
+    pub fn delegate_input(&mut self, delegate_input: DelegateInput) -> &mut Self {
+        self.delegate_input = Some(delegate_input);
         self
     }
     /// Add an aditional account to the instruction.
@@ -143,7 +143,10 @@ impl ApproveBuilder {
             delegate: self.delegate.expect("delegate is not set"),
         };
         let args = ApproveInstructionArgs {
-            args: self.args.clone().expect("args is not set"),
+            delegate_input: self
+                .delegate_input
+                .clone()
+                .expect("delegate_input is not set"),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -285,7 +288,7 @@ impl<'a, 'b> ApproveCpiBuilder<'a, 'b> {
             asset: None,
             holder: None,
             delegate: None,
-            args: None,
+            delegate_input: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -315,8 +318,8 @@ impl<'a, 'b> ApproveCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn args(&mut self, args: Vec<DelegateRole>) -> &mut Self {
-        self.instruction.args = Some(args);
+    pub fn delegate_input(&mut self, delegate_input: DelegateInput) -> &mut Self {
+        self.instruction.delegate_input = Some(delegate_input);
         self
     }
     /// Add an additional account to the instruction.
@@ -361,7 +364,11 @@ impl<'a, 'b> ApproveCpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = ApproveInstructionArgs {
-            args: self.instruction.args.clone().expect("args is not set"),
+            delegate_input: self
+                .instruction
+                .delegate_input
+                .clone()
+                .expect("delegate_input is not set"),
         };
         let instruction = ApproveCpi {
             __program: self.instruction.__program,
@@ -385,7 +392,7 @@ struct ApproveCpiBuilderInstruction<'a, 'b> {
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     holder: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     delegate: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    args: Option<Vec<DelegateRole>>,
+    delegate_input: Option<DelegateInput>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

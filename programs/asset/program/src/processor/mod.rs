@@ -77,9 +77,9 @@ pub fn process_instruction<'a>(
             msg!("Instruction: Lock");
             lock::process_lock(program_id, LockAccounts::context(accounts)?)
         }
-        Instruction::Revoke => {
+        Instruction::Revoke(args) => {
             msg!("Instruction: Revoke");
-            revoke::process_revoke(program_id, RevokeAccounts::context(accounts)?)
+            revoke::process_revoke(program_id, RevokeAccounts::context(accounts)?, args)
         }
         Instruction::Transfer => {
             msg!("Instruction: Transfer");

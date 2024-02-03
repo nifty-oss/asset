@@ -12,6 +12,8 @@ pub struct Delegate {
 }
 
 impl Delegate {
+    pub const ALL_ROLES_MASK: u8 = 0b111;
+
     pub fn is_active(&self, role: DelegateRole) -> bool {
         self.roles & role.mask() > 0
     }
@@ -22,6 +24,10 @@ impl Delegate {
 
     pub fn disable(&mut self, role: DelegateRole) {
         self.roles &= !role.mask();
+    }
+
+    pub fn has_active_roles(&self) -> bool {
+        self.roles > 0
     }
 }
 
@@ -53,7 +59,10 @@ pub enum DelegateRole {
 
 impl DelegateRole {
     pub fn mask(&self) -> u8 {
-        0b1u8 << ((*self as u8) - 1)
+        match *self {
+            DelegateRole::None => 0,
+            _ => 0b1u8 << ((*self as u8) - 1),
+        }
     }
 }
 

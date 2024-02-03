@@ -5,6 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::DelegateInput;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -17,12 +18,16 @@ pub struct Revoke {
 }
 
 impl Revoke {
-    pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        self.instruction_with_remaining_accounts(&[])
+    pub fn instruction(
+        &self,
+        args: RevokeInstructionArgs,
+    ) -> solana_program::instruction::Instruction {
+        self.instruction_with_remaining_accounts(args, &[])
     }
     #[allow(clippy::vec_init_then_push)]
     pub fn instruction_with_remaining_accounts(
         &self,
+        args: RevokeInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
         let mut accounts = Vec::with_capacity(2 + remaining_accounts.len());
@@ -34,7 +39,9 @@ impl Revoke {
             true,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let data = RevokeInstructionData::new().try_to_vec().unwrap();
+        let mut data = RevokeInstructionData::new().try_to_vec().unwrap();
+        let mut args = args.try_to_vec().unwrap();
+        data.append(&mut args);
 
         solana_program::instruction::Instruction {
             program_id: crate::ASSET_ID,
@@ -55,6 +62,12 @@ impl RevokeInstructionData {
     }
 }
 
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct RevokeInstructionArgs {
+    pub delegate_input: DelegateInput,
+}
+
 /// Instruction builder for `Revoke`.
 ///
 /// ### Accounts:
@@ -65,6 +78,7 @@ impl RevokeInstructionData {
 pub struct RevokeBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
     signer: Option<solana_program::pubkey::Pubkey>,
+    delegate_input: Option<DelegateInput>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -82,6 +96,11 @@ impl RevokeBuilder {
     #[inline(always)]
     pub fn signer(&mut self, signer: solana_program::pubkey::Pubkey) -> &mut Self {
         self.signer = Some(signer);
+        self
+    }
+    #[inline(always)]
+    pub fn delegate_input(&mut self, delegate_input: DelegateInput) -> &mut Self {
+        self.delegate_input = Some(delegate_input);
         self
     }
     /// Add an aditional account to the instruction.
@@ -108,8 +127,14 @@ impl RevokeBuilder {
             asset: self.asset.expect("asset is not set"),
             signer: self.signer.expect("signer is not set"),
         };
+        let args = RevokeInstructionArgs {
+            delegate_input: self
+                .delegate_input
+                .clone()
+                .expect("delegate_input is not set"),
+        };
 
-        accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
+        accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
     }
 }
 
@@ -129,17 +154,21 @@ pub struct RevokeCpi<'a, 'b> {
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// Current holder of the asset or delegate
     pub signer: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The arguments for the instruction.
+    pub __args: RevokeInstructionArgs,
 }
 
 impl<'a, 'b> RevokeCpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
         accounts: RevokeCpiAccounts<'a, 'b>,
+        args: RevokeInstructionArgs,
     ) -> Self {
         Self {
             __program: program,
             asset: accounts.asset,
             signer: accounts.signer,
+            __args: args,
         }
     }
     #[inline(always)]
@@ -191,7 +220,9 @@ impl<'a, 'b> RevokeCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let data = RevokeInstructionData::new().try_to_vec().unwrap();
+        let mut data = RevokeInstructionData::new().try_to_vec().unwrap();
+        let mut args = self.__args.try_to_vec().unwrap();
+        data.append(&mut args);
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::ASSET_ID,
@@ -230,6 +261,7 @@ impl<'a, 'b> RevokeCpiBuilder<'a, 'b> {
             __program: program,
             asset: None,
             signer: None,
+            delegate_input: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -247,6 +279,11 @@ impl<'a, 'b> RevokeCpiBuilder<'a, 'b> {
         signer: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.signer = Some(signer);
+        self
+    }
+    #[inline(always)]
+    pub fn delegate_input(&mut self, delegate_input: DelegateInput) -> &mut Self {
+        self.instruction.delegate_input = Some(delegate_input);
         self
     }
     /// Add an additional account to the instruction.
@@ -290,12 +327,20 @@ impl<'a, 'b> RevokeCpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
+        let args = RevokeInstructionArgs {
+            delegate_input: self
+                .instruction
+                .delegate_input
+                .clone()
+                .expect("delegate_input is not set"),
+        };
         let instruction = RevokeCpi {
             __program: self.instruction.__program,
 
             asset: self.instruction.asset.expect("asset is not set"),
 
             signer: self.instruction.signer.expect("signer is not set"),
+            __args: args,
         };
         instruction.invoke_signed_with_remaining_accounts(
             signers_seeds,
@@ -308,6 +353,7 @@ struct RevokeCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     signer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    delegate_input: Option<DelegateInput>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

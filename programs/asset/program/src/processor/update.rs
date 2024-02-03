@@ -15,7 +15,7 @@ use crate::{
     error::AssetError,
     instruction::{
         accounts::{Context, UpdateAccounts},
-        UpdateData,
+        UpdateInput,
     },
     processor::resize,
     require,
@@ -38,7 +38,7 @@ use crate::{
 pub fn process_update(
     program_id: &Pubkey,
     ctx: Context<UpdateAccounts>,
-    args: UpdateData,
+    args: UpdateInput,
 ) -> ProgramResult {
     // account validation
 

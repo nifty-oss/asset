@@ -5,6 +5,13 @@ use nifty_asset_types::{
 };
 use shank::{ShankContext, ShankInstruction};
 
+#[repr(u8)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, PartialEq)]
+pub enum DelegateInput {
+    All,
+    Some { roles: Vec<DelegateRole> },
+}
+
 #[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankContext, ShankInstruction)]
 #[rustfmt::skip]
 pub enum Instruction {
@@ -33,7 +40,7 @@ pub enum Instruction {
     #[account(0, writable, name="asset", desc = "Asset account")]
     #[account(1, signer, name="holder", desc = "The holder of the asset")]
     #[account(2, name="delegate", desc = "The delegate account")]
-    Approve(Vec<DelegateRole>),
+    Approve(DelegateInput),
 
     /// Allocates an extension into an uninitialized asset (buffer) account.
     #[account(0, signer, writable, name="asset", desc = "Asset account")]
@@ -49,7 +56,7 @@ pub enum Instruction {
     /// Revokes a delegate.
     #[account(0, writable, name="asset", desc = "Asset account")]
     #[account(1, signer, name="signer", desc = "Current holder of the asset or delegate")]
-    Revoke,
+    Revoke(DelegateInput),
 
     /// Transfers ownership of the aseet to a new public key.
     #[account(0, writable, name="asset", desc = "Asset account")]
@@ -68,7 +75,7 @@ pub enum Instruction {
     #[account(2, optional, writable, name="buffer", desc = "Extension (asset) buffer account")]
     #[account(3, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
     #[account(4, optional, name="system_program", desc = "The system program")]
-    Update(UpdateData),
+    Update(UpdateInput),
 
     /// Writes data to an extension.
     #[account(0, signer, writable, name="asset", desc = "Asset account")]
@@ -115,7 +122,7 @@ pub struct Data {
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
-pub struct UpdateData {
+pub struct UpdateInput {
     /// The updated name of the asset.
     pub name: Option<String>,
 

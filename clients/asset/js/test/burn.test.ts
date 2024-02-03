@@ -10,6 +10,7 @@ import {
   create,
   approve,
   fetchAsset,
+  DelegateInput,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -70,7 +71,10 @@ test('it can burn an asset as a delegate', async (t) => {
     asset: assetSigner.publicKey,
     holder: holderSigner,
     delegate: delegateSigner.publicKey,
-    args: [DelegateRole.Burn],
+    delegateInput: {
+      __kind: 'Some',
+      roles: [DelegateRole.Burn],
+    } as DelegateInput,
   }).sendAndConfirm(umi);
 
   // and burn the asset as the delegate.

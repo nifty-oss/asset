@@ -11,6 +11,7 @@ export * from './blob';
 export * from './creator';
 export * from './creators';
 export * from './delegate';
+export * from './delegateInput';
 export * from './delegateRole';
 export * from './discriminator';
 export * from './extension';

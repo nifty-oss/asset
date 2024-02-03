@@ -16,7 +16,6 @@ import {
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
-  array,
   mapSerializer,
   struct,
   u8,
@@ -27,9 +26,9 @@ import {
   getAccountMetasAndSigners,
 } from '../shared';
 import {
-  DelegateRole,
-  DelegateRoleArgs,
-  getDelegateRoleSerializer,
+  DelegateInput,
+  DelegateInputArgs,
+  getDelegateInputSerializer,
 } from '../types';
 
 // Accounts.
@@ -45,10 +44,10 @@ export type ApproveInstructionAccounts = {
 // Data.
 export type ApproveInstructionData = {
   discriminator: number;
-  args: Array<DelegateRole>;
+  delegateInput: DelegateInput;
 };
 
-export type ApproveInstructionDataArgs = { args: Array<DelegateRoleArgs> };
+export type ApproveInstructionDataArgs = { delegateInput: DelegateInputArgs };
 
 export function getApproveInstructionDataSerializer(): Serializer<
   ApproveInstructionDataArgs,
@@ -58,7 +57,7 @@ export function getApproveInstructionDataSerializer(): Serializer<
     struct<ApproveInstructionData>(
       [
         ['discriminator', u8()],
-        ['args', array(getDelegateRoleSerializer())],
+        ['delegateInput', getDelegateInputSerializer()],
       ],
       { description: 'ApproveInstructionData' }
     ),

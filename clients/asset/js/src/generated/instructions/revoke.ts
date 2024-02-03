@@ -25,6 +25,11 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
+import {
+  DelegateInput,
+  DelegateInputArgs,
+  getDelegateInputSerializer,
+} from '../types';
 
 // Accounts.
 export type RevokeInstructionAccounts = {
@@ -35,26 +40,36 @@ export type RevokeInstructionAccounts = {
 };
 
 // Data.
-export type RevokeInstructionData = { discriminator: number };
+export type RevokeInstructionData = {
+  discriminator: number;
+  delegateInput: DelegateInput;
+};
 
-export type RevokeInstructionDataArgs = {};
+export type RevokeInstructionDataArgs = { delegateInput: DelegateInputArgs };
 
 export function getRevokeInstructionDataSerializer(): Serializer<
   RevokeInstructionDataArgs,
   RevokeInstructionData
 > {
   return mapSerializer<RevokeInstructionDataArgs, any, RevokeInstructionData>(
-    struct<RevokeInstructionData>([['discriminator', u8()]], {
-      description: 'RevokeInstructionData',
-    }),
+    struct<RevokeInstructionData>(
+      [
+        ['discriminator', u8()],
+        ['delegateInput', getDelegateInputSerializer()],
+      ],
+      { description: 'RevokeInstructionData' }
+    ),
     (value) => ({ ...value, discriminator: 6 })
   ) as Serializer<RevokeInstructionDataArgs, RevokeInstructionData>;
 }
 
+// Args.
+export type RevokeInstructionArgs = RevokeInstructionDataArgs;
+
 // Instruction.
 export function revoke(
   context: Pick<Context, 'programs'>,
-  input: RevokeInstructionAccounts
+  input: RevokeInstructionAccounts & RevokeInstructionArgs
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -76,6 +91,9 @@ export function revoke(
     },
   } satisfies ResolvedAccountsWithIndices;
 
+  // Arguments.
+  const resolvedArgs: RevokeInstructionArgs = { ...input };
+
   // Accounts in order.
   const orderedAccounts: ResolvedAccount[] = Object.values(
     resolvedAccounts
@@ -89,7 +107,9 @@ export function revoke(
   );
 
   // Data.
-  const data = getRevokeInstructionDataSerializer().serialize({});
+  const data = getRevokeInstructionDataSerializer().serialize(
+    resolvedArgs as RevokeInstructionDataArgs
+  );
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

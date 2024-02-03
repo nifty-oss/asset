@@ -1,6 +1,6 @@
 use nifty_asset::{
     instructions::{Approve, ApproveInstructionArgs},
-    types::DelegateRole,
+    types::{DelegateInput, DelegateRole},
 };
 
 use super::*;
@@ -33,7 +33,9 @@ pub fn handle_approve(args: ApproveArgs) -> Result<()> {
         })
         .collect();
 
-    let args = ApproveInstructionArgs { args: roles };
+    let args = ApproveInstructionArgs {
+        delegate_input: DelegateInput::Some { roles },
+    };
 
     let ix = Approve {
         asset,

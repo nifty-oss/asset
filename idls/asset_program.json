@@ -152,11 +152,9 @@
       ],
       "args": [
         {
-          "name": "args",
+          "name": "delegateInput",
           "type": {
-            "vec": {
-              "defined": "DelegateRole"
-            }
+            "defined": "DelegateInput"
           }
         }
       ],
@@ -254,7 +252,14 @@
           ]
         }
       ],
-      "args": [],
+      "args": [
+        {
+          "name": "delegateInput",
+          "type": {
+            "defined": "DelegateInput"
+          }
+        }
+      ],
       "discriminant": {
         "type": "u8",
         "value": 6
@@ -369,9 +374,9 @@
       ],
       "args": [
         {
-          "name": "updateData",
+          "name": "updateInput",
           "type": {
-            "defined": "UpdateData"
+            "defined": "UpdateInput"
           }
         }
       ],
@@ -486,7 +491,7 @@
       }
     },
     {
-      "name": "UpdateData",
+      "name": "UpdateInput",
       "type": {
         "kind": "struct",
         "fields": [
@@ -509,6 +514,30 @@
                 "defined": "Extension"
               }
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "DelegateInput",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "All"
+          },
+          {
+            "name": "Some",
+            "fields": [
+              {
+                "name": "roles",
+                "type": {
+                  "vec": {
+                    "defined": "DelegateRole"
+                  }
+                }
+              }
+            ]
           }
         ]
       }

@@ -9,6 +9,7 @@ import {
   fetchAsset,
   lock,
   transfer,
+  DelegateInput,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -59,7 +60,10 @@ test('it can lock an asset with a delegate', async (t) => {
     asset: asset.publicKey,
     holder,
     delegate: authority.publicKey,
-    args: [DelegateRole.Lock],
+    delegateInput: {
+      __kind: 'Some',
+      roles: [DelegateRole.Lock],
+    } as DelegateInput,
   }).sendAndConfirm(umi);
 
   // When we lock the asset.
@@ -95,7 +99,10 @@ test('it cannot transfer a locked asset', async (t) => {
     asset: asset.publicKey,
     holder,
     delegate: authority.publicKey,
-    args: [DelegateRole.Lock],
+    delegateInput: {
+      __kind: 'Some',
+      roles: [DelegateRole.Lock],
+    } as DelegateInput,
   }).sendAndConfirm(umi);
 
   // And we lock the asset.
@@ -136,7 +143,10 @@ test('it cannot lock an asset without "Lock" role', async (t) => {
     asset: asset.publicKey,
     holder,
     delegate: authority.publicKey,
-    args: [DelegateRole.Transfer],
+    delegateInput: {
+      __kind: 'Some',
+      roles: [DelegateRole.Transfer],
+    } as DelegateInput,
   }).sendAndConfirm(umi);
 
   // When we lock the asset.
@@ -169,7 +179,10 @@ test('it cannot lock as a holder if delegate set', async (t) => {
     asset: asset.publicKey,
     holder,
     delegate: authority.publicKey,
-    args: [DelegateRole.Transfer, DelegateRole.Lock],
+    delegateInput: {
+      __kind: 'Some',
+      roles: [DelegateRole.Lock, DelegateRole.Transfer],
+    } as DelegateInput,
   }).sendAndConfirm(umi);
 
   // When we try to lock the asset as a holder.
