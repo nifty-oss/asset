@@ -4,12 +4,12 @@ import {
   Asset,
   DelegateRole,
   State,
-  create,
   approve,
+  create,
+  delegateInput,
   fetchAsset,
   lock,
   unlock,
-  DelegateInput,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -33,10 +33,9 @@ test('it can unlock an asset', async (t) => {
     asset: asset.publicKey,
     holder,
     delegate: authority.publicKey,
-    delegateInput: {
-      __kind: 'Some',
+    delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Lock],
-    } as DelegateInput,
+    }),
   }).sendAndConfirm(umi);
 
   // And we lock the asset.
@@ -83,10 +82,9 @@ test('it cannot unlock an asset with an invalid delegate', async (t) => {
     asset: asset.publicKey,
     holder,
     delegate: authority.publicKey,
-    delegateInput: {
-      __kind: 'Some',
+    delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Lock],
-    } as DelegateInput,
+    }),
   }).sendAndConfirm(umi);
 
   // And we lock the asset.
@@ -137,10 +135,9 @@ test('it cannot unlock an asset locked with a delegate as a holder', async (t) =
     asset: asset.publicKey,
     holder,
     delegate: authority.publicKey,
-    delegateInput: {
-      __kind: 'Some',
+    delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Lock],
-    } as DelegateInput,
+    }),
   }).sendAndConfirm(umi);
 
   // And we lock the asset.
@@ -228,10 +225,9 @@ test('it can unlock an asset that is unlocked', async (t) => {
     asset: asset.publicKey,
     holder,
     delegate: authority.publicKey,
-    delegateInput: {
-      __kind: 'Some',
+    delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Lock],
-    } as DelegateInput,
+    }),
   }).sendAndConfirm(umi);
 
   // When we unlock an unlocked asset.

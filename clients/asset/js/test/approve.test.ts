@@ -3,10 +3,10 @@ import test from 'ava';
 import {
   Asset,
   DelegateRole,
-  create,
   approve,
+  create,
+  delegateInput,
   fetchAsset,
-  DelegateInput,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -30,13 +30,9 @@ test('it can set a delegate with a single role', async (t) => {
     asset: asset.publicKey,
     holder,
     delegate: authority,
-    delegateInput: {
-      __kind: 'Some',
-      roles: [DelegateRole.Transfer],
-    } as DelegateInput,
+    delegateInput: delegateInput('Some', { roles: [DelegateRole.Transfer] }),
   }).sendAndConfirm(umi);
 
-  // Then the delegate is set.
   // Then the delegate is set.
   const account = await fetchAsset(umi, asset.publicKey);
   t.like(account, <Asset>{
@@ -69,7 +65,7 @@ test('it can set a delegate with multiple role', async (t) => {
     asset: asset.publicKey,
     holder,
     delegate: authority,
-    delegateInput: { __kind: 'Some', roles } as DelegateInput,
+    delegateInput: delegateInput('Some', { roles }),
   }).sendAndConfirm(umi);
 
   // Then the delegate is set.
@@ -103,10 +99,7 @@ test('it can set a new role to an existing delegate', async (t) => {
     asset: asset.publicKey,
     holder,
     delegate: authority,
-    delegateInput: {
-      __kind: 'Some',
-      roles: [DelegateRole.Transfer],
-    } as DelegateInput,
+    delegateInput: delegateInput('Some', { roles: [DelegateRole.Transfer] }),
   }).sendAndConfirm(umi);
 
   let account = await fetchAsset(umi, asset.publicKey);
@@ -122,10 +115,7 @@ test('it can set a new role to an existing delegate', async (t) => {
     asset: asset.publicKey,
     holder,
     delegate: authority,
-    delegateInput: {
-      __kind: 'Some',
-      roles: [DelegateRole.Burn],
-    } as DelegateInput,
+    delegateInput: delegateInput('Some', { roles: [DelegateRole.Burn] }),
   }).sendAndConfirm(umi);
 
   // Then the delegate have both roles active.
@@ -152,19 +142,13 @@ test('it sets all roles when passing in the All variant', async (t) => {
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
-  const allRoles = [
-    DelegateRole.Transfer,
-    DelegateRole.Lock,
-    DelegateRole.Burn,
-  ];
-
   // When we approve a delegate with the All role
   const authority = generateSigner(umi).publicKey;
   await approve(umi, {
     asset: asset.publicKey,
     holder,
     delegate: authority,
-    delegateInput: { __kind: 'All' } as DelegateInput,
+    delegateInput: delegateInput('All'),
   }).sendAndConfirm(umi);
 
   // Then the delegate is set with all roles.
@@ -172,7 +156,7 @@ test('it sets all roles when passing in the All variant', async (t) => {
   t.like(account, <Asset>{
     delegate: {
       address: authority,
-      roles: allRoles,
+      roles: [DelegateRole.Transfer, DelegateRole.Lock, DelegateRole.Burn],
     },
   });
 });

@@ -3,11 +3,11 @@ import test from 'ava';
 import {
   Asset,
   DelegateRole,
-  create,
   approve,
+  create,
+  delegateInput,
   fetchAsset,
   revoke,
-  DelegateInput,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -27,16 +27,14 @@ test('a holder can revoke a delegate', async (t) => {
 
   // And set a delegate on it.
   const authority = generateSigner(umi).publicKey;
-  const delegateInput = {
-    __kind: 'Some',
-    roles: [DelegateRole.Transfer],
-  } as DelegateInput;
 
   await approve(umi, {
     asset: asset.publicKey,
     holder,
     delegate: authority,
-    delegateInput,
+    delegateInput: delegateInput('Some', {
+      roles: [DelegateRole.Transfer],
+    }),
   }).sendAndConfirm(umi);
 
   t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
@@ -49,7 +47,9 @@ test('a holder can revoke a delegate', async (t) => {
   await revoke(umi, {
     asset: asset.publicKey,
     signer: holder,
-    delegateInput,
+    delegateInput: delegateInput('Some', {
+      roles: [DelegateRole.Transfer],
+    }),
   }).sendAndConfirm(umi);
 
   // Then the delegate is removed.
@@ -74,16 +74,14 @@ test('a delegate can revoke itself', async (t) => {
 
   // And set a delegate on it.
   const authority = generateSigner(umi);
-  const delegateInput = {
-    __kind: 'Some',
-    roles: [DelegateRole.Transfer],
-  } as DelegateInput;
 
   await approve(umi, {
     asset: asset.publicKey,
     holder,
     delegate: authority.publicKey,
-    delegateInput,
+    delegateInput: delegateInput('Some', {
+      roles: [DelegateRole.Transfer],
+    }),
   }).sendAndConfirm(umi);
 
   t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
@@ -96,7 +94,9 @@ test('a delegate can revoke itself', async (t) => {
   await revoke(umi, {
     asset: asset.publicKey,
     signer: authority,
-    delegateInput,
+    delegateInput: delegateInput('Some', {
+      roles: [DelegateRole.Transfer],
+    }),
   }).sendAndConfirm(umi);
 
   // Then the delegate is removed.
@@ -121,16 +121,14 @@ test('a random signer cannot revoke the delegate', async (t) => {
 
   // And set a delegate on it.
   const authority = generateSigner(umi);
-  const delegateInput = {
-    __kind: 'Some',
-    roles: [DelegateRole.Transfer],
-  } as DelegateInput;
 
   await approve(umi, {
     asset: asset.publicKey,
     holder,
     delegate: authority.publicKey,
-    delegateInput,
+    delegateInput: delegateInput('Some', {
+      roles: [DelegateRole.Transfer],
+    }),
   }).sendAndConfirm(umi);
 
   t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
@@ -144,7 +142,9 @@ test('a random signer cannot revoke the delegate', async (t) => {
   const promise = revoke(umi, {
     asset: asset.publicKey,
     signer: randomSigner,
-    delegateInput,
+    delegateInput: delegateInput('Some', {
+      roles: [DelegateRole.Transfer],
+    }),
   }).sendAndConfirm(umi);
 
   // Then we get an error.
@@ -154,11 +154,12 @@ test('a random signer cannot revoke the delegate', async (t) => {
   t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
     delegate: {
       address: authority.publicKey,
+      roles: [DelegateRole.Transfer],
     },
   });
 });
 
-test('revoking with the All variant revokes all active roles', async (t) => {
+test('revoking with the "All" variant revokes all active roles', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
@@ -174,16 +175,14 @@ test('revoking with the All variant revokes all active roles', async (t) => {
 
   // And set a delegate on it.
   const authority = generateSigner(umi);
-  const delegateInput = {
-    __kind: 'Some',
-    roles: [DelegateRole.Transfer, DelegateRole.Burn, DelegateRole.Lock],
-  } as DelegateInput;
 
   await approve(umi, {
     asset: asset.publicKey,
     holder,
     delegate: authority.publicKey,
-    delegateInput,
+    delegateInput: delegateInput('Some', {
+      roles: [DelegateRole.Transfer, DelegateRole.Burn, DelegateRole.Lock],
+    }),
   }).sendAndConfirm(umi);
 
   t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
@@ -196,7 +195,7 @@ test('revoking with the All variant revokes all active roles', async (t) => {
   await revoke(umi, {
     asset: asset.publicKey,
     signer: authority,
-    delegateInput: { __kind: 'All' } as DelegateInput,
+    delegateInput: delegateInput('All'),
   }).sendAndConfirm(umi);
 
   // Then the delegate is removed.

@@ -4,11 +4,11 @@ import {
   Asset,
   DelegateRole,
   Standard,
-  create,
   approve,
+  create,
+  delegateInput,
   fetchAsset,
   transfer,
-  DelegateInput,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -68,10 +68,9 @@ test('it can transfer an asset as a delegate', async (t) => {
     asset: assetSigner.publicKey,
     holder: holderSigner,
     delegate: delegateSigner.publicKey,
-    delegateInput: {
-      __kind: 'Some',
+    delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Transfer],
-    } as DelegateInput,
+    }),
   }).sendAndConfirm(umi);
 
   // and transfer the asset as the delegate.
@@ -144,10 +143,9 @@ test('holder transfer clears delegate', async (t) => {
     asset: assetSigner.publicKey,
     holder: holderSigner,
     delegate: delegateSigner.publicKey,
-    delegateInput: {
-      __kind: 'Some',
+    delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Burn, DelegateRole.Transfer],
-    } as DelegateInput,
+    }),
   }).sendAndConfirm(umi);
 
   // and transfer the asset as holder.
@@ -190,10 +188,9 @@ test('delegate transfer clears delegate', async (t) => {
     asset: assetSigner.publicKey,
     holder: holderSigner,
     delegate: delegateSigner.publicKey,
-    delegateInput: {
-      __kind: 'Some',
+    delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Lock, DelegateRole.Transfer],
-    } as DelegateInput,
+    }),
   }).sendAndConfirm(umi);
 
   // and transfer the asset as the delegate.
@@ -235,10 +232,9 @@ test('self-transfer does not clear delegate', async (t) => {
     asset: assetSigner.publicKey,
     holder: holderSigner,
     delegate: delegateSigner.publicKey,
-    delegateInput: {
-      __kind: 'Some',
+    delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Burn],
-    } as DelegateInput,
+    }),
   }).sendAndConfirm(umi);
 
   // and transfer the asset as holder to itself.
