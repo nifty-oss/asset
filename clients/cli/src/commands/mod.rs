@@ -4,6 +4,7 @@ mod create;
 mod decode;
 mod lock;
 mod mint;
+mod revoke;
 mod transfer;
 mod unlock;
 
@@ -14,6 +15,7 @@ pub use create::*;
 pub use decode::*;
 pub use lock::*;
 pub use mint::*;
+pub use revoke::*;
 pub use transfer::*;
 pub use unlock::*;
 

@@ -29,6 +29,20 @@ impl Delegate {
     pub fn has_active_roles(&self) -> bool {
         self.roles > 0
     }
+
+    pub fn decode_roles(roles: u8) -> Vec<DelegateRole> {
+        let mut result = Vec::new();
+        if roles == 0 {
+            result.push(DelegateRole::None);
+            return result;
+        }
+        for i in 0..3 {
+            if roles & (0b1u8 << i) > 0 {
+                result.push(DelegateRole::from(i + 1));
+            }
+        }
+        result
+    }
 }
 
 impl Nullable for Delegate {
@@ -92,3 +106,35 @@ impl From<DelegateRole> for u8 {
 unsafe impl Pod for DelegateRole {}
 
 unsafe impl Zeroable for DelegateRole {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_decode_roles() {
+        // Test case 1: roles = 0b101 (Transfer and Burn)
+        let roles = 0b101;
+        let expected_result = vec![DelegateRole::Transfer, DelegateRole::Burn];
+        assert_eq!(Delegate::decode_roles(roles), expected_result);
+
+        // Test case 2: roles = 0b010 (Lock)
+        let roles = 0b010;
+        let expected_result = vec![DelegateRole::Lock];
+        assert_eq!(Delegate::decode_roles(roles), expected_result);
+
+        // Test case 3: roles = 0b000 (None)
+        let roles = 0b000;
+        let expected_result = vec![DelegateRole::None];
+        assert_eq!(Delegate::decode_roles(roles), expected_result);
+
+        // Test case 4: roles = 0b111 (All roles)
+        let roles = 0b111;
+        let expected_result = vec![
+            DelegateRole::Transfer,
+            DelegateRole::Lock,
+            DelegateRole::Burn,
+        ];
+        assert_eq!(Delegate::decode_roles(roles), expected_result);
+    }
+}

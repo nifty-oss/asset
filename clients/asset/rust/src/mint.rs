@@ -28,6 +28,8 @@ pub struct MintIxArgs {
 pub struct MintAccounts {
     pub asset: Pubkey,
     pub owner: Pubkey,
+    /// If not specified, the owner is used as the payer.
+    pub payer: Option<Pubkey>,
 }
 
 /// Mint instruction asset sub-args.
@@ -246,6 +248,8 @@ const MAX_IX_DATA_SIZE: usize = 925;
 pub fn mint(args: MintIxArgs) -> Result<Vec<Instruction>, MintError> {
     let mut instructions = vec![];
 
+    let payer = args.accounts.payer.unwrap_or(args.accounts.owner);
+
     // Extension allocation instructions.
     for extension in args.extension_args.iter() {
         let ix_args = AllocateInstructionArgs {
@@ -263,7 +267,7 @@ pub fn mint(args: MintIxArgs) -> Result<Vec<Instruction>, MintError> {
         instructions.push(
             Allocate {
                 asset: args.accounts.asset,
-                payer: Some(args.accounts.owner),
+                payer: Some(payer),
                 system_program: Some(solana_program::system_program::id()),
             }
             .instruction(ix_args),
@@ -280,7 +284,7 @@ pub fn mint(args: MintIxArgs) -> Result<Vec<Instruction>, MintError> {
                 instructions.push(
                     Write {
                         asset: args.accounts.asset,
-                        payer: args.accounts.owner,
+                        payer,
                         system_program: solana_program::system_program::id(),
                     }
                     .instruction(ix_args),
@@ -301,7 +305,7 @@ pub fn mint(args: MintIxArgs) -> Result<Vec<Instruction>, MintError> {
             asset: args.accounts.asset,
             authority: args.accounts.owner,
             holder: args.accounts.owner,
-            payer: Some(args.accounts.owner),
+            payer: Some(payer),
             system_program: Some(solana_program::system_program::id()),
         }
         .instruction(ix_args),

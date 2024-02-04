@@ -60,7 +60,7 @@ pub enum Commands {
         field: Option<String>,
     },
     /// Set a delegate on an asset with specific roles.
-    Delegate {
+    Approve {
         /// The asset to delegate.
         asset: Pubkey,
 
@@ -79,6 +79,20 @@ pub enum Commands {
 
         /// Path to the authority keypair file. Defaults to the signer.
         authority_keypair_path: Option<PathBuf>,
+    },
+    /// Revoke a delegate from an asset.
+    Revoke {
+        /// The asset to revoke the delegate from.
+        asset: Pubkey,
+
+        /// The roles to revoke: "burn", "lock", "transfer".
+        /// Specify each one separately: --role burn --role lock --role transfer
+        #[arg(short = 'R', long)]
+        role: Vec<String>,
+
+        /// Revoke all roles from the delegate and clear it.
+        #[arg(long)]
+        all: bool,
     },
     /// Transfer an asset to a new holder.
     Transfer {

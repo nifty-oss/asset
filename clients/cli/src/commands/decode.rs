@@ -4,8 +4,9 @@ use nifty_asset::{
 };
 use nifty_asset_types::{
     extensions::{Attributes, Extension, ExtensionData, ExtensionType, Metadata},
-    ZeroCopy,
+    state::Delegate,
 };
+use podded::ZeroCopy;
 
 use super::*;
 
@@ -47,7 +48,11 @@ pub fn handle_decode(args: DecodeArgs) -> Result<()> {
                 println!("authority: {:?}", asset.authority);
             }
             "delegate" => {
-                println!("delegate: {:?}", asset.delegate);
+                println!("delegate address: {:?}", asset.delegate.address);
+                println!(
+                    "delegate roles: {:?}",
+                    Delegate::decode_roles(asset.delegate.roles)
+                );
             }
             "name" => {
                 println!("name: {:?}", asset.name);

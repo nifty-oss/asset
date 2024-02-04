@@ -25,7 +25,11 @@ pub async fn handle_mint(args: MintArgs) -> Result<()> {
     let asset = asset_sk.pubkey();
     let owner = asset_data.owner;
 
-    let accounts = MintAccounts { asset, owner };
+    let accounts = MintAccounts {
+        asset,
+        owner,
+        payer: Some(authority_sk.pubkey()),
+    };
     let asset_args = AssetArgs {
         name: asset_data.name,
         standard: Standard::NonFungible,

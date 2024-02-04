@@ -40,7 +40,7 @@ async fn main() -> Result<()> {
             asset,
             field,
         }),
-        Commands::Delegate {
+        Commands::Approve {
             asset,
             delegate,
             role,
@@ -68,6 +68,13 @@ async fn main() -> Result<()> {
             })
             .await
         }
+        Commands::Revoke { asset, role, all } => handle_revoke(RevokeArgs {
+            keypair_path,
+            rpc_url,
+            asset,
+            role,
+            all,
+        }),
         Commands::Transfer { asset, recipient } => handle_transfer(TransferArgs {
             keypair_path,
             rpc_url,
