@@ -2,7 +2,11 @@ use mpl_token_metadata::{
     accounts::Metadata,
     types::{Collection, TokenStandard},
 };
-use nifty_asset::instructions::CreateCpiBuilder;
+use nifty_asset::{
+    extensions::{ExtensionBuilder, MetadataBuilder},
+    instructions::{AllocateCpiBuilder, CreateCpiBuilder},
+    types::{Extension, ExtensionType},
+};
 use podded::ZeroCopy;
 use solana_program::{
     entrypoint::ProgramResult, msg, program::invoke_signed, program_error::ProgramError,
@@ -171,6 +175,27 @@ pub fn process_create(program_id: &Pubkey, ctx: Context<CreateAccounts>) -> Prog
     // drop data for the cpi call
     drop(data);
 
+    let signer_seeds = [
+        BRIDGED_ASSET_PREFIX,
+        ctx.accounts.mint.key.as_ref(),
+        &[bump],
+    ];
+
+    let mut extension = MetadataBuilder::default();
+    extension.set(&metadata.symbol, &metadata.uri);
+    let data = extension.build();
+
+    AllocateCpiBuilder::new(ctx.accounts.nifty_asset_program)
+        .asset(ctx.accounts.asset)
+        .payer(Some(ctx.accounts.payer))
+        .system_program(Some(ctx.accounts.system_program))
+        .extension(Extension {
+            extension_type: ExtensionType::Metadata,
+            length: data.len() as u32,
+            data: Some(data),
+        })
+        .invoke_signed(&[&signer_seeds])?;
+
     CreateCpiBuilder::new(ctx.accounts.nifty_asset_program)
         .asset(ctx.accounts.asset)
         .authority(ctx.accounts.update_authority)
@@ -178,9 +203,5 @@ pub fn process_create(program_id: &Pubkey, ctx: Context<CreateAccounts>) -> Prog
         .payer(Some(ctx.accounts.payer))
         .system_program(Some(ctx.accounts.system_program))
         .name(metadata.name)
-        .invoke_signed(&[&[
-            BRIDGED_ASSET_PREFIX,
-            ctx.accounts.mint.key.as_ref(),
-            &[bump],
-        ]])
+        .invoke_signed(&[&signer_seeds])
 }

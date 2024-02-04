@@ -17,11 +17,13 @@ mod attributes;
 mod blob;
 mod creators;
 mod links;
+mod metadata;
 
 pub use attributes::*;
 pub use blob::*;
 pub use creators::*;
 pub use links::*;
+pub use metadata::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
 use bytemuck::{Pod, Zeroable};
@@ -115,6 +117,7 @@ pub enum ExtensionType {
     Blob,
     Creators,
     Links,
+    Metadata,
 }
 
 impl From<u32> for ExtensionType {
@@ -125,6 +128,7 @@ impl From<u32> for ExtensionType {
             2 => ExtensionType::Blob,
             3 => ExtensionType::Creators,
             4 => ExtensionType::Links,
+            5 => ExtensionType::Metadata,
             _ => panic!("invalid extension value: {value}"),
         }
     }
@@ -138,6 +142,7 @@ impl From<ExtensionType> for u32 {
             ExtensionType::Blob => 2,
             ExtensionType::Creators => 3,
             ExtensionType::Links => 4,
+            ExtensionType::Metadata => 5,
         }
     }
 }
@@ -172,4 +177,4 @@ macro_rules! validate_extension_type {
     };
 }
 
-validate_extension_type!(Attributes, Blob, Creators, Links,);
+validate_extension_type!(Attributes, Blob, Creators, Links, Metadata);

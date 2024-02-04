@@ -3,7 +3,7 @@ use nifty_asset::{
     JsonCreator,
 };
 use nifty_asset_types::{
-    extensions::{Attributes, Extension, ExtensionData, ExtensionType},
+    extensions::{Attributes, Extension, ExtensionData, ExtensionType, Metadata},
     ZeroCopy,
 };
 
@@ -99,6 +99,10 @@ pub fn handle_decode(args: DecodeArgs) -> Result<()> {
             ExtensionType::Links => {
                 let links: Links = Links::from_bytes(extension_data);
                 println!("{links:#?}");
+            }
+            ExtensionType::Metadata => {
+                let metadata: Metadata = Metadata::from_bytes(extension_data);
+                println!("{metadata:#?}");
             }
             ExtensionType::None => {
                 println!("None");

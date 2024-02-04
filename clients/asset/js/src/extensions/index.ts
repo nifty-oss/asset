@@ -9,18 +9,22 @@ import {
   getBlobSerializer,
   getLinksSerializer,
   getCreatorsSerializer,
+  Metadata,
+  getMetadataSerializer,
 } from '../generated';
 
 export * from './attributes';
 export * from './creators';
 export * from './blob';
 export * from './links';
+export * from './metadata';
 
 export type TypedExtension =
   | ({ type: ExtensionType.Attributes } & Attributes)
   | ({ type: ExtensionType.Blob } & Blob)
   | ({ type: ExtensionType.Creators } & Creators)
-  | ({ type: ExtensionType.Links } & Links);
+  | ({ type: ExtensionType.Links } & Links)
+  | ({ type: ExtensionType.Metadata } & Metadata);
 
 export const getExtensionSerializerFromType = <T extends TypedExtension>(
   type: ExtensionType
@@ -35,6 +39,8 @@ export const getExtensionSerializerFromType = <T extends TypedExtension>(
         return getCreatorsSerializer();
       case ExtensionType.Links:
         return getLinksSerializer();
+      case ExtensionType.Metadata:
+        return getMetadataSerializer();
       default:
         throw new Error(`Unknown extension type: ${type}`);
     }

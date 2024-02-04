@@ -14,6 +14,7 @@ export enum ExtensionType {
   Blob,
   Creators,
   Links,
+  Metadata,
 }
 
 export type ExtensionTypeArgs = ExtensionType;

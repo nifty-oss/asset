@@ -3,8 +3,14 @@ import {
   percentAmount,
   publicKey,
 } from '@metaplex-foundation/umi';
+import {
+  publicKey as publicKeySerializer,
+  string,
+} from '@metaplex-foundation/umi/serializers';
+import { Asset, ExtensionType, fetchAsset } from '@nifty-oss/asset';
 import test from 'ava';
 import {
+  BRIDGE_PROGRAM_ID,
   Discriminator,
   State,
   Vault,
@@ -27,6 +33,7 @@ test('it can create an asset on the bridge', async (t) => {
   // And a Token Metadata non-fungible.
   const mint = await createNft(umi, {
     name: 'Bridge Asset',
+    symbol: 'BA',
     uri: 'https://asset.bridge',
     sellerFeeBasisPoints: percentAmount(5.5),
   });
@@ -47,6 +54,21 @@ test('it can create an asset on the bridge', async (t) => {
     discriminator: Discriminator.Vault,
     state: State.Idle,
     mint: mint.publicKey,
+  });
+
+  // And the asset is created.
+  const asset = umi.eddsa.findPda(BRIDGE_PROGRAM_ID, [
+    string({ size: 'variable' }).serialize('nifty::bridge::asset'),
+    publicKeySerializer().serialize(mint.publicKey),
+  ]);
+  t.like(await fetchAsset(umi, asset), <Asset>{
+    extensions: [
+      {
+        type: ExtensionType.Metadata,
+        symbol: 'BA',
+        uri: 'https://asset.bridge',
+      },
+    ],
   });
 });
 

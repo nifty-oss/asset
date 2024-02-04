@@ -77,6 +77,7 @@ pub enum ExtensionValue {
     JsonAttribute(Vec<JsonAttribute>),
     JsonLink(Vec<JsonLink>),
     JsonBlob(JsonBlob),
+    JsonMetadata(JsonMetadata),
 }
 
 impl ExtensionValue {
@@ -95,6 +96,7 @@ impl ExtensionValue {
                 acc
             }),
             Self::JsonBlob(value) => value.into_data(),
+            Self::JsonMetadata(value) => value.into_data(),
         }
     }
 }
@@ -199,6 +201,30 @@ impl JsonBlob {
         let path = PathBuf::from(self.path);
         let blob_data = std::fs::read(path).expect("failed to read blob file");
         data.extend(blob_data);
+
+        data
+    }
+}
+
+/// A type suitable for JSON serde de/serialization.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct JsonMetadata {
+    pub symbol: String,
+    pub uri: String,
+}
+
+impl JsonMetadata {
+    pub fn into_data(self) -> Vec<u8> {
+        let mut data = vec![];
+
+        let symbol_bytes = self.symbol.into_bytes();
+        data.push(symbol_bytes.len() as u8);
+        data.extend(symbol_bytes);
+
+        let uri_bytes = self.uri.into_bytes();
+        data.push(uri_bytes.len() as u8);
+        data.extend(uri_bytes);
 
         data
     }

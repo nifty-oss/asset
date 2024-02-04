@@ -18,6 +18,7 @@ export * from './extension';
 export * from './extensionType';
 export * from './link';
 export * from './links';
+export * from './metadata';
 export * from './standard';
 export * from './state';
 export * from './trait';
