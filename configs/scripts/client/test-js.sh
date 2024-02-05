@@ -23,9 +23,12 @@ if [ ! -z "$ARGS" ]; then
     ARGS=$*
 fi
 
+cd ${WORKING_DIR}/clients/js
+pnpm install
+
 PROGRAMS=$(echo $PROGRAMS | jq -c '.[]' | sed 's/"//g')
 
 for p in ${PROGRAMS[@]}; do
-    cd ${WORKING_DIR}/clients/${p}/js
-    pnpm install && pnpm build && pnpm test ${ARGS}
+    cd ${WORKING_DIR}/clients/js/${p}
+    pnpm build && pnpm test ${ARGS}
 done

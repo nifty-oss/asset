@@ -34,7 +34,7 @@ jobs:
         client: ${{ fromJson(inputs.client_matrix) }}
     steps:
       - name: Git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Load environment variables
         run: cat .github/.env >> $GITHUB_ENV
@@ -53,7 +53,7 @@ jobs:
       - name: Cache Rust client test dependencies
         uses: nifty-oss/actions/buildjet-cache-crate@v1
         with:
-          folder: ./clients/${{ matrix.client }}/rust
+          folder: ./clients/rust/${{ matrix.client }}
           key: ${{ matrix.client }}-rust-client-test
 
       - name: Run cargo clippy
@@ -61,12 +61,12 @@ jobs:
         with:
           command: clippy
           args:
-            --all-targets --all-features --no-deps --manifest-path ./clients/${{
-            matrix.client}}/rust/Cargo.toml
+            --all-targets --all-features --no-deps --manifest-path ./clients/rust/${{
+              matrix.client}}/Cargo.toml
 
       - name: Build Rust client
         shell: bash
-        working-directory: clients/${{ matrix.client }}/rust
+        working-directory: clients/rust/${{ matrix.client }}
         run: cargo build --all-features --release
 
       - name: Upload Rust client builds
@@ -74,5 +74,5 @@ jobs:
         with:
           name: rust-client-builds
           # First wildcard ensures exported paths are consistently under the clients folder.
-          path: ./client*/${{ matrix.client }}/rust/target/release/*${{ matrix.client }}*
+          path: ./client*/rust/${{ matrix.client }}/target/release/*${{ matrix.client }}*
           if-no-files-found: error

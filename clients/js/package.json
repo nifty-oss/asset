@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "build": "pnpm --filter {asset} build && pnpm --filter {bridge} build"
+  }
+}

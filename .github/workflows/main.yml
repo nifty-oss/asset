@@ -24,13 +24,13 @@ jobs:
       rust_cli: ${{ steps.changes.outputs.rust_cli }}
     steps:
       - name: Git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Load environment variables
         run: cat .github/.env >> $GITHUB_ENV
 
       - name: Detect changes
-        uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@v3
         id: changes
         with:
           filters: .github/file-filters.yml
@@ -82,7 +82,7 @@ jobs:
     runs-on: buildjet-8vcpu-ubuntu-2204
     steps:
       - name: Git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Load environment variables
         run: cat .github/.env >> $GITHUB_ENV

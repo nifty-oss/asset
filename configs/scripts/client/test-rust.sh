@@ -31,7 +31,7 @@ export SBF_OUT_DIR="${WORKING_DIR}/${PROGRAMS_OUTPUT}"
 
 # client SDK tests
 for p in ${PROGRAMS[@]}; do
-    cd ${WORKING_DIR}/clients/${p}/rust
+    cd ${WORKING_DIR}/clients/rust/${p}
 
     if [ ! "$(command -v $SOLFMT)" = "" ]; then
         CARGO_TERM_COLOR=always cargo test-sbf --sbf-out-dir ${WORKING_DIR}/${PROGRAMS_OUTPUT} ${ARGS} 2>&1 | ${SOLFMT}
