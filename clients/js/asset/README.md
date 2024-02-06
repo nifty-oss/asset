@@ -7,11 +7,11 @@ A Umi-compatible JavaScript library for the project.
 1. First, if you're not already using Umi, [follow these instructions to install the Umi framework](https://github.com/metaplex-foundation/umi/blob/main/docs/installation.md).
 2. Next, install this library using the package manager of your choice.
    ```sh
-   npm install @metaplex-foundation/asset
+   npm install @nifty-oss/asset
    ```
 2. Finally, register the library with your Umi instance like so.
    ```ts
-   import { asset } from '@metaplex-foundation/asset';
+   import { asset } from '@nifty-oss/asset';
    umi.use(asset());
    ```
 
