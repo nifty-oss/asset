@@ -1,12 +1,25 @@
-use nifty_asset_types::state::{Asset, Delegate, DelegateRole, Discriminator, Standard};
-use podded::{pod::PodOption, ZeroCopy};
-use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pubkey::Pubkey};
+use std::ops::Deref;
 
 use crate::{
     error::AssetError,
     instruction::accounts::{Context, TransferAccounts},
     require,
     utils::assert_delegate,
+};
+use nifty_asset_types::{
+    constraints::Context as ConstraintContext,
+    extensions::Royalties,
+    state::{Asset, Delegate, DelegateRole, Discriminator, Standard},
+};
+use podded::{
+    pod::{Nullable, PodOption},
+    ZeroCopy,
+};
+use solana_program::{
+    entrypoint::ProgramResult,
+    instruction::{get_stack_height, TRANSACTION_LEVEL_STACK_HEIGHT},
+    program_error::ProgramError,
+    pubkey::Pubkey,
 };
 
 pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> ProgramResult {
@@ -56,6 +69,73 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
     // Self transfer short-circuits so as not to clear the delegate.
     if asset.holder == *ctx.accounts.recipient.key {
         return Ok(());
+    }
+
+    // If the asset the asset is part of a collection we need to check if royalties
+    // are enabled and if so, if the destination account is allowed to receive the asset.
+    if let Some(group) = asset.group.value() {
+        if (*group).is_some() {
+            // We need collection asset account to be provided.
+            require!(
+                ctx.accounts.collection_asset.is_some(),
+                AssetError::InvalidGroup,
+                "asset is part of a group but no collection account was provided"
+            );
+
+            let collection_asset_info = ctx.accounts.collection_asset.unwrap();
+
+            // Collection asset account must be owned by the program.
+            require!(
+                collection_asset_info.owner == program_id,
+                AssetError::InvalidGroup,
+                "collection account is not owned by the program"
+            );
+
+            // Collection asset account must match the group.
+            require!(
+                (*group).deref() == ctx.accounts.collection_asset.unwrap().key,
+                AssetError::InvalidGroup,
+                "collection account does not match the group"
+            );
+
+            // Collection asset account must be initialized.
+            // let collection_data = (*collection_asset_info.data).borrow();
+            require!(
+                (*collection_asset_info.data).borrow()[0] == Discriminator::Asset as u8,
+                AssetError::InvalidGroup,
+                "collection account is not initialized"
+            );
+
+            // Check if royalties extension is present.
+            if let Some(royalties) =
+                Asset::get::<Royalties>(&(*collection_asset_info.data).borrow()[Asset::LEN..])
+            {
+                // Check if the recipient is allowed to receive the asset.
+
+                // Wallet-to-wallet transfers between system program accounts are exempt from the royalty check
+                // so we need to exclude them.
+
+                // Are we in a CPI? If so, the signer could be a ghost PDA so we cannot prove it's a wallet.
+                let is_cpi = get_stack_height() > TRANSACTION_LEVEL_STACK_HEIGHT;
+
+                // Are both the sender and the recipient system program accounts?
+                let sender_is_wallet =
+                    ctx.accounts.signer.owner == &solana_program::system_program::id();
+                let recipient_is_wallet =
+                    ctx.accounts.recipient.owner == &solana_program::system_program::id();
+
+                let is_wallet_to_wallet = !is_cpi && sender_is_wallet && recipient_is_wallet;
+
+                if !is_wallet_to_wallet {
+                    // We pass in the Constraint context and validate the royalties constraint.
+                    royalties.constraint.assertable.assert(&ConstraintContext {
+                        asset: collection_asset_info,
+                        authority: ctx.accounts.signer,
+                        recipient: Some(ctx.accounts.recipient),
+                    })?;
+                }
+            }
+        }
     }
 
     // Transfer the asset.

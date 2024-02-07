@@ -86,13 +86,12 @@ pub fn handle_decode(args: DecodeArgs) -> Result<()> {
             }
             ExtensionType::Blob => {
                 let blob: Blob = Blob::from_bytes(extension_data);
-                println!("Blob: {:?}", blob.content_type.as_str());
                 // write to a file based on the content type
                 let extension = blob.content_type.as_str().split('/').last().unwrap();
                 let filename = format!("blob.{}", extension);
                 std::fs::write(filename, blob.data).unwrap();
 
-                println!("Blob placeholder");
+                println!("Blob: {:?}", blob.content_type.as_str());
             }
             ExtensionType::Creators => {
                 let creators: Vec<JsonCreator> = extension_data
@@ -108,6 +107,9 @@ pub fn handle_decode(args: DecodeArgs) -> Result<()> {
             ExtensionType::Metadata => {
                 let metadata: Metadata = Metadata::from_bytes(extension_data);
                 println!("{metadata:#?}");
+            }
+            ExtensionType::Royalties => {
+                println!("Royalties placeholder");
             }
             ExtensionType::None => {
                 println!("None");

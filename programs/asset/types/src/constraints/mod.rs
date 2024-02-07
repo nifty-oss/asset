@@ -159,6 +159,7 @@ impl Operator {
 impl ZeroCopy<'_, Operator> for Operator {}
 
 /// Macro to automate the code required to deserialize a constraint from a byte array.
+#[macro_export]
 macro_rules! assertable_from_bytes {
     ( $operator_type:ident, $slice:expr, $( $available:ident ),+ $(,)? ) => {
         match $operator_type {
