@@ -6,7 +6,7 @@ use podded::{
 use solana_program::pubkey::Pubkey;
 
 use super::{Delegate, Discriminator, NullablePubkey, Standard, State};
-use crate::extensions::{Extension, ExtensionData, ExtensionType};
+use crate::extensions::{Extension, ExtensionData, ExtensionDataMut, ExtensionType};
 
 /// Maximum length of a name.
 pub const MAX_NAME_LENGTH: usize = 35;
@@ -87,6 +87,28 @@ impl Asset {
                 let start = cursor + Extension::LEN;
                 let end = start + extension.length() as usize;
                 return Some(T::from_bytes(&data[start..end]));
+            }
+
+            cursor = extension.boundary() as usize;
+        }
+
+        None
+    }
+
+    /// Returns a mutable reference to the extension data of a given type.
+    ///
+    /// This function will return the first extension of the given type. If the
+    /// extension is not found, `None` is returned.
+    pub fn get_mut<'a, T: ExtensionDataMut<'a>>(data: &'a mut [u8]) -> Option<T> {
+        let mut cursor = Asset::LEN;
+
+        while cursor < data.len() {
+            let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
+
+            if extension.extension_type() == T::TYPE {
+                let start = cursor + Extension::LEN;
+                let end = start + extension.length() as usize;
+                return Some(T::from_bytes_mut(&mut data[start..end]));
             }
 
             cursor = extension.boundary() as usize;

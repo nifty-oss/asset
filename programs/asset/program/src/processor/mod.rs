@@ -7,7 +7,9 @@ mod lock;
 mod revoke;
 mod transfer;
 mod unlock;
+mod unverify;
 mod update;
+mod verify;
 mod write;
 
 use borsh::BorshDeserialize;
@@ -30,8 +32,8 @@ use crate::{
     instruction::{
         accounts::{
             AllocateAccounts, ApproveAccounts, BurnAccounts, CloseAccounts, CreateAccounts,
-            LockAccounts, RevokeAccounts, TransferAccounts, UnlockAccounts, UpdateAccounts,
-            WriteAccounts,
+            LockAccounts, RevokeAccounts, TransferAccounts, UnlockAccounts, UnverifyAccounts,
+            UpdateAccounts, VerifyAccounts, WriteAccounts,
         },
         Instruction,
     },
@@ -89,9 +91,17 @@ pub fn process_instruction<'a>(
             msg!("Instruction: Unlock");
             unlock::process_unlock(program_id, UnlockAccounts::context(accounts)?)
         }
+        Instruction::Unverify => {
+            msg!("Instruction: Unverify");
+            unverify::process_unverify(program_id, UnverifyAccounts::context(accounts)?)
+        }
         Instruction::Update(args) => {
             msg!("Instruction: Update");
             update::process_update(program_id, UpdateAccounts::context(accounts)?, args)
+        }
+        Instruction::Verify => {
+            msg!("Instruction: Verify");
+            verify::process_verify(program_id, VerifyAccounts::context(accounts)?)
         }
         Instruction::Write(args) => {
             msg!("Instruction: Write");

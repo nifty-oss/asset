@@ -15,5 +15,7 @@ export * from './lock';
 export * from './revoke';
 export * from './transfer';
 export * from './unlock';
+export * from './unverify';
 export * from './update';
+export * from './verify';
 export * from './write';

@@ -3,11 +3,15 @@ use podded::ZeroCopy;
 use solana_program::pubkey::Pubkey;
 use std::ops::Deref;
 
-use super::{ExtensionBuilder, ExtensionData, ExtensionType};
+use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType};
 use crate::validation::{Validatable, ValidationError};
 
 /// Extension to add a list of creators.
+///
+/// This extension supports a variable number of creators. The only restriction is
+/// that the total share of royalties must be 100.
 pub struct Creators<'a> {
+    /// List of creators.
     pub creators: &'a [Creator],
 }
 
@@ -40,6 +44,20 @@ impl Validatable for Creators<'_> {
         } else {
             Ok(())
         }
+    }
+}
+
+/// Mutable version of the `Creators` extension.
+pub struct CreatorsMut<'a> {
+    pub creators: &'a mut [Creator],
+}
+
+impl<'a> ExtensionDataMut<'a> for CreatorsMut<'a> {
+    const TYPE: ExtensionType = ExtensionType::Creators;
+
+    fn from_bytes_mut(bytes: &'a mut [u8]) -> Self {
+        let creators = bytemuck::cast_slice_mut(bytes);
+        Self { creators }
     }
 }
 

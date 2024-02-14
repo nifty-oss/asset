@@ -14,7 +14,9 @@ pub(crate) mod r#lock;
 pub(crate) mod r#revoke;
 pub(crate) mod r#transfer;
 pub(crate) mod r#unlock;
+pub(crate) mod r#unverify;
 pub(crate) mod r#update;
+pub(crate) mod r#verify;
 pub(crate) mod r#write;
 
 pub use self::r#allocate::*;
@@ -26,5 +28,7 @@ pub use self::r#lock::*;
 pub use self::r#revoke::*;
 pub use self::r#transfer::*;
 pub use self::r#unlock::*;
+pub use self::r#unverify::*;
 pub use self::r#update::*;
+pub use self::r#verify::*;
 pub use self::r#write::*;

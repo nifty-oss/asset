@@ -326,6 +326,32 @@
       }
     },
     {
+      "name": "Unverify",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Asset account"
+          ]
+        },
+        {
+          "name": "creator",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Creator account to unverify"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 9
+      }
+    },
+    {
       "name": "Update",
       "accounts": [
         {
@@ -382,7 +408,33 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 9
+        "value": 10
+      }
+    },
+    {
+      "name": "Verify",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Asset account"
+          ]
+        },
+        {
+          "name": "creator",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Creator account to verify"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 11
       }
     },
     {
@@ -423,7 +475,7 @@
       ],
       "discriminant": {
         "type": "u8",
-        "value": 10
+        "value": 12
       }
     }
   ],

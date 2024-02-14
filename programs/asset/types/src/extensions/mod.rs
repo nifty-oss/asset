@@ -106,8 +106,6 @@ pub trait ExtensionDataMut<'a> {
     const TYPE: ExtensionType;
 
     fn from_bytes_mut(bytes: &'a mut [u8]) -> Self;
-
-    fn length(&self) -> usize;
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Copy, Debug, PartialEq)]

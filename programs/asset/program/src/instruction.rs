@@ -69,6 +69,11 @@ pub enum Instruction {
     #[account(1, signer, name="authority", desc = "Delegate ot holder account")]
     Unlock,
 
+    /// Unverifies a creator.
+    #[account(0, writable, name="asset", desc = "Asset account")]
+    #[account(1, signer, name="creator", desc = "Creator account to unverify")]
+    Unverify,
+
     /// Updates an asset.
     #[account(0, writable, name="asset", desc = "Asset account")]
     #[account(1, signer, name="authority", desc = "The authority of the asset")]
@@ -76,6 +81,11 @@ pub enum Instruction {
     #[account(3, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
     #[account(4, optional, name="system_program", desc = "The system program")]
     Update(UpdateInput),
+
+    /// Verifies a creator.
+    #[account(0, writable, name="asset", desc = "Asset account")]
+    #[account(1, signer, name="creator", desc = "Creator account to verify")]
+    Verify,
 
     /// Writes data to an extension.
     #[account(0, signer, writable, name="asset", desc = "Asset account")]
