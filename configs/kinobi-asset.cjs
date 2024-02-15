@@ -127,6 +127,7 @@ kinobi.update(
                   { name: "Creators" },
                   { name: "Links" },
                   { name: "Metadata" },
+                  { name: "Grouping" },
                 ],
               },
             }),
@@ -297,6 +298,20 @@ kinobi.update(
                 }),
               ]),
             }),
+            // grouping
+            k.definedTypeNode({
+              name: "grouping",
+              data: k.structTypeNode([
+                k.structFieldTypeNode({
+                  name: "size",
+                  child: k.numberTypeNode("u64"),
+                }),
+                k.structFieldTypeNode({
+                  name: "max_size",
+                  child: k.numberTypeNode("u64"),
+                }),
+              ]),
+            }),
           ],
         });
       },
@@ -340,6 +355,9 @@ kinobi.update(
   new k.SetStructDefaultValuesVisitor({
     initialize: {
       data: k.vNone(),
+    },
+    create: {
+      holder: k.identityDefault(),
     },
     CreateInstructionData: {
       standard: k.vEnum("Standard", "NonFungible"),

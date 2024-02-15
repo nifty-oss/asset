@@ -14,5 +14,5 @@ crate-type = ["cdylib", "lib"]
 [dependencies]
 borsh = "0.10.3"
 bytemuck = "1.14"
-podded = "0.4.0"
+podded = "0.5.1"
 solana-program = "~1.16"

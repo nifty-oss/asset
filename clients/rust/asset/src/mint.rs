@@ -306,6 +306,7 @@ pub fn mint(args: MintIxArgs) -> Result<Vec<Instruction>, MintError> {
             authority: args.accounts.owner,
             holder: args.accounts.owner,
             payer: Some(payer),
+            group: None,
             system_program: Some(solana_program::system_program::id()),
         }
         .instruction(ix_args),

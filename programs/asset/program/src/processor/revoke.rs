@@ -1,5 +1,7 @@
-use nifty_asset_types::state::{Asset, Delegate, Discriminator};
-use podded::{pod::PodOption, ZeroCopy};
+use nifty_asset_types::{
+    podded::{pod::PodOption, ZeroCopy},
+    state::{Asset, Delegate, Discriminator},
+};
 use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{

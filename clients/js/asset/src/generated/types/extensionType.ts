@@ -15,6 +15,7 @@ export enum ExtensionType {
   Creators,
   Links,
   Metadata,
+  Grouping,
 }
 
 export type ExtensionTypeArgs = ExtensionType;

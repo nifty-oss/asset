@@ -1,5 +1,7 @@
-use nifty_asset_types::state::{Asset, Delegate, Discriminator, NullablePubkey};
-use podded::ZeroCopy;
+use nifty_asset_types::{
+    podded::ZeroCopy,
+    state::{Asset, Delegate, Discriminator, NullablePubkey},
+};
 use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{

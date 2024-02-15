@@ -27,38 +27,36 @@ import {
 } from '../shared';
 
 // Accounts.
-export type BurnInstructionAccounts = {
+export type UngroupInstructionAccounts = {
   /** Asset account */
   asset: PublicKey | Pda;
-  /** The holder or burn delegate of the asset */
-  signer: Signer;
-  /** The account receiving refunded rent */
-  recipient?: PublicKey | Pda;
   /** Asset account of the group */
-  group?: PublicKey | Pda;
+  group: PublicKey | Pda;
+  /** The authority of the assets */
+  authority?: Signer;
 };
 
 // Data.
-export type BurnInstructionData = { discriminator: number };
+export type UngroupInstructionData = { discriminator: number };
 
-export type BurnInstructionDataArgs = {};
+export type UngroupInstructionDataArgs = {};
 
-export function getBurnInstructionDataSerializer(): Serializer<
-  BurnInstructionDataArgs,
-  BurnInstructionData
+export function getUngroupInstructionDataSerializer(): Serializer<
+  UngroupInstructionDataArgs,
+  UngroupInstructionData
 > {
-  return mapSerializer<BurnInstructionDataArgs, any, BurnInstructionData>(
-    struct<BurnInstructionData>([['discriminator', u8()]], {
-      description: 'BurnInstructionData',
+  return mapSerializer<UngroupInstructionDataArgs, any, UngroupInstructionData>(
+    struct<UngroupInstructionData>([['discriminator', u8()]], {
+      description: 'UngroupInstructionData',
     }),
-    (value) => ({ ...value, discriminator: 1 })
-  ) as Serializer<BurnInstructionDataArgs, BurnInstructionData>;
+    (value) => ({ ...value, discriminator: 14 })
+  ) as Serializer<UngroupInstructionDataArgs, UngroupInstructionData>;
 }
 
 // Instruction.
-export function burn(
-  context: Pick<Context, 'programs'>,
-  input: BurnInstructionAccounts
+export function ungroup(
+  context: Pick<Context, 'identity' | 'programs'>,
+  input: UngroupInstructionAccounts
 ): TransactionBuilder {
   // Program ID.
   const programId = context.programs.getPublicKey(
@@ -73,22 +71,22 @@ export function burn(
       isWritable: true as boolean,
       value: input.asset ?? null,
     },
-    signer: {
-      index: 1,
-      isWritable: true as boolean,
-      value: input.signer ?? null,
-    },
-    recipient: {
-      index: 2,
-      isWritable: true as boolean,
-      value: input.recipient ?? null,
-    },
     group: {
-      index: 3,
+      index: 1,
       isWritable: true as boolean,
       value: input.group ?? null,
     },
+    authority: {
+      index: 2,
+      isWritable: false as boolean,
+      value: input.authority ?? null,
+    },
   } satisfies ResolvedAccountsWithIndices;
+
+  // Default values.
+  if (!resolvedAccounts.authority.value) {
+    resolvedAccounts.authority.value = context.identity;
+  }
 
   // Accounts in order.
   const orderedAccounts: ResolvedAccount[] = Object.values(
@@ -103,7 +101,7 @@ export function burn(
   );
 
   // Data.
-  const data = getBurnInstructionDataSerializer().serialize({});
+  const data = getUngroupInstructionDataSerializer().serialize({});
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

@@ -3,9 +3,11 @@ mod approve;
 mod burn;
 mod close;
 mod create;
+mod group;
 mod lock;
 mod revoke;
 mod transfer;
+mod ungroup;
 mod unlock;
 mod unverify;
 mod update;
@@ -32,8 +34,8 @@ use crate::{
     instruction::{
         accounts::{
             AllocateAccounts, ApproveAccounts, BurnAccounts, CloseAccounts, CreateAccounts,
-            LockAccounts, RevokeAccounts, TransferAccounts, UnlockAccounts, UnverifyAccounts,
-            UpdateAccounts, VerifyAccounts, WriteAccounts,
+            GroupAccounts, LockAccounts, RevokeAccounts, TransferAccounts, UngroupAccounts,
+            UnlockAccounts, UnverifyAccounts, UpdateAccounts, VerifyAccounts, WriteAccounts,
         },
         Instruction,
     },
@@ -75,6 +77,10 @@ pub fn process_instruction<'a>(
             msg!("Instruction: Create");
             create::process_create(program_id, CreateAccounts::context(accounts)?, args)
         }
+        Instruction::Group => {
+            msg!("Instruction: Group");
+            group::process_group(program_id, GroupAccounts::context(accounts)?)
+        }
         Instruction::Lock => {
             msg!("Instruction: Lock");
             lock::process_lock(program_id, LockAccounts::context(accounts)?)
@@ -86,6 +92,10 @@ pub fn process_instruction<'a>(
         Instruction::Transfer => {
             msg!("Instruction: Transfer");
             transfer::process_transfer(program_id, TransferAccounts::context(accounts)?)
+        }
+        Instruction::Ungroup => {
+            msg!("Instruction: Ungroup");
+            ungroup::process_ungroup(program_id, UngroupAccounts::context(accounts)?)
         }
         Instruction::Unlock => {
             msg!("Instruction: Unlock");

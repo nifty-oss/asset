@@ -1,21 +1,24 @@
 import { Serializer } from '@metaplex-foundation/umi/serializers';
 import {
   Attributes,
+  Blob,
   Creators,
   ExtensionType,
-  Blob,
+  Grouping,
   Links,
+  Metadata,
   getAttributesSerializer,
   getBlobSerializer,
-  getLinksSerializer,
   getCreatorsSerializer,
-  Metadata,
+  getGroupingSerializer,
+  getLinksSerializer,
   getMetadataSerializer,
 } from '../generated';
 
 export * from './attributes';
-export * from './creators';
 export * from './blob';
+export * from './creators';
+export * from './grouping';
 export * from './links';
 export * from './metadata';
 
@@ -24,7 +27,8 @@ export type TypedExtension =
   | ({ type: ExtensionType.Blob } & Blob)
   | ({ type: ExtensionType.Creators } & Creators)
   | ({ type: ExtensionType.Links } & Links)
-  | ({ type: ExtensionType.Metadata } & Metadata);
+  | ({ type: ExtensionType.Metadata } & Metadata)
+  | ({ type: ExtensionType.Grouping } & Grouping);
 
 export const getExtensionSerializerFromType = <T extends TypedExtension>(
   type: ExtensionType
@@ -41,6 +45,8 @@ export const getExtensionSerializerFromType = <T extends TypedExtension>(
         return getLinksSerializer();
       case ExtensionType.Metadata:
         return getMetadataSerializer();
+      case ExtensionType.Grouping:
+        return getGroupingSerializer();
       default:
         throw new Error(`Unknown extension type: ${type}`);
     }

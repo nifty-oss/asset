@@ -8,14 +8,9 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
-#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq, PartialOrd, Hash)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub enum ExtensionType {
-    None,
-    Attributes,
-    Blob,
-    Creators,
-    Links,
-    Metadata,
-    Grouping,
+pub struct Grouping {
+    pub size: u64,
+    pub max_size: u64,
 }

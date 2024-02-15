@@ -55,6 +55,15 @@
           "docs": [
             "The account receiving refunded rent"
           ]
+        },
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "Asset account of the group"
+          ]
         }
       ],
       "args": [],
@@ -88,6 +97,15 @@
           "isSigner": false,
           "docs": [
             "The holder of the asset"
+          ]
+        },
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "Asset account of the group"
           ]
         },
         {
@@ -476,6 +494,74 @@
       "discriminant": {
         "type": "u8",
         "value": 12
+      }
+    },
+    {
+      "name": "Group",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Asset account"
+          ]
+        },
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Asset account of the group"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The authority of the assets"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 13
+      }
+    },
+    {
+      "name": "Ungroup",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Asset account"
+          ]
+        },
+        {
+          "name": "group",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Asset account of the group"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The authority of the assets"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 14
       }
     }
   ],

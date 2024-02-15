@@ -1,8 +1,8 @@
 use nifty_asset_types::{
     extensions::{validate, Extension},
+    podded::ZeroCopy,
     state::{Asset, Discriminator},
 };
-use podded::ZeroCopy;
 use solana_program::{
     entrypoint::ProgramResult, msg, program::invoke, program_error::ProgramError,
     program_memory::sol_memcpy, pubkey::Pubkey, rent::Rent, system_instruction, system_program,

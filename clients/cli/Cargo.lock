@@ -2084,7 +2084,7 @@ version = "0.0.1"
 dependencies = [
  "borsh 0.10.3",
  "bytemuck",
- "podded",
+ "podded 0.5.1",
  "solana-program",
 ]
 
@@ -2099,7 +2099,7 @@ dependencies = [
  "indexmap 2.1.0",
  "nifty-asset",
  "nifty-asset-types",
- "podded",
+ "podded 0.4.0",
  "retry",
  "serde",
  "serde_json",
@@ -2462,6 +2462,15 @@ name = "podded"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "239a0770c3a1948fc3ac671d5d92a5126c630baf51962d5982e43a378ce4025d"
+dependencies = [
+ "bytemuck",
+]
+
+[[package]]
+name = "podded"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e5ef03855395ea7838e038410cf2be5dd419fa65560c3c82dfcf1ee5b32cfb4e"
 dependencies = [
  "bytemuck",
 ]

@@ -16,12 +16,14 @@
 mod attributes;
 mod blob;
 mod creators;
+mod grouping;
 mod links;
 mod metadata;
 
 pub use attributes::*;
 pub use blob::*;
 pub use creators::*;
+pub use grouping::*;
 pub use links::*;
 pub use metadata::*;
 
@@ -116,6 +118,7 @@ pub enum ExtensionType {
     Creators,
     Links,
     Metadata,
+    Grouping,
 }
 
 impl From<u32> for ExtensionType {
@@ -127,6 +130,7 @@ impl From<u32> for ExtensionType {
             3 => ExtensionType::Creators,
             4 => ExtensionType::Links,
             5 => ExtensionType::Metadata,
+            6 => ExtensionType::Grouping,
             _ => panic!("invalid extension value: {value}"),
         }
     }
@@ -141,6 +145,7 @@ impl From<ExtensionType> for u32 {
             ExtensionType::Creators => 3,
             ExtensionType::Links => 4,
             ExtensionType::Metadata => 5,
+            ExtensionType::Grouping => 6,
         }
     }
 }
@@ -175,4 +180,4 @@ macro_rules! validate_extension_type {
     };
 }
 
-validate_extension_type!(Attributes, Blob, Creators, Links, Metadata);
+validate_extension_type!(Attributes, Blob, Creators, Links, Metadata, Grouping);
