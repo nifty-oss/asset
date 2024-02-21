@@ -45,7 +45,10 @@ pub fn process_create(program_id: &Pubkey, ctx: Context<CreateAccounts>) -> Prog
     let metadata = Metadata::try_from(ctx.accounts.metadata)?;
 
     require!(
-        matches!(metadata.token_standard, Some(TokenStandard::NonFungible)),
+        matches!(
+            metadata.token_standard,
+            Some(TokenStandard::NonFungible) | Some(TokenStandard::ProgrammableNonFungible)
+        ),
         ProgramError::InvalidAccountData,
         "invalid token standard"
     );

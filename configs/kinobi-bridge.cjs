@@ -153,20 +153,21 @@ kinobi.update(
           }),
         },
         tokenRecord: {
-          defaultsTo: k.conditionalDefault(
-            "arg",
-            "tokenStandard",
-            { value: k.vEnum("TokenStandard", "ProgrammableNonFungible") },
-            {
-              ifTrue: k.pdaDefault("tokenRecord", {
-                importFrom: "mplTokenMetadata",
-                seeds: {
-                  mint: k.accountDefault("mint"),
-                  token: k.accountDefault("token"),
-                },
-              }),
-            }
-          ),
+          defaultsTo: k.conditionalDefault("arg", "tokenStandard", {
+            value: k.vEnum(
+              "TokenStandard",
+              "ProgrammableNonFungible",
+              undefined,
+              "mplTokenMetadata"
+            ),
+            ifTrue: k.pdaDefault("tokenRecord", {
+              importFrom: "mplTokenMetadata",
+              seeds: {
+                mint: k.accountDefault("mint"),
+                token: k.accountDefault("token"),
+              },
+            }),
+          }),
         },
         vaultToken: {
           defaultsTo: k.pdaDefault("associatedToken", {
@@ -178,20 +179,35 @@ kinobi.update(
           }),
         },
         vaultTokenRecord: {
-          defaultsTo: k.conditionalDefault(
-            "arg",
-            "tokenStandard",
-            { value: k.vEnum("TokenStandard", "ProgrammableNonFungible") },
-            {
-              ifTrue: k.pdaDefault("tokenRecord", {
-                importFrom: "mplTokenMetadata",
-                seeds: {
-                  mint: k.accountDefault("mint"),
-                  token: k.accountDefault("vaultToken"),
-                },
-              }),
-            }
-          ),
+          defaultsTo: k.conditionalDefault("arg", "tokenStandard", {
+            value: k.vEnum(
+              "TokenStandard",
+              "ProgrammableNonFungible",
+              undefined,
+              "mplTokenMetadata"
+            ),
+            ifTrue: k.pdaDefault("tokenRecord", {
+              importFrom: "mplTokenMetadata",
+              seeds: {
+                mint: k.accountDefault("mint"),
+                token: k.accountDefault("vaultToken"),
+              },
+            }),
+          }),
+        },
+        authorizationRulesProgram: {
+          defaultsTo: k.conditionalDefault("arg", "tokenStandard", {
+            value: k.vEnum(
+              "TokenStandard",
+              "ProgrammableNonFungible",
+              undefined,
+              "mplTokenMetadata"
+            ),
+            ifTrue: k.programDefault(
+              "mplTokenAuthRules",
+              "auth9SigNpDKz4sJJ1DfCTuZrZNSAgh9sFD3rboVmgg"
+            ),
+          }),
         },
       },
       args: {
