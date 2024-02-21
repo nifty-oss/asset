@@ -1,5 +1,4 @@
 use nifty_asset_types::{
-    extensions::validate,
     podded::ZeroCopy,
     state::{Asset, Discriminator},
 };
@@ -108,21 +107,6 @@ pub fn process_create(
     let extensions = Asset::get_extensions(&data);
 
     if !extensions.is_empty() {
-        // should only create the asset if all extension data are valid
-        for extension_type in &extensions {
-            let (extension, offset) = Asset::get_extension(*extension_type, &data)
-                .ok_or(AssetError::ExtensionNotFound)?;
-
-            validate(
-                *extension_type,
-                &data[offset..offset + extension.length() as usize],
-            )
-            .map_err(|error| {
-                msg!("Validation error: {:?}", error);
-                AssetError::ExtensionDataInvalid
-            })?;
-        }
-
         msg!("Asset created with {:?} extension(s)", extensions);
     }
 

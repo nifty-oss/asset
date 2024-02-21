@@ -31,7 +31,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use bytemuck::{Pod, Zeroable};
 use podded::ZeroCopy;
 
-use crate::validation::Validatable;
+use crate::error::Error;
 
 /// The `Extension` struct is used to store the "header" information for an extension.
 ///
@@ -95,8 +95,8 @@ impl<'a> ZeroCopy<'a, Extension> for Extension {}
 /// Trait for extension data.
 ///
 /// The `ExtensionData` defines the data of a particular extension. To implement this trait,
-/// a type also
-pub trait ExtensionData<'a>: Validatable {
+/// a type also needs to implement the `Lifecycle` trait to manage the lifecycle of the extension.
+pub trait ExtensionData<'a> {
     const TYPE: ExtensionType;
 
     fn from_bytes(bytes: &'a [u8]) -> Self;
@@ -104,7 +104,7 @@ pub trait ExtensionData<'a>: Validatable {
     fn length(&self) -> usize;
 }
 
-pub trait ExtensionDataMut<'a> {
+pub trait ExtensionDataMut<'a>: Lifecycle {
     const TYPE: ExtensionType;
 
     fn from_bytes_mut(bytes: &'a mut [u8]) -> Self;
@@ -161,23 +161,60 @@ pub trait ExtensionBuilder: Default {
     fn build(&mut self) -> Vec<u8>;
 }
 
-/// Defines a "generic" validate function.
+/// Trait to define lifecycle callbacks for an extension.
+pub trait Lifecycle {
+    /// Validates the data of the extension.
+    fn on_create(&mut self) -> Result<(), Error> {
+        Ok(())
+    }
+
+    /// Validates the data of the extension when it is updated.
+    ///
+    /// The purpose of this callback is to provide a mechanism to validate and modify the data of an
+    /// extension when it is updated.
+    fn on_update(&mut self, _other: &mut Self) -> Result<(), Error> {
+        Ok(())
+    }
+}
+
+/// Defines "generic" lifecycle functions for extension types.
 ///
-/// This macro is used to generate a helper validate function that can validate any extension type.
+/// This macro is used to generate helper functions to call `on_create` and `on_update` for
+/// each extension type. Note that these functions are only called on types that implement the
+/// `Lifecycle` trait.
 macro_rules! validate_extension_type {
-    ($($member:tt),+ $(,)?) => {
-        pub fn validate(
+    ( $( ($member:tt, $member_mut:tt) ),+ $(,)? ) => {
+        pub fn on_create(
             extension_type: ExtensionType,
-            data: &[u8],
-        ) -> Result<(), $crate::validation::ValidationError>{
+            data: &mut [u8],
+        ) -> Result<(), Error>{
             match extension_type {
                 $(
-                    ExtensionType::$member => $member::from_bytes(data).validate(),
+                    ExtensionType::$member => $member_mut::from_bytes_mut(data).on_create(),
                 )+
-                ExtensionType::None => Ok(()),
+                _ => Ok(()),
+            }
+        }
+
+        pub fn on_update(
+            extension_type: ExtensionType,
+            data: &mut [u8],
+            updated: &mut [u8],
+        ) -> Result<(), Error>{
+            match extension_type {
+                $(
+                    ExtensionType::$member => $member_mut::from_bytes_mut(data).on_update(
+                        &mut $member_mut::from_bytes_mut(updated)
+                    ),
+                )+
+                _ => Ok(()),
             }
         }
     };
 }
 
-validate_extension_type!(Attributes, Blob, Creators, Links, Metadata, Grouping);
+validate_extension_type!(
+    (Creators, CreatorsMut),
+    (Grouping, GroupingMut),
+    (Metadata, MetadataMut),
+);

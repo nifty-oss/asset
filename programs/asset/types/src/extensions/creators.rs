@@ -1,18 +1,31 @@
 use bytemuck::{Pod, Zeroable};
 use podded::ZeroCopy;
 use solana_program::pubkey::Pubkey;
-use std::ops::Deref;
+use std::{fmt::Debug, ops::Deref};
 
-use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType};
-use crate::validation::{Validatable, ValidationError};
+use crate::error::Error;
+
+use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle};
+
+/// Maximum total share of royalties.
+const TOTAL_SHARE: u8 = 100;
 
 /// Extension to add a list of creators.
 ///
 /// This extension supports a variable number of creators. The only restriction is
-/// that the total share of royalties must be 100.
+/// that the total share of royalties must be `100`.
 pub struct Creators<'a> {
     /// List of creators.
     pub creators: &'a [Creator],
+}
+
+impl Creators<'_> {
+    /// Returns the creator with the given address.
+    pub fn get(&self, address: &Pubkey) -> Option<&Creator> {
+        self.creators
+            .iter()
+            .find(|creator| &creator.address == address)
+    }
 }
 
 impl<'a> ExtensionData<'a> for Creators<'a> {
@@ -28,28 +41,18 @@ impl<'a> ExtensionData<'a> for Creators<'a> {
     }
 }
 
-/// Validatable implementation for `Creators`.
-///
-/// The total share of royalties must be 100.
-impl Validatable for Creators<'_> {
-    fn validate(&self) -> Result<(), ValidationError> {
-        let mut total = 0;
-
-        for creator in self.creators {
-            total += creator.share();
-        }
-
-        if total != 100 {
-            Err(ValidationError::InvalidShareTotal)
-        } else {
-            Ok(())
-        }
-    }
-}
-
 /// Mutable version of the `Creators` extension.
 pub struct CreatorsMut<'a> {
     pub creators: &'a mut [Creator],
+}
+
+impl CreatorsMut<'_> {
+    /// Returns the creator with the given address.
+    pub fn get(&mut self, address: &Pubkey) -> Option<&mut Creator> {
+        self.creators
+            .iter_mut()
+            .find(|&&mut creator| &creator.address == address)
+    }
 }
 
 impl<'a> ExtensionDataMut<'a> for CreatorsMut<'a> {
@@ -58,6 +61,62 @@ impl<'a> ExtensionDataMut<'a> for CreatorsMut<'a> {
     fn from_bytes_mut(bytes: &'a mut [u8]) -> Self {
         let creators = bytemuck::cast_slice_mut(bytes);
         Self { creators }
+    }
+}
+
+impl Lifecycle for CreatorsMut<'_> {
+    /// Validates the creators' share added up to `100`.
+    fn on_create(&mut self) -> Result<(), Error> {
+        let mut total = 0;
+
+        self.creators.iter_mut().for_each(|creator| {
+            // make sure all creators are unverified
+            creator.set_verified(false);
+            total += creator.share();
+        });
+
+        if total != TOTAL_SHARE {
+            Err(Error::InvalidCreatorsTotalShare(TOTAL_SHARE, total))
+        } else {
+            Ok(())
+        }
+    }
+
+    fn on_update(&mut self, other: &mut Self) -> Result<(), Error> {
+        let mut total = 0;
+        other.creators.iter_mut().for_each(|creator| {
+            if let Some(original) = self.get(&creator.address) {
+                // creators maintain their verified status
+                creator.set_verified(original.verified());
+            } else {
+                // creators are always initialized as unverified
+                creator.set_verified(false);
+            }
+            total += creator.share();
+        });
+
+        if total != 100 {
+            return Err(Error::InvalidCreatorsTotalShare(TOTAL_SHARE, total));
+        }
+
+        for creator in self.creators.iter() {
+            // if the creator is verified, it must be present in
+            // the other list
+            if creator.verified() {
+                if let Some(updated) = other.get(&creator.address) {
+                    // sanity check: the creator must have already been verified
+                    // on the above closure
+                    if !updated.verified() {
+                        return Err(Error::CannotUnverifyCreator);
+                    }
+                } else {
+                    // cannot remove a verified creator
+                    return Err(Error::CannotRemoveVerifiedCreator);
+                }
+            }
+        }
+
+        Ok(())
     }
 }
 
@@ -89,6 +148,16 @@ impl Creator {
 
     pub fn set_share(&mut self, share: u8) {
         self.data[1] = share;
+    }
+}
+
+impl Debug for Creator {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Creator")
+            .field("address", &self.address)
+            .field("verified", &self.verified())
+            .field("share", &self.share())
+            .finish()
     }
 }
 

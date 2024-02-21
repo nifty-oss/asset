@@ -1,8 +1,7 @@
 use podded::types::{U8PrefixStr, U8PrefixStrMut};
 use std::{fmt::Debug, ops::Deref};
 
-use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType};
-use crate::validation::Validatable;
+use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle};
 
 /// Extension to add `symbol` and `uri` attributes to an asset.
 ///
@@ -39,6 +38,8 @@ impl Debug for Metadata<'_> {
     }
 }
 
+impl Lifecycle for Metadata<'_> {}
+
 /// Mutable reference to `Metadata` extension.
 ///
 /// This type is used to modify the `Metadata` extension. Note that the `symbol` and `uri` fields
@@ -67,7 +68,7 @@ impl<'a> ExtensionDataMut<'a> for MetadataMut<'a> {
     }
 }
 
-impl Validatable for Metadata<'_> {}
+impl Lifecycle for MetadataMut<'_> {}
 
 /// Builder for an `Attributes` extension.
 #[derive(Default)]

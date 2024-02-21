@@ -19,7 +19,7 @@ pub enum BridgeError {
 
 impl PrintProgramError for BridgeError {
     fn print<E>(&self) {
-        msg!(&self.to_string());
+        msg!("⛔️ {}", &self.to_string());
     }
 }
 
@@ -41,7 +41,7 @@ macro_rules! err {
         Err($error.into())
     }};
     ( $error:expr, $msg:expr ) => {{
-        solana_program::msg!("Error log: {}", $msg);
+        solana_program::msg!("[ERROR] {}", $msg);
         Err($error.into())
     }};
     ( $error:expr, $msg:literal, $($args:tt)+ ) => {{

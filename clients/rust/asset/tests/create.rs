@@ -147,8 +147,8 @@ mod create {
         assert!(Asset::get_extensions(account_data).len() == 1);
         let attributes = Asset::get::<Attributes>(account_data).unwrap();
 
-        assert_eq!(attributes.traits.len(), 1);
-        assert_eq!(attributes.traits[0].name.as_str(), "hat");
-        assert_eq!(attributes.traits[0].value.as_str(), "nifty");
+        assert_eq!(attributes.len(), 1);
+        assert_eq!(attributes[0].name.as_str(), "hat");
+        assert_eq!(attributes[0].value.as_str(), "nifty");
     }
 }

@@ -2116,6 +2116,7 @@ dependencies = [
  "bytemuck",
  "podded",
  "solana-program",
+ "thiserror",
 ]
 
 [[package]]

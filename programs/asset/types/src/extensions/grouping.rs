@@ -5,13 +5,17 @@ use std::{
     ops::{Deref, DerefMut},
 };
 
-use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType};
-use crate::validation::Validatable;
+use crate::error::Error;
+
+use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle};
 
 /// Extension to define a group of assets.
 ///
 /// Assets that are intented to be use as group "markers" must have this extension
 /// attached to them.
+///
+/// The `size` of the group is updated every time an asset is added or removed from the group.
+/// Additionally, the `size` is decreased when an asset is burned.
 pub struct Grouping<'a> {
     /// The number of assets in the group.
     pub size: &'a u64,
@@ -47,8 +51,6 @@ impl Debug for Grouping<'_> {
     }
 }
 
-impl Validatable for Grouping<'_> {}
-
 pub struct GroupingMut<'a> {
     pub size: &'a mut u64,
 
@@ -64,6 +66,30 @@ impl<'a> ExtensionDataMut<'a> for GroupingMut<'a> {
             size: bytemuck::from_bytes_mut(size),
             max_size: bytemuck::from_bytes_mut(max_size),
         }
+    }
+}
+
+impl Lifecycle for GroupingMut<'_> {
+    fn on_create(&mut self) -> Result<(), super::Error> {
+        if *self.size > 0 {
+            Err(Error::InvalidGroupSize)
+        } else {
+            Ok(())
+        }
+    }
+
+    fn on_update(&mut self, other: &mut Self) -> Result<(), Error> {
+        // size cannot be updated
+        *other.size = *self.size;
+
+        if let Some(max_size) = other.max_size.value() {
+            // it cannot update the max size to be lower than the current size
+            if **max_size < *other.size {
+                return Err(Error::InvalidMaximumGroupSize(*other.size, **max_size));
+            }
+        }
+
+        Ok(())
     }
 }
 
