@@ -10,6 +10,8 @@ pub use or::*;
 pub use owned_by::*;
 pub use pubkey_match::*;
 
+use std::fmt::Debug;
+
 use bytemuck::{Pod, Zeroable};
 use podded::ZeroCopy;
 use solana_program::{account_info::AccountInfo, program_error::ProgramError};
@@ -31,7 +33,7 @@ pub struct Context<'a, 'b> {
 
 #[repr(u64)]
 /// Account types involved in a constraint evaluation.
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum Account {
     Asset,
     Authority,
@@ -130,7 +132,7 @@ impl From<OperatorType> for u32 {
 
 /// An operator defines the header information for a constraint.
 #[repr(C)]
-#[derive(Clone, Copy, Pod, Zeroable)]
+#[derive(Debug, Clone, Copy, Pod, Zeroable)]
 pub struct Operator {
     /// Header data.
     ///   0. operator type

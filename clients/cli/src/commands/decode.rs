@@ -1,8 +1,9 @@
 use nifty_asset::{
-    extensions::{Blob, Links},
+    extensions::{Blob, Links, Royalties},
     JsonCreator,
 };
 use nifty_asset_types::{
+    constraints::{FromBytes, Operator, OperatorType, OwnedBy},
     extensions::{Attributes, Extension, ExtensionData, ExtensionType, Grouping, Metadata},
     podded::ZeroCopy,
     state::Delegate,
@@ -113,7 +114,45 @@ pub fn handle_decode(args: DecodeArgs) -> Result<()> {
                 println!("{grouping:#?}");
             }
             ExtensionType::Royalties => {
-                println!("Royalties placeholder");
+                let royalties: Royalties = Royalties::from_bytes(extension_data);
+                let constraint = royalties.constraint;
+                let basis_points = royalties.basis_points;
+                let operator_type = constraint.operator.operator_type();
+
+                let values = match operator_type {
+                    OperatorType::And => {
+                        println!("And");
+                        todo!()
+                    }
+                    OperatorType::Not => {
+                        println!("Not");
+                        todo!()
+                    }
+                    OperatorType::Or => {
+                        println!("Or");
+                        todo!()
+                    }
+                    OperatorType::OwnedBy => {
+                        // Basis Points: u64
+                        // Operator: [u32; 2]
+                        let index = std::mem::size_of::<u64>() + std::mem::size_of::<Operator>();
+
+                        let owned_by = OwnedBy::from_bytes(&extension_data[index..]);
+                        format!(
+                            "Account: {:#?}\nOwners:{:#?}",
+                            owned_by.account, owned_by.owners
+                        )
+                    }
+                    OperatorType::PubkeyMatch => {
+                        println!("PubkeyMatch");
+                        todo!()
+                    }
+                };
+
+                println!("royalties:");
+                println!("basis points:{:#?}", basis_points);
+                println!("constraint:{:#?}", constraint.operator.operator_type());
+                println!("constraint values:\n{:#}", values);
             }
             ExtensionType::None => {
                 println!("None");

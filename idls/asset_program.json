@@ -311,12 +311,12 @@
           ]
         },
         {
-          "name": "collectionAsset",
+          "name": "groupAsset",
           "isMut": false,
           "isSigner": false,
           "isOptional": true,
           "docs": [
-            "The asset defining the collection, if applicable"
+            "The asset defining the group, if applicable"
           ]
         }
       ],

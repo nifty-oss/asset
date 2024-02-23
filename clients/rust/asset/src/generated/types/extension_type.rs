@@ -18,4 +18,5 @@ pub enum ExtensionType {
     Links,
     Metadata,
     Grouping,
+    Royalties,
 }
