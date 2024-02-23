@@ -3,10 +3,10 @@ use nifty_asset::{
     JsonCreator,
 };
 use nifty_asset_types::{
-    extensions::{Attributes, Extension, ExtensionData, ExtensionType, Metadata},
+    extensions::{Attributes, Extension, ExtensionData, ExtensionType, Grouping, Metadata},
+    podded::ZeroCopy,
     state::Delegate,
 };
-use podded::ZeroCopy;
 
 use super::*;
 
@@ -107,6 +107,10 @@ pub fn handle_decode(args: DecodeArgs) -> Result<()> {
             ExtensionType::Metadata => {
                 let metadata: Metadata = Metadata::from_bytes(extension_data);
                 println!("{metadata:#?}");
+            }
+            ExtensionType::Grouping => {
+                let grouping: Grouping = Grouping::from_bytes(extension_data);
+                println!("{grouping:#?}");
             }
             ExtensionType::Royalties => {
                 println!("Royalties placeholder");

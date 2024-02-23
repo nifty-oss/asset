@@ -2,7 +2,6 @@ use podded::types::{U8PrefixStr, U8PrefixStrMut};
 use std::{fmt::Debug, ops::Deref};
 
 use super::{ExtensionBuilder, ExtensionData, ExtensionType};
-use crate::validation::Validatable;
 
 /// Extension to add external links.
 ///
@@ -41,8 +40,6 @@ impl Debug for Links<'_> {
             .finish()
     }
 }
-
-impl Validatable for Links<'_> {}
 
 /// Link information.
 pub struct Link<'a> {

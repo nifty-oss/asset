@@ -22,6 +22,7 @@ pub fn handle_transfer(args: TransferArgs) -> Result<()> {
         asset,
         signer,
         recipient,
+        collection_asset: None,
     }
     .instruction();
 

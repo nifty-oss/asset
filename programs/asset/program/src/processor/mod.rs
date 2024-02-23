@@ -3,11 +3,15 @@ mod approve;
 mod burn;
 mod close;
 mod create;
+mod group;
 mod lock;
 mod revoke;
 mod transfer;
+mod ungroup;
 mod unlock;
+mod unverify;
 mod update;
+mod verify;
 mod write;
 
 use borsh::BorshDeserialize;
@@ -30,8 +34,8 @@ use crate::{
     instruction::{
         accounts::{
             AllocateAccounts, ApproveAccounts, BurnAccounts, CloseAccounts, CreateAccounts,
-            LockAccounts, RevokeAccounts, TransferAccounts, UnlockAccounts, UpdateAccounts,
-            WriteAccounts,
+            GroupAccounts, LockAccounts, RevokeAccounts, TransferAccounts, UngroupAccounts,
+            UnlockAccounts, UnverifyAccounts, UpdateAccounts, VerifyAccounts, WriteAccounts,
         },
         Instruction,
     },
@@ -73,6 +77,10 @@ pub fn process_instruction<'a>(
             msg!("Instruction: Create");
             create::process_create(program_id, CreateAccounts::context(accounts)?, args)
         }
+        Instruction::Group => {
+            msg!("Instruction: Group");
+            group::process_group(program_id, GroupAccounts::context(accounts)?)
+        }
         Instruction::Lock => {
             msg!("Instruction: Lock");
             lock::process_lock(program_id, LockAccounts::context(accounts)?)
@@ -85,13 +93,25 @@ pub fn process_instruction<'a>(
             msg!("Instruction: Transfer");
             transfer::process_transfer(program_id, TransferAccounts::context(accounts)?)
         }
+        Instruction::Ungroup => {
+            msg!("Instruction: Ungroup");
+            ungroup::process_ungroup(program_id, UngroupAccounts::context(accounts)?)
+        }
         Instruction::Unlock => {
             msg!("Instruction: Unlock");
             unlock::process_unlock(program_id, UnlockAccounts::context(accounts)?)
         }
+        Instruction::Unverify => {
+            msg!("Instruction: Unverify");
+            unverify::process_unverify(program_id, UnverifyAccounts::context(accounts)?)
+        }
         Instruction::Update(args) => {
             msg!("Instruction: Update");
             update::process_update(program_id, UpdateAccounts::context(accounts)?, args)
+        }
+        Instruction::Verify => {
+            msg!("Instruction: Verify");
+            verify::process_verify(program_id, VerifyAccounts::context(accounts)?)
         }
         Instruction::Write(args) => {
             msg!("Instruction: Write");

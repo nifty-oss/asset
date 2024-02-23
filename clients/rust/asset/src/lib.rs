@@ -11,4 +11,4 @@ pub use generated::programs::ASSET_ID as ID;
 pub use generated::*;
 
 pub use mint::*;
-pub use nifty_asset_types::ZeroCopy;
+pub use nifty_asset_types::podded::ZeroCopy;

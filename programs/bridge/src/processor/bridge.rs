@@ -24,10 +24,14 @@ struct TransferAccounts<'a> {
     source: &'a AccountInfo<'a>,
     /// Token account to transfer from.
     source_token: &'a AccountInfo<'a>,
+    /// Token record account to transfer from.
+    source_token_record: Option<&'a AccountInfo<'a>>,
     /// The account receiving the tokens.
     destination: &'a AccountInfo<'a>,
     /// Token account to transfer to.
     destination_token: &'a AccountInfo<'a>,
+    /// Token record account receiving the tokens.
+    destination_token_record: Option<&'a AccountInfo<'a>>,
 }
 
 pub fn process_bridge(program_id: &Pubkey, ctx: Context<BridgeAccounts>) -> ProgramResult {
@@ -99,7 +103,10 @@ pub fn process_bridge(program_id: &Pubkey, ctx: Context<BridgeAccounts>) -> Prog
     let metadata = Metadata::try_from(ctx.accounts.metadata)?;
 
     require!(
-        matches!(metadata.token_standard, Some(TokenStandard::NonFungible)),
+        matches!(
+            metadata.token_standard,
+            Some(TokenStandard::NonFungible) | Some(TokenStandard::ProgrammableNonFungible)
+        ),
         ProgramError::InvalidAccountData,
         "metadata"
     );
@@ -118,8 +125,10 @@ pub fn process_bridge(program_id: &Pubkey, ctx: Context<BridgeAccounts>) -> Prog
                 authority: ctx.accounts.owner,
                 source: ctx.accounts.owner,
                 source_token: ctx.accounts.token,
+                source_token_record: ctx.accounts.token_record,
                 destination: ctx.accounts.vault,
                 destination_token: ctx.accounts.vault_token,
+                destination_token_record: ctx.accounts.vault_token_record,
             },
             State::Active,
         ),
@@ -128,8 +137,10 @@ pub fn process_bridge(program_id: &Pubkey, ctx: Context<BridgeAccounts>) -> Prog
                 authority: ctx.accounts.vault,
                 source: ctx.accounts.vault,
                 source_token: ctx.accounts.vault_token,
+                source_token_record: ctx.accounts.vault_token_record,
                 destination: ctx.accounts.owner,
                 destination_token: ctx.accounts.token,
+                destination_token_record: ctx.accounts.token_record,
             },
             State::Idle,
         ),
@@ -147,12 +158,17 @@ pub fn process_bridge(program_id: &Pubkey, ctx: Context<BridgeAccounts>) -> Prog
         .destination_owner(transfer_accounts.destination)
         .mint(ctx.accounts.mint)
         .metadata(ctx.accounts.metadata)
+        .edition(Some(ctx.accounts.master_edition))
+        .token_record(transfer_accounts.source_token_record)
+        .destination_token_record(transfer_accounts.destination_token_record)
         .authority(transfer_accounts.authority)
         .payer(ctx.accounts.payer)
         .system_program(ctx.accounts.system_program)
         .sysvar_instructions(ctx.accounts.sysvar_instructions)
         .spl_token_program(ctx.accounts.spl_token_program)
         .spl_ata_program(ctx.accounts.spl_ata_program)
+        .authorization_rules_program(ctx.accounts.authorization_rules_program)
+        .authorization_rules(ctx.accounts.authorization_rules)
         .amount(1);
 
     let mut asset_transfer_cpi = TransferCpiBuilder::new(ctx.accounts.nifty_asset_program);

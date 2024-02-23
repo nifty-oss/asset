@@ -15,10 +15,18 @@ pub fn handle_burn(args: BurnArgs) -> Result<()> {
     let signer = signer_sk.pubkey();
     let asset = args.asset;
 
+    let data = config.client.get_account_data(&args.asset)?;
+    let asset_account = Asset::from_bytes(&data).unwrap();
+
     let ix = Burn {
         asset,
         signer,
         recipient: args.recipient,
+        group: if asset_account.group == Pubkey::default() {
+            None
+        } else {
+            Some(asset_account.group)
+        },
     }
     .instruction();
 

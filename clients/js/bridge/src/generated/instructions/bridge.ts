@@ -11,6 +11,7 @@ import {
   TokenStandardArgs,
   findMasterEditionPda,
   findMetadataPda,
+  findTokenRecordPda,
 } from '@metaplex-foundation/mpl-token-metadata';
 import { findAssociatedTokenPda } from '@metaplex-foundation/mpl-toolbox';
 import {
@@ -252,11 +253,27 @@ export function bridge(
   if (!resolvedArgs.tokenStandard) {
     resolvedArgs.tokenStandard = TokenStandard.NonFungible;
   }
+  if (!resolvedAccounts.tokenRecord.value) {
+    if (resolvedArgs.tokenStandard === TokenStandard.ProgrammableNonFungible) {
+      resolvedAccounts.tokenRecord.value = findTokenRecordPda(context, {
+        mint: expectPublicKey(resolvedAccounts.mint.value),
+        token: expectPublicKey(resolvedAccounts.token.value),
+      });
+    }
+  }
   if (!resolvedAccounts.vaultToken.value) {
     resolvedAccounts.vaultToken.value = findAssociatedTokenPda(context, {
       mint: expectPublicKey(resolvedAccounts.mint.value),
       owner: expectPublicKey(resolvedAccounts.vault.value),
     });
+  }
+  if (!resolvedAccounts.vaultTokenRecord.value) {
+    if (resolvedArgs.tokenStandard === TokenStandard.ProgrammableNonFungible) {
+      resolvedAccounts.vaultTokenRecord.value = findTokenRecordPda(context, {
+        mint: expectPublicKey(resolvedAccounts.mint.value),
+        token: expectPublicKey(resolvedAccounts.vaultToken.value),
+      });
+    }
   }
   if (!resolvedAccounts.payer.value) {
     resolvedAccounts.payer.value = context.payer;
@@ -300,6 +317,16 @@ export function bridge(
       'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'
     );
     resolvedAccounts.splAtaProgram.isWritable = false;
+  }
+  if (!resolvedAccounts.authorizationRulesProgram.value) {
+    if (resolvedArgs.tokenStandard === TokenStandard.ProgrammableNonFungible) {
+      resolvedAccounts.authorizationRulesProgram.value =
+        context.programs.getPublicKey(
+          'mplTokenAuthRules',
+          'auth9SigNpDKz4sJJ1DfCTuZrZNSAgh9sFD3rboVmgg'
+        );
+      resolvedAccounts.authorizationRulesProgram.isWritable = false;
+    }
   }
 
   // Accounts in order.

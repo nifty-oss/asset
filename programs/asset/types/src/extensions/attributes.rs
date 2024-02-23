@@ -2,7 +2,6 @@ use podded::types::{U8PrefixStr, U8PrefixStrMut};
 use std::{fmt::Debug, ops::Deref};
 
 use super::{ExtensionBuilder, ExtensionData, ExtensionType};
-use crate::validation::Validatable;
 
 /// Extension to add attributes (traits) to an asset – e.g., `"head": "bald"`.
 ///
@@ -10,7 +9,27 @@ use crate::validation::Validatable;
 ///   * `name` - name of the attribute.
 ///   * `value` - value of the attribute.
 pub struct Attributes<'a> {
-    pub traits: Vec<Trait<'a>>,
+    traits: Vec<Trait<'a>>,
+}
+
+impl Attributes<'_> {
+    /// Get the value of a trait by name.
+    ///
+    /// If no value is found under the `name`, returns `None`.
+    pub fn get(&self, name: &str) -> Option<&str> {
+        self.traits
+            .iter()
+            .find(|t| t.name.as_str() == name)
+            .map(|t| t.value.as_str())
+    }
+}
+
+impl<'a> Deref for Attributes<'a> {
+    type Target = Vec<Trait<'a>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.traits
+    }
 }
 
 impl<'a> ExtensionData<'a> for Attributes<'a> {
@@ -40,8 +59,6 @@ impl Debug for Attributes<'_> {
             .finish()
     }
 }
-
-impl Validatable for Attributes<'_> {}
 
 /// Trait information.
 pub struct Trait<'a> {

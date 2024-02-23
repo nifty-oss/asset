@@ -16,6 +16,7 @@ export * from './delegateRole';
 export * from './discriminator';
 export * from './extension';
 export * from './extensionType';
+export * from './grouping';
 export * from './link';
 export * from './links';
 export * from './metadata';

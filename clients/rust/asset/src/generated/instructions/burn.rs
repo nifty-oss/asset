@@ -16,6 +16,8 @@ pub struct Burn {
     pub signer: solana_program::pubkey::Pubkey,
     /// The account receiving refunded rent
     pub recipient: Option<solana_program::pubkey::Pubkey>,
+    /// Asset account of the group
+    pub group: Option<solana_program::pubkey::Pubkey>,
 }
 
 impl Burn {
@@ -27,7 +29,7 @@ impl Burn {
         &self,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(4 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.asset, false,
         ));
@@ -39,6 +41,14 @@ impl Burn {
             accounts.push(solana_program::instruction::AccountMeta::new(
                 recipient, false,
             ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::ASSET_ID,
+                false,
+            ));
+        }
+        if let Some(group) = self.group {
+            accounts.push(solana_program::instruction::AccountMeta::new(group, false));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 crate::ASSET_ID,
@@ -74,11 +84,13 @@ impl BurnInstructionData {
 ///   0. `[writable]` asset
 ///   1. `[writable, signer]` signer
 ///   2. `[writable, optional]` recipient
+///   3. `[writable, optional]` group
 #[derive(Default)]
 pub struct BurnBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
     signer: Option<solana_program::pubkey::Pubkey>,
     recipient: Option<solana_program::pubkey::Pubkey>,
+    group: Option<solana_program::pubkey::Pubkey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -105,6 +117,13 @@ impl BurnBuilder {
         self.recipient = recipient;
         self
     }
+    /// `[optional account]`
+    /// Asset account of the group
+    #[inline(always)]
+    pub fn group(&mut self, group: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
+        self.group = group;
+        self
+    }
     /// Add an aditional account to the instruction.
     #[inline(always)]
     pub fn add_remaining_account(
@@ -129,6 +148,7 @@ impl BurnBuilder {
             asset: self.asset.expect("asset is not set"),
             signer: self.signer.expect("signer is not set"),
             recipient: self.recipient,
+            group: self.group,
         };
 
         accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
@@ -143,6 +163,8 @@ pub struct BurnCpiAccounts<'a, 'b> {
     pub signer: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account receiving refunded rent
     pub recipient: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// Asset account of the group
+    pub group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
 /// `burn` CPI instruction.
@@ -155,6 +177,8 @@ pub struct BurnCpi<'a, 'b> {
     pub signer: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account receiving refunded rent
     pub recipient: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// Asset account of the group
+    pub group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
 impl<'a, 'b> BurnCpi<'a, 'b> {
@@ -167,6 +191,7 @@ impl<'a, 'b> BurnCpi<'a, 'b> {
             asset: accounts.asset,
             signer: accounts.signer,
             recipient: accounts.recipient,
+            group: accounts.group,
         }
     }
     #[inline(always)]
@@ -202,7 +227,7 @@ impl<'a, 'b> BurnCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(4 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.asset.key,
             false,
@@ -215,6 +240,16 @@ impl<'a, 'b> BurnCpi<'a, 'b> {
             accounts.push(solana_program::instruction::AccountMeta::new(
                 *recipient.key,
                 false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::ASSET_ID,
+                false,
+            ));
+        }
+        if let Some(group) = self.group {
+            accounts.push(solana_program::instruction::AccountMeta::new(
+                *group.key, false,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -236,12 +271,15 @@ impl<'a, 'b> BurnCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(3 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(4 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset.clone());
         account_infos.push(self.signer.clone());
         if let Some(recipient) = self.recipient {
             account_infos.push(recipient.clone());
+        }
+        if let Some(group) = self.group {
+            account_infos.push(group.clone());
         }
         remaining_accounts
             .iter()
@@ -262,6 +300,7 @@ impl<'a, 'b> BurnCpi<'a, 'b> {
 ///   0. `[writable]` asset
 ///   1. `[writable, signer]` signer
 ///   2. `[writable, optional]` recipient
+///   3. `[writable, optional]` group
 pub struct BurnCpiBuilder<'a, 'b> {
     instruction: Box<BurnCpiBuilderInstruction<'a, 'b>>,
 }
@@ -273,6 +312,7 @@ impl<'a, 'b> BurnCpiBuilder<'a, 'b> {
             asset: None,
             signer: None,
             recipient: None,
+            group: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -300,6 +340,16 @@ impl<'a, 'b> BurnCpiBuilder<'a, 'b> {
         recipient: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
         self.instruction.recipient = recipient;
+        self
+    }
+    /// `[optional account]`
+    /// Asset account of the group
+    #[inline(always)]
+    pub fn group(
+        &mut self,
+        group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    ) -> &mut Self {
+        self.instruction.group = group;
         self
     }
     /// Add an additional account to the instruction.
@@ -351,6 +401,8 @@ impl<'a, 'b> BurnCpiBuilder<'a, 'b> {
             signer: self.instruction.signer.expect("signer is not set"),
 
             recipient: self.instruction.recipient,
+
+            group: self.instruction.group,
         };
         instruction.invoke_signed_with_remaining_accounts(
             signers_seeds,
@@ -364,6 +416,7 @@ struct BurnCpiBuilderInstruction<'a, 'b> {
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     signer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     recipient: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

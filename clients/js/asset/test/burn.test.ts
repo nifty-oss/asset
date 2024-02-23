@@ -4,6 +4,7 @@ import {
   Asset,
   DelegateRole,
   Discriminator,
+  ExtensionType,
   Standard,
   State,
   approve,
@@ -11,6 +12,8 @@ import {
   create,
   delegateInput,
   fetchAsset,
+  grouping,
+  mint,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -122,4 +125,135 @@ test('invalid signer cannot burn', async (t) => {
 
   // Then the asset still exists.
   t.true(await umi.rpc.accountExists(asset.publicKey), 'asset exists');
+});
+
+test('it ungroups an asset on burn', async (t) => {
+  // Given a Umi instance.
+  const umi = await createUmi();
+
+  // And we create a group asset.
+  const groupAsset = generateSigner(umi);
+  await mint(umi, {
+    asset: groupAsset,
+    payer: umi.identity,
+    name: 'Group',
+    extensions: [grouping(10)],
+  }).sendAndConfirm(umi);
+
+  t.like(await fetchAsset(umi, groupAsset.publicKey), <Asset>{
+    group: null,
+    extensions: [
+      {
+        type: ExtensionType.Grouping,
+        size: 0n,
+        maxSize: 10n,
+      },
+    ],
+  });
+
+  // And a "normal" asset.
+  const asset = generateSigner(umi);
+  await mint(umi, {
+    asset,
+    payer: umi.identity,
+    name: 'Asset',
+    group: groupAsset.publicKey,
+  }).sendAndConfirm(umi);
+
+  t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
+    group: groupAsset.publicKey,
+  });
+
+  t.like(await fetchAsset(umi, groupAsset.publicKey), <Asset>{
+    group: null,
+    extensions: [
+      {
+        type: ExtensionType.Grouping,
+        size: 1n,
+        maxSize: 10n,
+      },
+    ],
+  });
+
+  // When we burn the asset.
+  await burn(umi, {
+    asset: asset.publicKey,
+    signer: umi.identity,
+    group: groupAsset.publicKey,
+  }).sendAndConfirm(umi);
+
+  // Then the asset is gone.
+  t.false(await umi.rpc.accountExists(asset.publicKey), 'asset exists');
+
+  // And the group size has decreased.
+  t.like(await fetchAsset(umi, groupAsset.publicKey), <Asset>{
+    group: null,
+    extensions: [
+      {
+        type: ExtensionType.Grouping,
+        size: 0n,
+        maxSize: 10n,
+      },
+    ],
+  });
+});
+
+test('it cannot burn a grouped asset without group account', async (t) => {
+  // Given a Umi instance.
+  const umi = await createUmi();
+
+  // And we create a group asset.
+  const groupAsset = generateSigner(umi);
+  await mint(umi, {
+    asset: groupAsset,
+    payer: umi.identity,
+    name: 'Group',
+    extensions: [grouping(10)],
+  }).sendAndConfirm(umi);
+
+  t.like(await fetchAsset(umi, groupAsset.publicKey), <Asset>{
+    group: null,
+    extensions: [
+      {
+        type: ExtensionType.Grouping,
+        size: 0n,
+        maxSize: 10n,
+      },
+    ],
+  });
+
+  // And a "normal" asset.
+  const asset = generateSigner(umi);
+  await mint(umi, {
+    asset,
+    payer: umi.identity,
+    name: 'Asset',
+    group: groupAsset.publicKey,
+  }).sendAndConfirm(umi);
+
+  t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
+    group: groupAsset.publicKey,
+  });
+
+  t.like(await fetchAsset(umi, groupAsset.publicKey), <Asset>{
+    group: null,
+    extensions: [
+      {
+        type: ExtensionType.Grouping,
+        size: 1n,
+        maxSize: 10n,
+      },
+    ],
+  });
+
+  // When we try to burn the asset without the group account.
+  const promise = burn(umi, {
+    asset: asset.publicKey,
+    signer: umi.identity,
+  }).sendAndConfirm(umi);
+
+  // Then we expect an error.
+  await t.throwsAsync(promise, {
+    message: /insufficient account keys for instruction/,
+  });
 });

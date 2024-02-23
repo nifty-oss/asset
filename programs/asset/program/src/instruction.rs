@@ -26,14 +26,16 @@ pub enum Instruction {
     #[account(0, writable, name="asset", desc = "Asset account")]
     #[account(1, signer, writable, name="signer", desc = "The holder or burn delegate of the asset")]
     #[account(2, optional, writable, name="recipient", desc = "The account receiving refunded rent")]
+    #[account(3, optional, writable, name="group", desc = "Asset account of the group")]
     Burn,
 
     /// Creates a new asset.
     #[account(0, signer, writable, name="asset", desc = "Asset account")]
     #[account(1, name="authority", desc = "The authority of the asset")]
     #[account(2, name="holder", desc = "The holder of the asset")]
-    #[account(3, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
-    #[account(4, optional, name="system_program", desc = "The system program")]
+    #[account(3, optional, writable, name="group", desc = "Asset account of the group")]
+    #[account(4, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
+    #[account(5, optional, name="system_program", desc = "The system program")]
     Create(Metadata),
 
     /// Approves a delegate to manage an asset.
@@ -70,6 +72,11 @@ pub enum Instruction {
     #[account(1, signer, name="authority", desc = "Delegate ot holder account")]
     Unlock,
 
+    /// Unverifies a creator.
+    #[account(0, writable, name="asset", desc = "Asset account")]
+    #[account(1, signer, name="creator", desc = "Creator account to unverify")]
+    Unverify,
+
     /// Updates an asset.
     #[account(0, writable, name="asset", desc = "Asset account")]
     #[account(1, signer, name="authority", desc = "The authority of the asset")]
@@ -78,11 +85,28 @@ pub enum Instruction {
     #[account(4, optional, name="system_program", desc = "The system program")]
     Update(UpdateInput),
 
+    /// Verifies a creator.
+    #[account(0, writable, name="asset", desc = "Asset account")]
+    #[account(1, signer, name="creator", desc = "Creator account to verify")]
+    Verify,
+
     /// Writes data to an extension.
     #[account(0, signer, writable, name="asset", desc = "Asset account")]
     #[account(1, signer, writable, name="payer", desc = "The account paying for the storage fees")]
     #[account(2, name="system_program", desc = "The system program")]
     Write(Data),
+
+    /// Adds an asset to a group.
+    #[account(0, writable, name="asset", desc = "Asset account")]
+    #[account(1, writable, name="group", desc = "Asset account of the group")]
+    #[account(2, signer, name="authority", desc = "The authority of the assets")]
+    Group,
+
+    /// Removes an asset from a group.
+    #[account(0, writable, name="asset", desc = "Asset account")]
+    #[account(1, writable, name="group", desc = "Asset account of the group")]
+    #[account(2, signer, name="authority", desc = "The authority of the assets")]
+    Ungroup,
 }
 
 #[repr(C)]

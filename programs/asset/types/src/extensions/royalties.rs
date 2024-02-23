@@ -1,7 +1,4 @@
-use crate::{
-    constraints::{Constraint, FromBytes},
-    validation::Validatable,
-};
+use crate::constraints::{Constraint, FromBytes};
 
 use super::{ExtensionData, ExtensionType};
 
@@ -27,5 +24,3 @@ impl<'a> ExtensionData<'a> for Royalties<'a> {
         std::mem::size_of::<u64>() + self.constraint.size()
     }
 }
-
-impl Validatable for Royalties<'_> {}

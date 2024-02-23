@@ -1,8 +1,8 @@
 use nifty_asset_types::{
-    extensions::{validate, Extension},
+    extensions::{on_create, Extension},
+    podded::ZeroCopy,
     state::{Asset, Discriminator},
 };
-use podded::ZeroCopy;
 use solana_program::{
     entrypoint::ProgramResult, msg, program::invoke, program_error::ProgramError,
     program_memory::sol_memcpy, pubkey::Pubkey, rent::Rent, system_instruction, system_program,
@@ -147,16 +147,19 @@ pub fn process_allocate(
             length
         );
     } else {
-        let asset_data = &(*ctx.accounts.asset.data).borrow();
+        let asset_data = (*ctx.accounts.asset.data).borrow();
         let (extension, offset) =
-            Asset::last_extension(asset_data).ok_or(AssetError::ExtensionNotFound)?;
+            Asset::last_extension(&asset_data).ok_or(AssetError::ExtensionNotFound)?;
 
-        validate(
-            args.extension_type,
-            &asset_data[offset..offset + extension.length() as usize],
-        )
-        .map_err(|error| {
-            msg!("Validation error: {:?}", error);
+        let extension_type = extension.extension_type();
+        let length = extension.length() as usize;
+
+        drop(asset_data);
+
+        // validate the extension data
+        let asset_data = &mut (*ctx.accounts.asset.data).borrow_mut();
+        on_create(extension_type, &mut asset_data[offset..offset + length]).map_err(|error| {
+            msg!("[ERROR] {}", error);
             AssetError::ExtensionDataInvalid
         })?;
 

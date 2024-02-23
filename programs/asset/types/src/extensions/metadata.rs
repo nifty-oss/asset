@@ -1,8 +1,7 @@
 use podded::types::{U8PrefixStr, U8PrefixStrMut};
 use std::{fmt::Debug, ops::Deref};
 
-use super::{ExtensionBuilder, ExtensionData, ExtensionType};
-use crate::validation::Validatable;
+use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle};
 
 /// Extension to add `symbol` and `uri` attributes to an asset.
 ///
@@ -38,7 +37,37 @@ impl Debug for Metadata<'_> {
     }
 }
 
-impl Validatable for Metadata<'_> {}
+impl Lifecycle for Metadata<'_> {}
+
+/// Mutable reference to `Metadata` extension.
+///
+/// This type is used to modify the `Metadata` extension. Note that the `symbol` and `uri` fields
+/// are mutable references to the original bytes, but cannot be increased in size.
+pub struct MetadataMut<'a> {
+    /// Name of the trait.
+    pub symbol: U8PrefixStrMut<'a>,
+
+    /// Value of the trait.
+    pub uri: U8PrefixStrMut<'a>,
+}
+
+impl<'a> ExtensionDataMut<'a> for MetadataMut<'a> {
+    const TYPE: ExtensionType = ExtensionType::Metadata;
+
+    fn from_bytes_mut(bytes: &'a mut [u8]) -> Self {
+        // we need to first determine the size of the symbol to be able to split the bytes
+        // into mutable symbol and uri refernces
+        let symbol = U8PrefixStr::from_bytes(bytes);
+        let size = symbol.size();
+
+        let (symbol, uri) = bytes.split_at_mut(size);
+        let symbol = U8PrefixStrMut::from_bytes_mut(symbol);
+        let uri = U8PrefixStrMut::from_bytes_mut(uri);
+        Self { symbol, uri }
+    }
+}
+
+impl Lifecycle for MetadataMut<'_> {}
 
 /// Builder for an `Attributes` extension.
 #[derive(Default)]

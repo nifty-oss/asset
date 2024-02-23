@@ -1,5 +1,5 @@
 use nifty_asset_types::{
-    extensions::validate,
+    extensions::on_create,
     state::{Asset, Discriminator},
 };
 use solana_program::{
@@ -122,16 +122,19 @@ pub(crate) fn process_write(
             expected.saturating_sub(ctx.accounts.asset.data_len())
         );
     } else {
-        let asset_data = &(*ctx.accounts.asset.data).borrow();
+        let asset_data = (*ctx.accounts.asset.data).borrow();
         let (extension, offset) =
-            Asset::last_extension(asset_data).ok_or(AssetError::ExtensionNotFound)?;
+            Asset::last_extension(&asset_data).ok_or(AssetError::ExtensionNotFound)?;
 
-        validate(
-            extension.extension_type(),
-            &asset_data[offset..offset + extension.length() as usize],
-        )
-        .map_err(|error| {
-            msg!("Validation error: {:?}", error);
+        let extension_type = extension.extension_type();
+        let length = extension.length() as usize;
+
+        drop(asset_data);
+
+        // validate the extension data
+        let asset_data = &mut (*ctx.accounts.asset.data).borrow_mut();
+        on_create(extension_type, &mut asset_data[offset..offset + length]).map_err(|error| {
+            msg!("[ERROR] {}", error);
             AssetError::ExtensionDataInvalid
         })?;
 

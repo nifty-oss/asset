@@ -34,6 +34,8 @@ export type BurnInstructionAccounts = {
   signer: Signer;
   /** The account receiving refunded rent */
   recipient?: PublicKey | Pda;
+  /** Asset account of the group */
+  group?: PublicKey | Pda;
 };
 
 // Data.
@@ -80,6 +82,11 @@ export function burn(
       index: 2,
       isWritable: true as boolean,
       value: input.recipient ?? null,
+    },
+    group: {
+      index: 3,
+      isWritable: true as boolean,
+      value: input.group ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
 

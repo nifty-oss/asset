@@ -16,6 +16,5 @@ shank = "0.3.0"
 nifty-asset-types = { version = "^0", path = "../types" }
 num-derive = "^0.3"
 num-traits = "^0.2"
-podded = "0.4.0"
 solana-program = "~1.16"
 thiserror = "^1.0"

@@ -98,7 +98,7 @@ unsafe impl Pod for State {}
 unsafe impl Zeroable for State {}
 
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Default, Pod, Zeroable)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Pod, Zeroable)]
 pub struct NullablePubkey(Pubkey);
 
 impl NullablePubkey {
@@ -128,5 +128,17 @@ impl Nullable for NullablePubkey {
 
     fn is_none(&self) -> bool {
         self.0 == Pubkey::default()
+    }
+}
+
+impl From<Pubkey> for NullablePubkey {
+    fn from(pubkey: Pubkey) -> Self {
+        Self(pubkey)
+    }
+}
+
+impl From<&Pubkey> for NullablePubkey {
+    fn from(pubkey: &Pubkey) -> Self {
+        Self(*pubkey)
     }
 }

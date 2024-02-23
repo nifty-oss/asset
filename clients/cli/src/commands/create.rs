@@ -34,6 +34,7 @@ pub fn handle_create(args: CreateArgs) -> Result<()> {
         authority,
         holder,
         payer: Some(authority),
+        group: None,
         system_program: Some(system_program::id()),
     }
     .instruction(ix_args);

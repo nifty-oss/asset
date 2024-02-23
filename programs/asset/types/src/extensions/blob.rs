@@ -1,11 +1,11 @@
+use podded::types::{U8PrefixStr, U8PrefixStrMut};
 use std::ops::Deref;
 
-use podded::types::{U8PrefixStr, U8PrefixStrMut};
-
 use super::{ExtensionBuilder, ExtensionData, ExtensionType};
-use crate::validation::Validatable;
 
-/// Extension to add a list of creators.
+/// Extension to add "binary large object" to an asset.
+///
+/// In most cases, this extension is used to add an image or document to an asset.
 #[repr(C)]
 pub struct Blob<'a> {
     /// The content type of the blob.
@@ -28,8 +28,6 @@ impl<'a> ExtensionData<'a> for Blob<'a> {
         self.content_type.size() + self.data.len()
     }
 }
-
-impl Validatable for Blob<'_> {}
 
 /// Builder for a `Blob` extension.
 #[derive(Default)]

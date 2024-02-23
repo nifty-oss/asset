@@ -17,4 +17,5 @@ pub enum ExtensionType {
     Creators,
     Links,
     Metadata,
+    Grouping,
 }

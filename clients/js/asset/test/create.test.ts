@@ -9,6 +9,7 @@ import {
   attributes,
   create,
   fetchAsset,
+  grouping,
   initialize,
   links,
 } from '../src';
@@ -175,5 +176,61 @@ test('it can create a soulbound asset', async (t) => {
     holder: holder.publicKey,
     authority: umi.identity.publicKey,
     name: 'Soulbound Asset',
+  });
+});
+
+test('it can create an asset with a group', async (t) => {
+  // Given a Umi instance.
+  const umi = await createUmi();
+
+  // And we create a group asset.
+  const groupAsset = generateSigner(umi);
+  await initialize(umi, {
+    asset: groupAsset,
+    payer: umi.identity,
+    extension: grouping(10),
+  }).sendAndConfirm(umi);
+
+  await create(umi, {
+    asset: groupAsset,
+    name: 'Group',
+  }).sendAndConfirm(umi);
+
+  t.like(await fetchAsset(umi, groupAsset.publicKey), <Asset>{
+    group: null,
+    extensions: [
+      {
+        type: ExtensionType.Grouping,
+        size: 0n,
+        maxSize: 10n,
+      },
+    ],
+  });
+
+  // When we create an asset with a group.
+  const asset = generateSigner(umi);
+  await create(umi, {
+    asset,
+    payer: umi.identity,
+    name: 'Asset',
+    group: groupAsset.publicKey,
+  }).sendAndConfirm(umi);
+
+  // Then the group is set on the asset.
+  t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
+    name: 'Asset',
+    group: groupAsset.publicKey,
+  });
+
+  // And the group size has increased.
+  t.like(await fetchAsset(umi, groupAsset.publicKey), <Asset>{
+    group: null,
+    extensions: [
+      {
+        type: ExtensionType.Grouping,
+        size: 1n,
+        maxSize: 10n,
+      },
+    ],
   });
 });

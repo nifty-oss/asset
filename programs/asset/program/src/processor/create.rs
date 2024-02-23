@@ -1,8 +1,7 @@
 use nifty_asset_types::{
-    extensions::validate,
+    podded::ZeroCopy,
     state::{Asset, Discriminator},
 };
-use podded::ZeroCopy;
 use solana_program::{
     entrypoint::ProgramResult, msg, program::invoke, program_error::ProgramError, pubkey::Pubkey,
     rent::Rent, system_instruction, system_program, sysvar::Sysvar,
@@ -11,7 +10,7 @@ use solana_program::{
 use crate::{
     error::AssetError,
     instruction::{
-        accounts::{Context, CreateAccounts},
+        accounts::{Context, CreateAccounts, GroupAccounts},
         Metadata,
     },
     require,
@@ -108,22 +107,27 @@ pub fn process_create(
     let extensions = Asset::get_extensions(&data);
 
     if !extensions.is_empty() {
-        // should only create the asset if all extension data are valid
-        for extension_type in &extensions {
-            let (extension, offset) = Asset::get_extension(*extension_type, &data)
-                .ok_or(AssetError::ExtensionNotFound)?;
-
-            validate(
-                *extension_type,
-                &data[offset..offset + extension.length() as usize],
-            )
-            .map_err(|error| {
-                msg!("Validation error: {:?}", error);
-                AssetError::ExtensionDataInvalid
-            })?;
-        }
-
         msg!("Asset created with {:?} extension(s)", extensions);
+    }
+
+    drop(data);
+
+    // process the group (if there is one)
+
+    if let Some(group) = ctx.accounts.group {
+        let accounts = GroupAccounts {
+            authority: ctx.accounts.authority,
+            asset: ctx.accounts.asset,
+            group,
+        };
+        msg!("Setting group");
+        super::group::process_group(
+            program_id,
+            Context {
+                accounts,
+                remaining_accounts: ctx.remaining_accounts,
+            },
+        )?;
     }
 
     Ok(())

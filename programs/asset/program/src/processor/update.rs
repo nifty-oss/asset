@@ -1,8 +1,8 @@
 use nifty_asset_types::{
-    extensions::{validate, Extension},
+    extensions::{on_update, Extension},
+    podded::{pod::PodBool, ZeroCopy},
     state::{Asset, Discriminator},
 };
-use podded::{pod::PodBool, ZeroCopy};
 use solana_program::{
     entrypoint::ProgramResult,
     msg,
@@ -105,7 +105,7 @@ pub fn process_update(
     //
     // at the end of this process, the extension is "loaded" to sanity check that
     // the update was successful
-    if let Some(args) = args.extension {
+    if let Some(mut args) = args.extension {
         let mut offset = Asset::LEN;
         let mut extension = None;
 
@@ -113,14 +113,14 @@ pub fn process_update(
             let current = Extension::load(&account_data[offset..offset + Extension::LEN]);
 
             if current.extension_type() == args.extension_type {
-                extension = Some(current);
+                extension = Some((current.length() as usize, current.boundary() as usize));
                 break;
             }
 
             offset = current.boundary() as usize;
         }
 
-        let extension = extension.ok_or(AssetError::ExtensionNotFound)?;
+        let (current_length, boundary) = extension.ok_or(AssetError::ExtensionNotFound)?;
 
         // extension data can be specified through a buffer account or
         // instruction args
@@ -148,11 +148,46 @@ pub fn process_update(
                 "extension type mismatch"
             );
 
+            let header_length = header.length() as usize;
+
+            drop(extension_data);
+
+            let start = offset + Extension::LEN;
+            // validate the extension data update
+            on_update(
+                args.extension_type,
+                &mut account_data[start..start + current_length],
+                &mut (*buffer.data).borrow_mut()[Asset::LEN..Asset::LEN + header_length],
+            )
+            .map_err(|error| {
+                msg!("[ERROR] {}", error);
+                AssetError::ExtensionDataInvalid
+            })?;
+
             msg!("Updating extension from buffer account");
-            header.length() as usize
+            header_length
         } else {
+            let length = if let Some(extension_data) = args.data.as_mut() {
+                let start = offset + Extension::LEN;
+                // validate the extension data update
+                on_update(
+                    args.extension_type,
+                    &mut account_data[start..start + current_length],
+                    extension_data.as_mut_slice(),
+                )
+                .map_err(|error| {
+                    msg!("[ERROR] {}", error);
+                    AssetError::ExtensionDataInvalid
+                })?;
+
+                extension_data.len()
+            } else {
+                // extension do not have any data
+                0
+            };
+
             msg!("Updating extension from instruction data");
-            args.data.as_ref().map_or(0, |d| d.len())
+            length
         };
 
         // determine the new boundary of the extension and any required padding
@@ -164,14 +199,13 @@ pub fn process_update(
         .map_err(|_| AssetError::InvalidAlignment)?
         .pad_to_align()
         .size();
-        let boundary = extension.boundary() as usize;
 
         // calculate the delta between the old and new boundaries to determine
         // by how much the data needs to be moved
         let delta = updated_boundary as i32 - boundary as i32;
 
         // if the extension is being resized, then the account needs to be resized
-        if extension.length() as usize != extension_length {
+        if current_length != extension_length {
             let account_boundary = Asset::last_extension(&account_data)
                 .ok_or(AssetError::ExtensionNotFound)?
                 .0
@@ -246,15 +280,6 @@ pub fn process_update(
                     extension_length,
                 );
             }
-
-            validate(
-                args.extension_type,
-                &account_data[offset..offset + extension_length],
-            )
-            .map_err(|error| {
-                msg!("Validation error: {:?}", error);
-                AssetError::ExtensionDataInvalid
-            })?;
         }
     }
 
