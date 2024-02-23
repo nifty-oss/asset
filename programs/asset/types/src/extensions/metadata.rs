@@ -10,7 +10,7 @@ use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Li
 pub struct Metadata<'a> {
     /// Name of the trait.
     pub symbol: U8PrefixStr<'a>,
-     /// Value of the trait.
+    /// Value of the trait.
     pub uri: U8PrefixStr<'a>,
 }
 

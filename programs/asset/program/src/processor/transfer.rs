@@ -77,23 +77,23 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
         if (*group).is_some() {
             // We need collection asset account to be provided.
             require!(
-                ctx.accounts.collection_asset.is_some(),
+                ctx.accounts.group_asset.is_some(),
                 AssetError::InvalidGroup,
                 "asset is part of a group but no collection account was provided"
             );
 
-            let collection_asset_info = ctx.accounts.collection_asset.unwrap();
+            let group_asset_info = ctx.accounts.group_asset.unwrap();
 
             // Collection asset account must be owned by the program.
             require!(
-                collection_asset_info.owner == program_id,
+                group_asset_info.owner == program_id,
                 AssetError::InvalidGroup,
                 "collection account is not owned by the program"
             );
 
             // Collection asset account must match the group.
             require!(
-                (*group).deref() == ctx.accounts.collection_asset.unwrap().key,
+                (*group).deref() == ctx.accounts.group_asset.unwrap().key,
                 AssetError::InvalidGroup,
                 "collection account does not match the group"
             );
@@ -101,14 +101,14 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
             // Collection asset account must be initialized.
             // let collection_data = (*collection_asset_info.data).borrow();
             require!(
-                (*collection_asset_info.data).borrow()[0] == Discriminator::Asset as u8,
+                (*group_asset_info.data).borrow()[0] == Discriminator::Asset as u8,
                 AssetError::InvalidGroup,
                 "collection account is not initialized"
             );
 
             // Check if royalties extension is present.
             if let Some(royalties) =
-                Asset::get::<Royalties>(&(*collection_asset_info.data).borrow()[Asset::LEN..])
+                Asset::get::<Royalties>(&(*group_asset_info.data).borrow()[Asset::LEN..])
             {
                 // Check if the recipient is allowed to receive the asset.
 
@@ -129,7 +129,7 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
                 if !is_wallet_to_wallet {
                     // We pass in the Constraint context and validate the royalties constraint.
                     royalties.constraint.assertable.assert(&ConstraintContext {
-                        asset: collection_asset_info,
+                        asset: group_asset_info,
                         authority: ctx.accounts.signer,
                         recipient: Some(ctx.accounts.recipient),
                     })?;

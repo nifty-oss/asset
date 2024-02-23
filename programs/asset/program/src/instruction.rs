@@ -64,7 +64,7 @@ pub enum Instruction {
     #[account(0, writable, name="asset", desc = "Asset account")]
     #[account(1, signer, name="signer", desc = "Current holder of the asset or transfer delegate")]
     #[account(2, name="recipient", desc = "The recipient of the asset")]
-    #[account(3, optional, name="collection_asset", desc = "The asset defining the collection, if applicable")]
+    #[account(3, optional, name="group_asset", desc = "The asset defining the group, if applicable")]
     Transfer,
 
     /// Unlocks an asset.
