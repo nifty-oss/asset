@@ -3,11 +3,14 @@ use nifty_asset::{
     JsonCreator,
 };
 use nifty_asset_types::{
-    constraints::{FromBytes, Operator, OperatorType, OwnedBy},
+    constraints::{
+        And, Constraint, FromBytes, Not, Operator, OperatorType, Or, OwnedBy, PubkeyMatch,
+    },
     extensions::{Attributes, Extension, ExtensionData, ExtensionType, Grouping, Metadata},
     podded::ZeroCopy,
     state::Delegate,
 };
+use serde_json::{json, Value};
 
 use super::*;
 
@@ -117,42 +120,15 @@ pub fn handle_decode(args: DecodeArgs) -> Result<()> {
                 let royalties: Royalties = Royalties::from_bytes(extension_data);
                 let constraint = royalties.constraint;
                 let basis_points = royalties.basis_points;
-                let operator_type = constraint.operator.operator_type();
-
-                let values = match operator_type {
-                    OperatorType::And => {
-                        println!("And");
-                        todo!()
-                    }
-                    OperatorType::Not => {
-                        println!("Not");
-                        todo!()
-                    }
-                    OperatorType::Or => {
-                        println!("Or");
-                        todo!()
-                    }
-                    OperatorType::OwnedBy => {
-                        // Basis Points: u64
-                        // Operator: [u32; 2]
-                        let index = std::mem::size_of::<u64>() + std::mem::size_of::<Operator>();
-
-                        let owned_by = OwnedBy::from_bytes(&extension_data[index..]);
-                        format!(
-                            "Account: {:#?}\nOwners:{:#?}",
-                            owned_by.account, owned_by.owners
-                        )
-                    }
-                    OperatorType::PubkeyMatch => {
-                        println!("PubkeyMatch");
-                        todo!()
-                    }
-                };
 
                 println!("royalties:");
                 println!("basis points:{:#?}", basis_points);
-                println!("constraint:{:#?}", constraint.operator.operator_type());
-                println!("constraint values:\n{:#}", values);
+
+                // Basis Points: u64
+                let index = std::mem::size_of::<u64>();
+
+                let constraints = handle_constraints(&constraint, index, extension_data);
+                println!("Constraints: {constraints:#?}");
             }
             ExtensionType::None => {
                 println!("None");
@@ -163,4 +139,61 @@ pub fn handle_decode(args: DecodeArgs) -> Result<()> {
     }
 
     Ok(())
+}
+
+fn handle_constraints(constraint: &Constraint, mut index: usize, extension_data: &[u8]) -> Value {
+    let operator_type = constraint.operator.operator_type();
+    // Operator: [u32; 2]
+    index += std::mem::size_of::<Operator>();
+
+    match operator_type {
+        OperatorType::And => {
+            let and = And::from_bytes(&extension_data[index..]);
+            let constraints: Vec<Value> = and
+                .constraints
+                .iter()
+                .map(|constraint| handle_constraints(constraint, index, extension_data))
+                .collect();
+
+            json!({
+                "AND": constraints
+            })
+        }
+        OperatorType::Not => {
+            let constraint = Not::from_bytes(&extension_data[index..]);
+            json!({
+                "NOT": handle_constraints(&constraint.constraint, index, extension_data)
+            })
+        }
+        OperatorType::Or => {
+            let or = Or::from_bytes(&extension_data[index..]);
+            let constraints: Vec<Value> = or
+                .constraints
+                .iter()
+                .map(|constraint| handle_constraints(constraint, index, extension_data))
+                .collect();
+
+            json!({
+                "OR": constraints
+            })
+        }
+        OperatorType::OwnedBy => {
+            let owned_by = OwnedBy::from_bytes(&extension_data[index..]);
+            json!({
+                "OWNED_BY": {
+                    "account": owned_by.account.to_string(),
+                    "owners": owned_by.owners.iter().map(|owner| owner.to_string()).collect::<Vec<String>>()
+                }
+            })
+        }
+        OperatorType::PubkeyMatch => {
+            let pubkey_match = PubkeyMatch::from_bytes(&extension_data[index..]);
+            json!({
+                "PUBKEY_MATCH": {
+                    "account": pubkey_match.account.to_string(),
+                    "pubkeys": pubkey_match.pubkeys.iter().map(|pubkey| pubkey.to_string()).collect::<Vec<String>>()
+                }
+            })
+        }
+    }
 }

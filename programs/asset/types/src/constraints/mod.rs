@@ -10,7 +10,7 @@ pub use or::*;
 pub use owned_by::*;
 pub use pubkey_match::*;
 
-use std::fmt::Debug;
+use std::fmt::{self, Debug};
 
 use bytemuck::{Pod, Zeroable};
 use podded::ZeroCopy;
@@ -51,13 +51,14 @@ impl From<&str> for Account {
     }
 }
 
-impl From<Account> for &str {
-    fn from(account: Account) -> Self {
-        match account {
+impl fmt::Display for Account {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let account_str = match self {
             Account::Asset => "asset",
             Account::Authority => "authority",
             Account::Recipient => "recipient",
-        }
+        };
+        write!(f, "{}", account_str)
     }
 }
 
