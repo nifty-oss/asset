@@ -43,3 +43,38 @@ pub fn assert_delegate(asset: &Asset, target: &Pubkey, role: DelegateRole) -> Pr
 
     Ok(())
 }
+
+#[macro_export]
+macro_rules! process_royalties {
+    ( $ctx:expr, $data:expr) => {
+        {
+            // Check if royalties extension is present.
+            if let Some(royalties) = Asset::get::<Royalties>($data) {
+                // Check if the recipient is allowed to receive the asset.
+
+                // Wallet-to-wallet transfers between system program accounts are exempt from the royalty check
+                // so we need to exclude them.
+
+                // Are we in a CPI? If so, the signer could be a ghost PDA so we cannot prove it's a wallet.
+                let is_cpi = get_stack_height() > TRANSACTION_LEVEL_STACK_HEIGHT;
+
+                // Are both the sender and the recipient system program accounts?
+                let sender_is_wallet =
+                    $ctx.accounts.signer.owner == &solana_program::system_program::id();
+                let recipient_is_wallet =
+                    $ctx.accounts.recipient.owner == &solana_program::system_program::id();
+
+                let is_wallet_to_wallet = !is_cpi && sender_is_wallet && recipient_is_wallet;
+
+                if !is_wallet_to_wallet {
+                    // We pass in the Constraint context and validate the royalties constraint.
+                    royalties.constraint.assertable.assert(&ConstraintContext {
+                        asset: $ctx.accounts.asset,
+                        authority: $ctx.accounts.signer,
+                        recipient: Some($ctx.accounts.recipient),
+                    })?;
+                }
+            }
+        }
+    };
+}

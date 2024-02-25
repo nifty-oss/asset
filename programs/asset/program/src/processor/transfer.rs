@@ -9,17 +9,18 @@ use nifty_asset_types::{
 };
 use std::ops::Deref;
 
-use crate::{
-    error::AssetError,
-    instruction::accounts::{Context, TransferAccounts},
-    require,
-    utils::assert_delegate,
-};
 use solana_program::{
     entrypoint::ProgramResult,
     instruction::{get_stack_height, TRANSACTION_LEVEL_STACK_HEIGHT},
     program_error::ProgramError,
     pubkey::Pubkey,
+};
+
+use crate::{
+    error::AssetError,
+    instruction::accounts::{Context, TransferAccounts},
+    process_royalties, require,
+    utils::assert_delegate,
 };
 
 pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> ProgramResult {
@@ -44,6 +45,9 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
         AssetError::Uninitialized,
         "unitialized asset"
     );
+
+    // First we check if the asset itself has the royalties extension, and validate the constraint.
+    process_royalties!(ctx, &data);
 
     let asset = Asset::load_mut(&mut data);
 
@@ -71,7 +75,7 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
         return Ok(());
     }
 
-    // If the asset the asset is part of a collection we need to check if royalties
+    // If the asset the asset is part of a group we need to check if royalties
     // are enabled and if so, if the destination account is allowed to receive the asset.
     if let Some(group) = asset.group.value() {
         if (*group).is_some() {
@@ -99,42 +103,14 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
             );
 
             // Collection asset account must be initialized.
-            // let collection_data = (*collection_asset_info.data).borrow();
             require!(
                 (*group_asset_info.data).borrow()[0] == Discriminator::Asset as u8,
                 AssetError::InvalidGroup,
                 "collection account is not initialized"
             );
 
-            // Check if royalties extension is present.
-            if let Some(royalties) =
-                Asset::get::<Royalties>(&(*group_asset_info.data).borrow()[Asset::LEN..])
-            {
-                // Check if the recipient is allowed to receive the asset.
-
-                // Wallet-to-wallet transfers between system program accounts are exempt from the royalty check
-                // so we need to exclude them.
-
-                // Are we in a CPI? If so, the signer could be a ghost PDA so we cannot prove it's a wallet.
-                let is_cpi = get_stack_height() > TRANSACTION_LEVEL_STACK_HEIGHT;
-
-                // Are both the sender and the recipient system program accounts?
-                let sender_is_wallet =
-                    ctx.accounts.signer.owner == &solana_program::system_program::id();
-                let recipient_is_wallet =
-                    ctx.accounts.recipient.owner == &solana_program::system_program::id();
-
-                let is_wallet_to_wallet = !is_cpi && sender_is_wallet && recipient_is_wallet;
-
-                if !is_wallet_to_wallet {
-                    // We pass in the Constraint context and validate the royalties constraint.
-                    royalties.constraint.assertable.assert(&ConstraintContext {
-                        asset: group_asset_info,
-                        authority: ctx.accounts.signer,
-                        recipient: Some(ctx.accounts.recipient),
-                    })?;
-                }
-            }
+            // Check if royalties extension is present on the group asset and validate the constraint.
+            process_royalties!(ctx, &(*group_asset_info.data).borrow());
         }
     }
 

@@ -115,9 +115,9 @@ pub struct JsonCreator {
         feature = "serde",
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
-    address: Pubkey,
-    verified: bool,
-    share: u8,
+    pub address: Pubkey,
+    pub verified: bool,
+    pub share: u8,
 }
 
 impl JsonCreator {

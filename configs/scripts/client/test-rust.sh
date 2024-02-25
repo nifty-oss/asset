@@ -34,8 +34,8 @@ for p in ${PROGRAMS[@]}; do
     cd ${WORKING_DIR}/clients/rust/${p}
 
     if [ ! "$(command -v $SOLFMT)" = "" ]; then
-        CARGO_TERM_COLOR=always cargo test-sbf --sbf-out-dir ${WORKING_DIR}/${PROGRAMS_OUTPUT} ${ARGS} 2>&1 | ${SOLFMT}
+        CARGO_TERM_COLOR=always cargo test-sbf --features "serde" --sbf-out-dir ${WORKING_DIR}/${PROGRAMS_OUTPUT} ${ARGS} 2>&1 | ${SOLFMT}
     else
-        cargo test-sbf --sbf-out-dir ${WORKING_DIR}/${PROGRAMS_OUTPUT} ${ARGS}
+        cargo test-sbf --features "serde" --sbf-out-dir ${WORKING_DIR}/${PROGRAMS_OUTPUT} ${ARGS}
     fi
 done
