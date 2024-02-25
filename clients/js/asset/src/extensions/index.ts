@@ -1,5 +1,6 @@
 import { Serializer } from '@metaplex-foundation/umi/serializers';
 import {
+  Asset,
   Attributes,
   Blob,
   Creators,
@@ -51,3 +52,19 @@ export const getExtensionSerializerFromType = <T extends TypedExtension>(
         throw new Error(`Unknown extension type: ${type}`);
     }
   })() as Serializer<T>;
+
+type TypedExtensionfromEnum<T extends ExtensionType> = Extract<
+  TypedExtension,
+  { type: T }
+>;
+
+export function getExtension<T extends ExtensionType>(
+  asset: Asset,
+  extensionType: T
+): TypedExtensionfromEnum<T> | undefined {
+  const extension = asset.extensions.find(
+    (extension) => 'type' in extension && extension.type === extensionType
+  );
+
+  return extension ? (extension as TypedExtensionfromEnum<T>) : undefined;
+}
