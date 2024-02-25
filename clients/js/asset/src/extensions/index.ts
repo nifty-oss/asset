@@ -63,7 +63,7 @@ export function getExtension<T extends ExtensionType>(
   extensionType: T
 ): TypedExtensionfromEnum<T> | undefined {
   const extension = asset.extensions.find(
-    (extension) => 'type' in extension && extension.type === extensionType
+    (e) => 'type' in e && e.type === extensionType
   );
 
   return extension ? (extension as TypedExtensionfromEnum<T>) : undefined;
