@@ -3,7 +3,7 @@ name = "asset-program"
 version = "0.1.0"
 edition = "2021"
 readme = "./README.md"
-license-file = "../../LICENSE"
+license-file = "../../../LICENSE"
 publish = false
 
 [lib]

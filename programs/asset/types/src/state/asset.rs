@@ -1,3 +1,20 @@
+//! The `Asset` account consists of a fixed length (header) section followed by an optional
+//! variable length section (extensions). The header section contains the basic information
+//! of an asset, such as the state, standard, name, and holder. The extensions section
+//! contains additional data that can be attached to the asset.
+//!
+//! Extensions can either represent additional on-chain data or used to include pointer to
+//! external data. For example, an asset can include its image as an extension on-chain or
+//! a pointer to an external image.
+//!
+//! # Account layout
+//!
+//! |  *fixed*  |                            *optional*                             |
+//! |-----------|-------------------------------------------------------------------|
+//! | Asset     | Extension 1 + Extension Data | ... | Extension n + Extension Data |
+//! |-----------|------------------------------|-----|------------------------------|
+//! | 168 bytes | 16 bytes    + variable bytes | ... | 16 bytes    + variable bytes |
+
 use bytemuck::{Pod, Zeroable};
 use podded::{
     pod::{PodBool, PodOption, PodStr},
@@ -11,6 +28,7 @@ use crate::extensions::{Extension, ExtensionData, ExtensionDataMut, ExtensionTyp
 /// Maximum length of a name.
 pub const MAX_NAME_LENGTH: usize = 35;
 
+/// `Asset` account (header) information.
 #[repr(C)]
 #[derive(Clone, Copy, Pod, Zeroable)]
 pub struct Asset {
@@ -193,4 +211,5 @@ impl Asset {
     }
 }
 
+/// Default implementation for zero-copy trait.
 impl<'a> ZeroCopy<'a, Asset> for Asset {}
