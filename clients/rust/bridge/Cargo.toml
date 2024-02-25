@@ -3,7 +3,7 @@ name = "nifty-bridge"
 version = "0.0.1"
 edition = "2021"
 readme = "README.md"
-license-file = "../../LICENSE"
+license-file = "../../../LICENSE"
 
 [lib]
 crate-type = ["cdylib", "lib"]
