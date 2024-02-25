@@ -1,8 +1,7 @@
-use core::panic;
 use std::{path::PathBuf, vec};
 
 use borsh::BorshDeserialize;
-use nifty_asset_types::constraints::{Account, ConstraintBuilder, OwnedByBuilder};
+use nifty_asset_types::constraints::{Account, ConstraintBuilder, NotBuilder, OwnedByBuilder};
 use solana_program::{instruction::Instruction, pubkey::Pubkey};
 use thiserror::Error;
 
@@ -261,7 +260,14 @@ impl JsonRoyalties {
                 let bytes = builder.build();
                 data.extend(bytes);
             }
-            RoyaltiesKind::Denylist => panic!("denylist not supported"),
+            RoyaltiesKind::Denylist => {
+                let mut owned_by_builder = OwnedByBuilder::default();
+                owned_by_builder.set(Account::Asset, &self.items);
+                let mut builder = NotBuilder::default();
+                builder.set(&mut owned_by_builder);
+                let bytes = builder.build();
+                data.extend(bytes);
+            }
         }
         data
     }
