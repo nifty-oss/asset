@@ -2,7 +2,7 @@
   Nifty Asset
 </h1>
 <p align="center">
-  <img width="500" alt="Nifty Asset" src="https://github.com/nifty-oss/asset/assets/729235/90513ea4-ce87-41b5-88a4-008991fc73a7" />
+  <img width="400" alt="Nifty Asset" src="https://github.com/nifty-oss/asset/assets/729235/90513ea4-ce87-41b5-88a4-008991fc73a7" />
 </p>
 <p align="center">
   A lightweight standard for non-fungible assets.
