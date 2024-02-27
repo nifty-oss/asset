@@ -20,6 +20,7 @@ export * from './grouping';
 export * from './link';
 export * from './links';
 export * from './metadata';
+export * from './operatorType';
 export * from './standard';
 export * from './state';
 export * from './trait';

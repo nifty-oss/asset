@@ -15,6 +15,7 @@ import {
   getLinksSerializer,
   getMetadataSerializer,
 } from '../generated';
+import { Royalties, getRoyaltiesSerializer } from './royalties';
 
 export * from './attributes';
 export * from './blob';
@@ -22,6 +23,7 @@ export * from './creators';
 export * from './grouping';
 export * from './links';
 export * from './metadata';
+export * from './royalties';
 
 export type TypedExtension =
   | ({ type: ExtensionType.Attributes } & Attributes)
@@ -29,7 +31,8 @@ export type TypedExtension =
   | ({ type: ExtensionType.Creators } & Creators)
   | ({ type: ExtensionType.Links } & Links)
   | ({ type: ExtensionType.Metadata } & Metadata)
-  | ({ type: ExtensionType.Grouping } & Grouping);
+  | ({ type: ExtensionType.Grouping } & Grouping)
+  | ({ type: ExtensionType.Royalties } & Royalties);
 
 export const getExtensionSerializerFromType = <T extends TypedExtension>(
   type: ExtensionType
@@ -48,6 +51,8 @@ export const getExtensionSerializerFromType = <T extends TypedExtension>(
         return getMetadataSerializer();
       case ExtensionType.Grouping:
         return getGroupingSerializer();
+      case ExtensionType.Royalties:
+        return getRoyaltiesSerializer();
       default:
         throw new Error(`Unknown extension type: ${type}`);
     }

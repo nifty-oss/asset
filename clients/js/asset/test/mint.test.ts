@@ -1,9 +1,12 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
+import { royalties } from '../src/extensions/royalties';
 import {
+  Account,
   Asset,
   Discriminator,
   ExtensionType,
+  OperatorType,
   Standard,
   State,
   attributes,
@@ -132,6 +135,50 @@ test('it can mint a new asset with multiple extensions', async (t) => {
             uri: 'https://arweave.net/ebBV1qEYt65AKmM2J5wH_Vg-gjBa9YcwSYWFVt0rw9w',
           },
         ],
+      },
+    ],
+  });
+});
+
+test('it can mint a new asset with a royalties extension', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = generateSigner(umi);
+  const holder = generateSigner(umi);
+
+  // When we create a new asset.
+  await mint(umi, {
+    asset,
+    holder: holder.publicKey,
+    payer: umi.identity,
+    name: 'Digital Asset',
+    extensions: [
+      royalties({
+        basisPoints: 500,
+        constraint: {
+          type: OperatorType.PubkeyMatch,
+          account: Account.Asset,
+          pubkeys: [umi.identity.publicKey],
+        },
+      }),
+    ],
+  }).sendAndConfirm(umi);
+
+  // Then an asset was created with the correct data.
+  t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
+    discriminator: Discriminator.Asset,
+    state: State.Unlocked,
+    standard: Standard.NonFungible,
+    holder: holder.publicKey,
+    authority: umi.identity.publicKey,
+    extensions: [
+      {
+        type: ExtensionType.Royalties,
+        basisPoints: 500,
+        constraint: {
+          account: Account.Asset,
+          pubkeys: [umi.identity.publicKey],
+        },
       },
     ],
   });
