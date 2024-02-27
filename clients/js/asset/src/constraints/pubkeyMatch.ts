@@ -44,14 +44,14 @@ export function getPubkeyMatchSerializer(): Serializer<
       };
       return struct<PubkeyMatchForSerialization>([
         ['account', getAccountSerializer()],
-        ['pubkeys', array(publicKeySerializer())],
+        ['pubkeys', array(publicKeySerializer(), { size: 'remainder' })],
       ]).serialize(valueForSerialization);
     },
     deserialize: (buffer: Uint8Array) => {
       const [valueForSerialization, bytesRead] =
         struct<PubkeyMatchForSerialization>([
           ['account', getAccountSerializer()],
-          ['pubkeys', array(publicKeySerializer())],
+          ['pubkeys', array(publicKeySerializer(), { size: 'remainder' })],
         ]).deserialize(buffer);
       const value: PubkeyMatch = {
         type: OperatorType.PubkeyMatch,
@@ -61,12 +61,3 @@ export function getPubkeyMatchSerializer(): Serializer<
     },
   };
 }
-// export function getPubkeyMatchSerializer(): Serializer<
-//   PubkeyMatch,
-//   PubkeyMatch
-// > {
-//   return struct([
-//     ['account', getAccountSerializer()],
-//     ['pubkeys', array(publicKeySerializer())],
-//   ]);
-// }

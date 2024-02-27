@@ -41,14 +41,14 @@ export function getOwnedBySerializer(): Serializer<OwnedBy, OwnedBy> {
       };
       return struct<OwnedByForSerialization>([
         ['account', getAccountSerializer()],
-        ['owners', array(publicKeySerializer())],
+        ['owners', array(publicKeySerializer(), { size: 'remainder' })],
       ]).serialize(valueForSerialization);
     },
     deserialize: (buffer: Uint8Array) => {
       const [valueForSerialization, bytesRead] =
         struct<OwnedByForSerialization>([
           ['account', getAccountSerializer()],
-          ['owners', array(publicKeySerializer())],
+          ['owners', array(publicKeySerializer(), { size: 'remainder' })],
         ]).deserialize(buffer);
       const value: OwnedBy = {
         type: OperatorType.OwnedBy,
