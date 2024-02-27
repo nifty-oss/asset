@@ -18,6 +18,7 @@ pub struct DecodeArgs {
     pub rpc_url: Option<String>,
     pub asset: Pubkey,
     pub field: Option<String>,
+    pub raw: bool,
 }
 
 const ASSET_LEN: usize = 168;
@@ -26,6 +27,12 @@ pub fn handle_decode(args: DecodeArgs) -> Result<()> {
     let config = CliConfig::new(None, args.rpc_url)?;
 
     let data = config.client.get_account_data(&args.asset)?;
+
+    if args.raw {
+        println!("{:?}", data);
+        return Ok(());
+    }
+
     let asset = Asset::from_bytes(&data).unwrap();
 
     if let Some(field) = args.field {

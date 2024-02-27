@@ -15,12 +15,24 @@ export function getConstraintSerializer(): Serializer<Constraint, Constraint> {
       switch (value.type) {
         case OperatorType.OwnedBy: {
           const serializer = getOwnedBySerializer();
-          buffer = serializer.serialize(value as OwnedBy);
+          const constraintBuffer = serializer.serialize(value as OwnedBy);
+          const constraintSize = constraintBuffer.length;
+          buffer = new Uint8Array(8 + constraintSize);
+          const dataView = new DataView(buffer.buffer);
+          dataView.setUint32(0, value.type, true);
+          dataView.setUint32(4, constraintSize, true);
+          buffer.set(constraintBuffer, 8);
           break;
         }
         case OperatorType.PubkeyMatch: {
           const serializer = getPubkeyMatchSerializer();
-          buffer = serializer.serialize(value as PubkeyMatch);
+          const constraintBuffer = serializer.serialize(value as PubkeyMatch);
+          const constraintSize = constraintBuffer.length;
+          buffer = new Uint8Array(8 + constraintSize);
+          const dataView = new DataView(buffer.buffer);
+          dataView.setUint32(0, value.type);
+          dataView.setUint32(4, constraintSize);
+          buffer.set(constraintBuffer, 8);
           break;
         }
         default:

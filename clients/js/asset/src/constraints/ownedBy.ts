@@ -18,6 +18,8 @@ export type OwnedBy = {
   owners: PublicKey[];
 };
 
+export type OwnedByForSerialization = Omit<OwnedBy, 'type'>;
+
 export const ownedBy = (
   account: Account,
   pubkeys: PublicKeyInput[]
@@ -28,8 +30,38 @@ export const ownedBy = (
 });
 
 export function getOwnedBySerializer(): Serializer<OwnedBy, OwnedBy> {
-  return struct([
-    ['account', getAccountSerializer()],
-    ['owners', array(publicKeySerializer())],
-  ]);
+  return {
+    description: 'OwnedBy',
+    fixedSize: null,
+    maxSize: null,
+    serialize: (value: OwnedBy) => {
+      const valueForSerialization: OwnedByForSerialization = {
+        account: value.account,
+        owners: value.owners,
+      };
+      return struct<OwnedByForSerialization>([
+        ['account', getAccountSerializer()],
+        ['owners', array(publicKeySerializer())],
+      ]).serialize(valueForSerialization);
+    },
+    deserialize: (buffer: Uint8Array) => {
+      const [valueForSerialization, bytesRead] =
+        struct<OwnedByForSerialization>([
+          ['account', getAccountSerializer()],
+          ['owners', array(publicKeySerializer())],
+        ]).deserialize(buffer);
+      const value: OwnedBy = {
+        type: OperatorType.OwnedBy,
+        ...valueForSerialization,
+      };
+      return [value, bytesRead];
+    },
+  };
 }
+
+// export function getOwnedBySerializer(): Serializer<OwnedBy, OwnedBy> {
+//   return struct([
+//     ['account', getAccountSerializer()],
+//     ['owners', array(publicKeySerializer())],
+//   ]);
+// }

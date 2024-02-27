@@ -18,6 +18,8 @@ export type PubkeyMatch = {
   pubkeys: PublicKey[];
 };
 
+export type PubkeyMatchForSerialization = Omit<PubkeyMatch, 'type'>;
+
 export const pubkeyMatch = (
   account: Account,
   pubkeys: PublicKeyInput[]
@@ -31,8 +33,40 @@ export function getPubkeyMatchSerializer(): Serializer<
   PubkeyMatch,
   PubkeyMatch
 > {
-  return struct([
-    ['account', getAccountSerializer()],
-    ['pubkeys', array(publicKeySerializer())],
-  ]);
+  return {
+    description: 'PubkeyMatch',
+    fixedSize: null,
+    maxSize: null,
+    serialize: (value: PubkeyMatch) => {
+      const valueForSerialization: PubkeyMatchForSerialization = {
+        account: value.account,
+        pubkeys: value.pubkeys,
+      };
+      return struct<PubkeyMatchForSerialization>([
+        ['account', getAccountSerializer()],
+        ['pubkeys', array(publicKeySerializer())],
+      ]).serialize(valueForSerialization);
+    },
+    deserialize: (buffer: Uint8Array) => {
+      const [valueForSerialization, bytesRead] =
+        struct<PubkeyMatchForSerialization>([
+          ['account', getAccountSerializer()],
+          ['pubkeys', array(publicKeySerializer())],
+        ]).deserialize(buffer);
+      const value: PubkeyMatch = {
+        type: OperatorType.PubkeyMatch,
+        ...valueForSerialization,
+      };
+      return [value, bytesRead];
+    },
+  };
 }
+// export function getPubkeyMatchSerializer(): Serializer<
+//   PubkeyMatch,
+//   PubkeyMatch
+// > {
+//   return struct([
+//     ['account', getAccountSerializer()],
+//     ['pubkeys', array(publicKeySerializer())],
+//   ]);
+// }

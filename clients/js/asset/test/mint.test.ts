@@ -1,4 +1,4 @@
-import { generateSigner } from '@metaplex-foundation/umi';
+import { generateSigner, publicKey } from '@metaplex-foundation/umi';
 import test from 'ava';
 import { royalties } from '../src/extensions/royalties';
 import {
@@ -154,18 +154,18 @@ test('it can mint a new asset with a royalties extension', async (t) => {
     name: 'Digital Asset',
     extensions: [
       royalties({
-        basisPoints: 500,
+        basisPoints: BigInt(500),
         constraint: {
-          type: OperatorType.PubkeyMatch,
-          account: Account.Asset,
-          pubkeys: [umi.identity.publicKey],
+          type: OperatorType.OwnedBy,
+          account: Account.Recipient,
+          owners: [publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8')],
         },
       }),
     ],
   }).sendAndConfirm(umi);
 
   // Then an asset was created with the correct data.
-  t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
+  t.like(await fetchAsset(umi, asset.publicKey), <Asset>(<unknown>{
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.NonFungible,
@@ -174,12 +174,12 @@ test('it can mint a new asset with a royalties extension', async (t) => {
     extensions: [
       {
         type: ExtensionType.Royalties,
-        basisPoints: 500,
+        basisPoints: BigInt(500),
         constraint: {
           account: Account.Asset,
           pubkeys: [umi.identity.publicKey],
         },
       },
     ],
-  });
+  }));
 });

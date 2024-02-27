@@ -1,4 +1,8 @@
-import { Serializer, scalarEnum } from '@metaplex-foundation/umi/serializers';
+import {
+  Serializer,
+  scalarEnum,
+  u32,
+} from '@metaplex-foundation/umi/serializers';
 
 export enum Account {
   Asset,
@@ -10,6 +14,6 @@ export type AccountArgs = Account;
 
 export function getAccountSerializer(): Serializer<AccountArgs, Account> {
   return scalarEnum<Account>(Account, {
-    description: 'Account',
+    size: u32(),
   }) as Serializer<AccountArgs, Account>;
 }

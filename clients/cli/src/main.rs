@@ -35,10 +35,11 @@ async fn main() -> Result<()> {
             immutable,
             owner,
         }),
-        Commands::Decode { asset, field } => handle_decode(DecodeArgs {
+        Commands::Decode { asset, field, raw } => handle_decode(DecodeArgs {
             rpc_url,
             asset,
             field,
+            raw,
         }),
         Commands::Approve {
             asset,
