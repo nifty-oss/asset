@@ -58,10 +58,3 @@ export function getOwnedBySerializer(): Serializer<OwnedBy, OwnedBy> {
     },
   };
 }
-
-// export function getOwnedBySerializer(): Serializer<OwnedBy, OwnedBy> {
-//   return struct([
-//     ['account', getAccountSerializer()],
-//     ['owners', array(publicKeySerializer())],
-//   ]);
-// }

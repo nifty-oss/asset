@@ -152,12 +152,14 @@ test('it can mint a new asset with a royalties extension', async (t) => {
     holder: holder.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
+    mutable: true,
+    standard: Standard.NonFungible,
     extensions: [
       royalties({
         basisPoints: BigInt(500),
         constraint: {
           type: OperatorType.OwnedBy,
-          account: Account.Recipient,
+          account: Account.Asset,
           owners: [publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8')],
         },
       }),
@@ -176,8 +178,9 @@ test('it can mint a new asset with a royalties extension', async (t) => {
         type: ExtensionType.Royalties,
         basisPoints: BigInt(500),
         constraint: {
+          type: OperatorType.OwnedBy,
           account: Account.Asset,
-          pubkeys: [umi.identity.publicKey],
+          owners: [publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8')],
         },
       },
     ],

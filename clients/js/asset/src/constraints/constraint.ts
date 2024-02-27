@@ -15,7 +15,15 @@ export function getConstraintSerializer(): Serializer<Constraint, Constraint> {
       switch (value.type) {
         case OperatorType.OwnedBy: {
           const serializer = getOwnedBySerializer();
-          const constraintBuffer = serializer.serialize(value as OwnedBy);
+          let constraintBuffer = serializer.serialize(value as OwnedBy);
+
+          // Remove the four bytes representing the array length to match the Rust type.
+          const account = constraintBuffer.subarray(0, 8);
+          const owners = constraintBuffer.subarray(12, constraintBuffer.length);
+          constraintBuffer = new Uint8Array(account.length + owners.length);
+          constraintBuffer.set(account);
+          constraintBuffer.set(owners, account.length);
+
           const constraintSize = constraintBuffer.length;
           buffer = new Uint8Array(8 + constraintSize);
           const dataView = new DataView(buffer.buffer);
@@ -26,7 +34,18 @@ export function getConstraintSerializer(): Serializer<Constraint, Constraint> {
         }
         case OperatorType.PubkeyMatch: {
           const serializer = getPubkeyMatchSerializer();
-          const constraintBuffer = serializer.serialize(value as PubkeyMatch);
+          let constraintBuffer = serializer.serialize(value as PubkeyMatch);
+          // Remove the four bytes representing the array length to match the Rust type.
+          const account = constraintBuffer.subarray(0, 8);
+          const pubkeys = constraintBuffer.subarray(
+            12,
+            constraintBuffer.length
+          );
+          constraintBuffer = new Uint8Array(account.length + pubkeys.length);
+          constraintBuffer.set(account);
+          constraintBuffer.set(pubkeys, account.length);
+          constraintBuffer = constraintBuffer.slice(4, constraintBuffer.length);
+
           const constraintSize = constraintBuffer.length;
           buffer = new Uint8Array(8 + constraintSize);
           const dataView = new DataView(buffer.buffer);
