@@ -1,5 +1,5 @@
 use bytemuck::{Pod, Zeroable};
-use podded::ZeroCopy;
+use podded::{pod::PodBool, ZeroCopy};
 use solana_program::pubkey::Pubkey;
 use std::{fmt::Debug, ops::Deref};
 
@@ -71,8 +71,8 @@ impl Lifecycle for CreatorsMut<'_> {
 
         self.creators.iter_mut().for_each(|creator| {
             // make sure all creators are unverified
-            creator.set_verified(false);
-            total += creator.share();
+            creator.verified = false.into();
+            total += creator.share;
         });
 
         if total != TOTAL_SHARE {
@@ -87,12 +87,12 @@ impl Lifecycle for CreatorsMut<'_> {
         other.creators.iter_mut().for_each(|creator| {
             if let Some(original) = self.get(&creator.address) {
                 // creators maintain their verified status
-                creator.set_verified(original.verified());
+                creator.verified = original.verified;
             } else {
                 // creators are always initialized as unverified
-                creator.set_verified(false);
+                creator.verified = false.into();
             }
-            total += creator.share();
+            total += creator.share;
         });
 
         if total != 100 {
@@ -102,11 +102,11 @@ impl Lifecycle for CreatorsMut<'_> {
         for creator in self.creators.iter() {
             // if the creator is verified, it must be present in
             // the other list
-            if creator.verified() {
+            if creator.verified.into() {
                 if let Some(updated) = other.get(&creator.address) {
                     // sanity check: the creator must have already been verified
                     // on the above closure
-                    if !updated.verified() {
+                    if !<PodBool as Into<bool>>::into(updated.verified) {
                         return Err(Error::CannotUnverifyCreator);
                     }
                 } else {
@@ -126,37 +126,20 @@ impl Lifecycle for CreatorsMut<'_> {
 pub struct Creator {
     /// Pubkey address.
     pub address: Pubkey,
-    /// Additional information.
-    ///   0. verified flag
-    ///   1. share of royalties
-    ///   2-7. unused
-    pub data: [u8; 8],
-}
 
-impl Creator {
-    pub fn verified(&self) -> bool {
-        self.data[0] == 1
-    }
+    /// Indicates whether the creator is verified or not.
+    pub verified: PodBool,
 
-    pub fn set_verified(&mut self, verified: bool) {
-        self.data[0] = verified as u8;
-    }
-
-    pub fn share(&self) -> u8 {
-        self.data[1]
-    }
-
-    pub fn set_share(&mut self, share: u8) {
-        self.data[1] = share;
-    }
+    /// Share of royalties.
+    pub share: u8,
 }
 
 impl Debug for Creator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Creator")
             .field("address", &self.address)
-            .field("verified", &self.verified())
-            .field("share", &self.share())
+            .field("verified", &<PodBool as Into<bool>>::into(self.verified))
+            .field("share", &self.share)
             .finish()
     }
 }
@@ -185,7 +168,8 @@ impl CreatorsBuilder {
 
         let creator = Creator::load_mut(&mut self.data[offset..]);
         creator.address = *addresss;
-        creator.data = [verified as u8, share, 0, 0, 0, 0, 0, 0];
+        creator.verified = verified.into();
+        creator.share = share;
 
         self.count += 1;
     }
@@ -210,6 +194,7 @@ impl Deref for CreatorsBuilder {
 #[cfg(test)]
 mod tests {
     use crate::extensions::{CreatorsBuilder, ExtensionData};
+    use podded::pod::PodBool;
     use solana_program::pubkey;
 
     use super::Creators;
@@ -228,7 +213,7 @@ mod tests {
             list.creators[0].address,
             pubkey!("AssetGtQBTSgm5s91d1RAQod5JmaZiJDxqsgtqrZud73")
         );
-        assert!(list.creators[0].verified());
-        assert_eq!(list.creators[0].share(), 100);
+        assert!(<PodBool as Into<bool>>::into(list.creators[0].verified));
+        assert_eq!(list.creators[0].share, 100);
     }
 }
