@@ -6,28 +6,28 @@ import {
 import { Constraint, getConstraintSerializer } from './constraint';
 import { OperatorType } from '../generated';
 
-export type And = {
-  type: OperatorType.And;
+export type Or = {
+  type: OperatorType.Or;
   constraints: Constraint[];
 };
 
-export type AndForSerialization = Omit<And, 'type'>;
+export type OrForSerialization = Omit<Or, 'type'>;
 
-export const and = (constraints: Constraint[]): And => ({
-  type: OperatorType.And,
+export const or = (constraints: Constraint[]): Or => ({
+  type: OperatorType.Or,
   constraints,
 });
 
-export function getAndSerializer(): Serializer<And, And> {
+export function getOrSerializer(): Serializer<Or, Or> {
   return {
-    description: 'And',
+    description: 'Or',
     fixedSize: null,
     maxSize: null,
-    serialize: (value: And) => {
-      const valueForSerialization: AndForSerialization = {
+    serialize: (value: Or) => {
+      const valueForSerialization: OrForSerialization = {
         constraints: value.constraints,
       };
-      return struct<AndForSerialization>([
+      return struct<OrForSerialization>([
         [
           'constraints',
           array(getConstraintSerializer(), { size: 'remainder' }),
@@ -35,14 +35,14 @@ export function getAndSerializer(): Serializer<And, And> {
       ]).serialize(valueForSerialization);
     },
     deserialize: (buffer: Uint8Array) => {
-      const [valueForSerialization, bytesRead] = struct<AndForSerialization>([
+      const [valueForSerialization, bytesRead] = struct<OrForSerialization>([
         [
           'constraints',
           array(getConstraintSerializer(), { size: 'remainder' }),
         ],
       ]).deserialize(buffer);
-      const value: And = {
-        type: OperatorType.And,
+      const value: Or = {
+        type: OperatorType.Or,
         ...valueForSerialization,
       };
       return [value, bytesRead];

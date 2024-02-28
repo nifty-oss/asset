@@ -4,20 +4,18 @@ import { ExtensionType } from '../generated';
 import { TypedExtension } from '.';
 
 export type Royalties = {
-  basisPoints: BigInt;
+  basisPoints: bigint | number;
   constraint: Constraint;
 };
 
-export type RoyaltiesArgs = Royalties;
-
-export function getRoyaltiesSerializer(): Serializer<RoyaltiesArgs, Royalties> {
+export function getRoyaltiesSerializer(): Serializer<Royalties> {
   return struct<Royalties>(
     [
-      ['basisPoints', u64() as Serializer<BigInt | number, BigInt>],
+      ['basisPoints', u64()],
       ['constraint', getConstraintSerializer()],
     ],
     { description: 'Royalties' }
-  ) as Serializer<RoyaltiesArgs, Royalties>;
+  ) as Serializer<Royalties>;
 }
 
 export const royalties = (data: Royalties): TypedExtension => ({
