@@ -2,19 +2,27 @@ import {
   Serializer,
   array,
   struct,
+  u32,
 } from '@metaplex-foundation/umi/serializers';
 import { Constraint, getConstraintSerializer } from './constraint';
-import { OperatorType } from '../generated';
+import {
+  OperatorType,
+  getOperatorTypeSerializer,
+} from '../extensions/operatorType';
 
 export type And = {
-  type: OperatorType.And;
+  type: OperatorType;
+  size: number;
   constraints: Constraint[];
 };
 
-export type AndForSerialization = Omit<And, 'type'>;
-
 export const and = (constraints: Constraint[]): And => ({
   type: OperatorType.And,
+  size: constraints.reduce(
+    (acc, constraint) =>
+      acc + getConstraintSerializer().serialize(constraint).length,
+    0
+  ),
   constraints,
 });
 
@@ -23,31 +31,37 @@ export function getAndSerializer(): Serializer<And, And> {
     description: 'And',
     fixedSize: null,
     maxSize: null,
-    serialize: (value: And) => {
-      const valueForSerialization: AndForSerialization = {
-        constraints: value.constraints,
-      };
-      return struct<AndForSerialization>([
+    serialize: (value: And) =>
+      struct<And>([
+        ['type', getOperatorTypeSerializer()],
+        ['size', u32()],
         [
           'constraints',
           array(getConstraintSerializer(), { size: 'remainder' }),
         ],
-      ]).serialize(valueForSerialization);
-    },
+      ]).serialize(value),
     deserialize: (buffer: Uint8Array, offset = 0) => {
-      // Slice off the type and size to get the actual constraint data.
-      buffer = buffer.slice(8);
-      const [valueForSerialization, constraintOffset] =
-        struct<AndForSerialization>([
-          [
-            'constraints',
-            array(getConstraintSerializer(), { size: 'remainder' }),
-          ],
-        ]).deserialize(buffer, offset);
-      const value: And = {
-        type: OperatorType.And,
-        ...valueForSerialization,
-      };
+      console.log('and buffer', buffer);
+      console.log('and offset', offset);
+      const dataView = new DataView(
+        buffer.buffer,
+        buffer.byteOffset,
+        buffer.length
+      );
+      const size = dataView.getUint32(offset + 4, true);
+      console.log('size', size);
+
+      const numItems = size / 48;
+      console.log('numItems', numItems);
+
+      const [value, constraintOffset] = struct<And>([
+        ['type', getOperatorTypeSerializer()],
+        ['size', u32()],
+        [
+          'constraints',
+          array(getConstraintSerializer(), { size: 'remainder' }),
+        ],
+      ]).deserialize(buffer, offset);
       return [value, constraintOffset + 8];
     },
   };

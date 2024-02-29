@@ -1,5 +1,5 @@
 import { Serializer } from '@metaplex-foundation/umi/serializers';
-import { OperatorType } from '../generated/types/operatorType';
+import { OperatorType } from '../extensions/operatorType';
 import { PubkeyMatch, getPubkeyMatchSerializer } from './pubkeyMatch';
 import { OwnedBy, getOwnedBySerializer } from './ownedBy';
 import { Or, getOrSerializer } from './or';
@@ -44,28 +44,31 @@ export function getConstraintSerializer(): Serializer<Constraint, Constraint> {
         default:
           throw new Error('Invalid constraint type');
       }
-      // Add the type and constraint size to each constraint.
-      const constraintSize = constraintBuffer.length;
-      const buffer = new Uint8Array(8 + constraintSize);
-      const dataView = new DataView(buffer.buffer);
-      dataView.setUint32(0, value.type, true);
-      dataView.setUint32(4, constraintSize, true);
-      buffer.set(constraintBuffer, 8);
-      return buffer;
+      // // Add the type and constraint size to each constraint.
+      // const constraintSize = constraintBuffer.length;
+      // const buffer = new Uint8Array(8 + constraintSize);
+      // const dataView = new DataView(buffer.buffer);
+      // dataView.setUint32(0, value.type, true);
+      // dataView.setUint32(4, constraintSize, true);
+      // buffer.set(constraintBuffer, 8);
+      return constraintBuffer;
     },
     deserialize: (buffer: Uint8Array, offset = 0) => {
-      // console.log('constraint buffer before', buffer);
-      // console.log('constraint offset', offset);
+      console.log('constraint buffer before', buffer);
+      console.log('constraint offset', offset);
       // console.log('constraint buffer length', buffer.length);
       buffer = buffer.slice(offset, buffer.length);
+      console.log('constraint buffer after', buffer);
+      // console.log('constraint offset', offset);
       const dataView = new DataView(
         buffer.buffer,
         buffer.byteOffset,
         buffer.length
       );
-      // Manually parse the constraint type and size. We need the type for our
-      // switch statement and the size to slice the buffer.
+      // Manually parse the constraint type. We need the type for our
+      // switch statement.
       const constraintType = dataView.getUint32(0, true) as OperatorType;
+      console.log('constraint type', constraintType);
 
       let constraint;
       switch (constraintType) {

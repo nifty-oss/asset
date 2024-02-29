@@ -1,43 +1,40 @@
-import { Serializer, struct } from '@metaplex-foundation/umi/serializers';
+import { Serializer, struct, u32 } from '@metaplex-foundation/umi/serializers';
 import { Constraint, getConstraintSerializer } from './constraint';
-import { OperatorType } from '../generated';
+import {
+  OperatorType,
+  getOperatorTypeSerializer,
+} from '../extensions/operatorType';
 
 export type Not = {
-  type: OperatorType.Not;
+  type: OperatorType;
+  size: number;
   constraint: Constraint;
 };
 
 export const not = (constraint: Constraint): Not => ({
   type: OperatorType.Not,
+  size: getConstraintSerializer().serialize(constraint).length,
   constraint,
 });
-
-export type NotForSerialization = Omit<Not, 'type'>;
 
 export function getNotSerializer(): Serializer<Not, Not> {
   return {
     description: 'Not',
     fixedSize: null,
     maxSize: null,
-    serialize: (value: Not) => {
-      const valueForSerialization: NotForSerialization = {
-        constraint: value.constraint,
-      };
-      return struct<NotForSerialization>([
+    serialize: (value: Not) =>
+      struct<Not>([
+        ['type', getOperatorTypeSerializer()],
+        ['size', u32()],
         ['constraint', getConstraintSerializer()],
-      ]).serialize(valueForSerialization);
-    },
+      ]).serialize(value),
     deserialize: (buffer: Uint8Array) => {
-      // Slice off the type and size to get the actual constraint data.
-      buffer = buffer.slice(8);
-      const [valueForSerialization, offset] = struct<NotForSerialization>([
+      const [value, offset] = struct<Not>([
+        ['type', getOperatorTypeSerializer()],
+        ['size', u32()],
         ['constraint', getConstraintSerializer()],
       ]).deserialize(buffer);
-      const value: Not = {
-        type: OperatorType.Not,
-        ...valueForSerialization,
-      };
-      return [value, offset + 8];
+      return [value, offset];
     },
   };
 }

@@ -8,23 +8,29 @@ import {
   array,
   publicKey as publicKeySerializer,
   struct,
+  u32,
 } from '@metaplex-foundation/umi/serializers';
 import { Account, getAccountSerializer } from './account';
-import { OperatorType } from '../generated';
+import {
+  OperatorType,
+  getOperatorTypeSerializer,
+} from '../extensions/operatorType';
+
+const ACCOUNT_SIZE = 8;
 
 export type PubkeyMatch = {
-  type: OperatorType.PubkeyMatch;
+  type: OperatorType;
+  size: number;
   account: Account;
   pubkeys: PublicKey[];
 };
-
-export type PubkeyMatchForSerialization = Omit<PubkeyMatch, 'type'>;
 
 export const pubkeyMatch = (
   account: Account,
   pubkeys: PublicKeyInput[]
 ): PubkeyMatch => ({
   type: OperatorType.PubkeyMatch,
+  size: ACCOUNT_SIZE + 32 * pubkeys.length,
   account,
   pubkeys: pubkeys.map((pubkey) => toPublicKey(pubkey, true)),
 });
@@ -37,16 +43,13 @@ export function getPubkeyMatchSerializer(): Serializer<
     description: 'PubkeyMatch',
     fixedSize: null,
     maxSize: null,
-    serialize: (value: PubkeyMatch) => {
-      const valueForSerialization: PubkeyMatchForSerialization = {
-        account: value.account,
-        pubkeys: value.pubkeys,
-      };
-      return struct<PubkeyMatchForSerialization>([
+    serialize: (value: PubkeyMatch) =>
+      struct<PubkeyMatch>([
+        ['type', getOperatorTypeSerializer()],
+        ['size', u32()],
         ['account', getAccountSerializer()],
         ['pubkeys', array(publicKeySerializer(), { size: 'remainder' })],
-      ]).serialize(valueForSerialization);
-    },
+      ]).serialize(value),
     deserialize: (buffer: Uint8Array, offset = 0) => {
       const dataView = new DataView(
         buffer.buffer,
@@ -55,21 +58,16 @@ export function getPubkeyMatchSerializer(): Serializer<
       );
       const size = dataView.getUint32(offset + 4, true);
 
-      // Slice off the type and size to get the actual constraint data.
-      const numItems = (size - 8) / 32;
+      const numItems = size / 40;
+      console.log('numItems', numItems);
 
-      // Slice off the type and size to get the actual constraint data.
-      buffer = buffer.slice(8);
-      const [valueForSerialization, constraintOffset] =
-        struct<PubkeyMatchForSerialization>([
-          ['account', getAccountSerializer()],
-          ['pubkeys', array(publicKeySerializer(), { size: numItems })],
-        ]).deserialize(buffer, offset);
-      const value: PubkeyMatch = {
-        type: OperatorType.PubkeyMatch,
-        ...valueForSerialization,
-      };
-      return [value, constraintOffset + 7];
+      const [value, constraintOffset] = struct<PubkeyMatch>([
+        ['type', getOperatorTypeSerializer()],
+        ['size', u32()],
+        ['account', getAccountSerializer()],
+        ['pubkeys', array(publicKeySerializer(), { size: numItems })],
+      ]).deserialize(buffer, offset);
+      return [value, constraintOffset];
     },
   };
 }

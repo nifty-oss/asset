@@ -9,7 +9,6 @@ import {
   Asset,
   Discriminator,
   ExtensionType,
-  OperatorType,
   Standard,
   State,
   fetchAsset,
@@ -17,6 +16,7 @@ import {
   niftyAsset,
   pubkeyMatch,
 } from '../src';
+import { OperatorType } from '../src/extensions/operatorType';
 
 const createUmi = async () =>
   (await basecreateUmi())

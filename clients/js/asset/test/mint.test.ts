@@ -6,9 +6,9 @@ import {
   Asset,
   Discriminator,
   ExtensionType,
-  OperatorType,
   Standard,
   State,
+  and,
   attributes,
   fetchAsset,
   links,
@@ -18,6 +18,7 @@ import {
   pubkeyMatch,
 } from '../src';
 import { createUmi } from './_setup';
+import { OperatorType } from '../src/extensions/operatorType';
 
 test('it can mint an asset', async (t) => {
   // Given a Umi instance and a new signer.
@@ -143,7 +144,7 @@ test('it can mint a new asset with multiple extensions', async (t) => {
   });
 });
 
-test('it can mint a new asset with a royalties extension', async (t) => {
+test('it can mint a new asset with a PubkeyMatch royalties extension', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
@@ -166,12 +167,6 @@ test('it can mint a new asset with a royalties extension', async (t) => {
           publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
         ]),
       }),
-      links([
-        {
-          name: 'metadata',
-          uri: 'https://arweave.net/ebBV1qEYt65AKmM2J5wH_Vg-gjBa9YcwSYWFVt0rw9w',
-        },
-      ]),
     ],
   }).sendAndConfirm(umi);
 
@@ -192,20 +187,11 @@ test('it can mint a new asset with a royalties extension', async (t) => {
           pubkeys: [publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8')],
         },
       },
-      {
-        type: ExtensionType.Links,
-        values: [
-          {
-            name: 'metadata',
-            uri: 'https://arweave.net/ebBV1qEYt65AKmM2J5wH_Vg-gjBa9YcwSYWFVt0rw9w',
-          },
-        ],
-      },
     ],
   }));
 });
 
-test('it can mint a new asset with a royalties extension with nested constraints', async (t) => {
+test('it can mint a new asset with a OwnedBy royalties extension', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
@@ -213,10 +199,61 @@ test('it can mint a new asset with a royalties extension with nested constraints
 
   const basisPoints = BigInt(500);
 
+  // When we create a new asset.
+  await mint(umi, {
+    asset,
+    holder: holder.publicKey,
+    payer: umi.identity,
+    name: 'Digital Asset',
+    mutable: true,
+    standard: Standard.NonFungible,
+    extensions: [
+      royalties({
+        basisPoints,
+        constraint: ownedBy(Account.Asset, [
+          publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
+        ]),
+      }),
+    ],
+  }).sendAndConfirm(umi);
+
+  // Then an asset was created with the correct data.
+  t.like(await fetchAsset(umi, asset.publicKey), <Asset>(<unknown>{
+    discriminator: Discriminator.Asset,
+    state: State.Unlocked,
+    standard: Standard.NonFungible,
+    holder: holder.publicKey,
+    authority: umi.identity.publicKey,
+    extensions: [
+      {
+        type: ExtensionType.Royalties,
+        basisPoints,
+        constraint: {
+          type: OperatorType.OwnedBy,
+          account: Account.Asset,
+          owners: [publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8')],
+        },
+      },
+    ],
+  }));
+});
+
+test('it can mint a new asset with a royalties extension with NOT constraint', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = generateSigner(umi);
+  const holder = generateSigner(umi);
+
+  console.log(asset.publicKey.toString());
+
+  const basisPoints = BigInt(500);
+
   const ownedByConstraint = ownedBy(Account.Asset, [
     publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
   ]);
   const notConstraint = not(ownedByConstraint);
+
+  console.log('notConstraint', notConstraint);
 
   // When we create a new asset.
   await mint(umi, {
@@ -251,51 +288,60 @@ test('it can mint a new asset with a royalties extension with nested constraints
   }));
 });
 
-// test('it can mint a new asset with a royalties extension with an AND constraint', async (t) => {
-//   // Given a Umi instance and a new signer.
-//   const umi = await createUmi();
-//   const asset = generateSigner(umi);
-//   const holder = generateSigner(umi);
+test('it can mint a new asset with a royalties extension with an AND constraint', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = generateSigner(umi);
+  const holder = generateSigner(umi);
 
-//   const basisPoints = BigInt(500);
+  console.log(asset.publicKey.toString());
 
-//   const ownedByConstraint = ownedBy(Account.Asset, [
-//     publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
-//   ]);
-//   const pubkeyMatchConstraint = pubkeyMatch(Account.Asset, [
-//     '8UWRNwLHxD5DmEJ2cjVFdVpCNhfxL7bLkYpXG1o9srEN',
-//   ]);
-//   const andConstraint = and([ownedByConstraint, pubkeyMatchConstraint]);
+  const basisPoints = BigInt(500);
 
-//   // When we create a new asset.
-//   await mint(umi, {
-//     asset,
-//     holder: holder.publicKey,
-//     payer: umi.identity,
-//     name: 'Digital Asset',
-//     mutable: true,
-//     standard: Standard.NonFungible,
-//     extensions: [
-//       royalties({
-//         basisPoints,
-//         constraint: andConstraint,
-//       }),
-//     ],
-//   }).sendAndConfirm(umi);
+  const ownedByConstraint = ownedBy(Account.Asset, [
+    publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
+  ]);
+  const pubkeyMatchConstraint = pubkeyMatch(Account.Asset, [
+    '8UWRNwLHxD5DmEJ2cjVFdVpCNhfxL7bLkYpXG1o9srEN',
+  ]);
+  const andConstraint = and([
+    ownedByConstraint,
+    pubkeyMatchConstraint,
+    ownedByConstraint,
+    pubkeyMatchConstraint,
+  ]);
 
-//   // Then an asset was created with the correct data.
-//   t.like(await fetchAsset(umi, asset.publicKey), <Asset>(<unknown>{
-//     discriminator: Discriminator.Asset,
-//     state: State.Unlocked,
-//     standard: Standard.NonFungible,
-//     holder: holder.publicKey,
-//     authority: umi.identity.publicKey,
-//     extensions: [
-//       {
-//         type: ExtensionType.Royalties,
-//         basisPoints,
-//         constraint: andConstraint,
-//       },
-//     ],
-//   }));
-// });
+  console.log('andConstraint', andConstraint);
+
+  // When we create a new asset.
+  await mint(umi, {
+    asset,
+    holder: holder.publicKey,
+    payer: umi.identity,
+    name: 'Digital Asset',
+    mutable: true,
+    standard: Standard.NonFungible,
+    extensions: [
+      royalties({
+        basisPoints,
+        constraint: andConstraint,
+      }),
+    ],
+  }).sendAndConfirm(umi);
+
+  // Then an asset was created with the correct data.
+  t.like(await fetchAsset(umi, asset.publicKey), <Asset>(<unknown>{
+    discriminator: Discriminator.Asset,
+    state: State.Unlocked,
+    standard: Standard.NonFungible,
+    holder: holder.publicKey,
+    authority: umi.identity.publicKey,
+    extensions: [
+      {
+        type: ExtensionType.Royalties,
+        basisPoints,
+        constraint: andConstraint,
+      },
+    ],
+  }));
+});

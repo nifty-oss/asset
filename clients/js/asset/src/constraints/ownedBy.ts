@@ -8,25 +8,31 @@ import {
   array,
   publicKey as publicKeySerializer,
   struct,
+  u32,
 } from '@metaplex-foundation/umi/serializers';
-import { OperatorType } from '../generated';
 import { Account, getAccountSerializer } from './account';
+import {
+  OperatorType,
+  getOperatorTypeSerializer,
+} from '../extensions/operatorType';
+
+const ACCOUNT_SIZE = 8;
 
 export type OwnedBy = {
-  type: OperatorType.OwnedBy;
+  type: OperatorType;
+  size: number;
   account: Account;
   owners: PublicKey[];
 };
 
-export type OwnedByForSerialization = Omit<OwnedBy, 'type'>;
-
 export const ownedBy = (
   account: Account,
-  pubkeys: PublicKeyInput[]
+  owners: PublicKeyInput[]
 ): OwnedBy => ({
   type: OperatorType.OwnedBy,
+  size: ACCOUNT_SIZE + 32 * owners.length,
   account,
-  owners: pubkeys.map((pubkey) => toPublicKey(pubkey, true)),
+  owners: owners.map((pubkey) => toPublicKey(pubkey, true)),
 });
 
 export function getOwnedBySerializer(): Serializer<OwnedBy, OwnedBy> {
@@ -34,39 +40,35 @@ export function getOwnedBySerializer(): Serializer<OwnedBy, OwnedBy> {
     description: 'OwnedBy',
     fixedSize: null,
     maxSize: null,
-    serialize: (value: OwnedBy) => {
-      const valueForSerialization: OwnedByForSerialization = {
-        account: value.account,
-        owners: value.owners,
-      };
-      return struct<OwnedByForSerialization>([
+    serialize: (value: OwnedBy) =>
+      struct<OwnedBy>([
+        ['type', getOperatorTypeSerializer()],
+        ['size', u32()],
         ['account', getAccountSerializer()],
         ['owners', array(publicKeySerializer(), { size: 'remainder' })],
-      ]).serialize(valueForSerialization);
-    },
+      ]).serialize(value),
     deserialize: (buffer: Uint8Array, offset = 0) => {
+      console.log('ownedBy buffer', buffer);
+      console.log('ownedBy offset', offset);
       const dataView = new DataView(
         buffer.buffer,
         buffer.byteOffset,
         buffer.length
       );
-      const size = dataView.getUint32(offset + 4, true);
+      const size = dataView.getUint32(4, true);
 
-      // Slice off the type and size to get the actual constraint data.
-      const numItems = (size - 8) / 32;
+      const numItems = size / 40;
+      console.log('numItems', numItems);
 
-      buffer = buffer.slice(8);
-
-      const [valueForSerialization, constraintOffset] =
-        struct<OwnedByForSerialization>([
-          ['account', getAccountSerializer()],
-          ['owners', array(publicKeySerializer(), { size: numItems })],
-        ]).deserialize(buffer, offset);
-      const value: OwnedBy = {
-        type: OperatorType.OwnedBy,
-        ...valueForSerialization,
-      };
-      return [value, constraintOffset + 8];
+      const [value, constraintOffset] = struct<OwnedBy>([
+        ['type', getOperatorTypeSerializer()],
+        ['size', u32()],
+        ['account', getAccountSerializer()],
+        ['owners', array(publicKeySerializer(), { size: numItems })],
+      ]).deserialize(buffer, offset);
+      console.log('ownedBy value', value);
+      console.log('ownedBy constraintOffset', constraintOffset);
+      return [value, constraintOffset];
     },
   };
 }

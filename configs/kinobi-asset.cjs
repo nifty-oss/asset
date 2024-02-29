@@ -312,20 +312,6 @@ kinobi.update(
                   child: k.numberTypeNode("u64")
                 })
               ])
-            }),
-            // operator type
-            k.definedTypeNodeFromIdl({
-              name: "operatorType",
-              type: {
-                kind: "enum",
-                variants: [
-                  { name: "And" },
-                  { name: "Not" },
-                  { name: "Or" },
-                  { name: "OwnedBy" },
-                  { name: "PubkeyMatch" }
-                ]
-              }
             })
           ]
         });

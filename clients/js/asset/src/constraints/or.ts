@@ -2,19 +2,27 @@ import {
   Serializer,
   array,
   struct,
+  u32,
 } from '@metaplex-foundation/umi/serializers';
 import { Constraint, getConstraintSerializer } from './constraint';
-import { OperatorType } from '../generated';
+import {
+  OperatorType,
+  getOperatorTypeSerializer,
+} from '../extensions/operatorType';
 
 export type Or = {
-  type: OperatorType.Or;
+  type: OperatorType;
+  size: number;
   constraints: Constraint[];
 };
 
-export type OrForSerialization = Omit<Or, 'type'>;
-
 export const or = (constraints: Constraint[]): Or => ({
   type: OperatorType.Or,
+  size: constraints.reduce(
+    (acc, constraint) =>
+      acc + getConstraintSerializer().serialize(constraint).length,
+    8
+  ),
   constraints,
 });
 
@@ -23,30 +31,24 @@ export function getOrSerializer(): Serializer<Or, Or> {
     description: 'Or',
     fixedSize: null,
     maxSize: null,
-    serialize: (value: Or) => {
-      const valueForSerialization: OrForSerialization = {
-        constraints: value.constraints,
-      };
-      return struct<OrForSerialization>([
+    serialize: (value: Or) =>
+      struct<Or>([
+        ['type', getOperatorTypeSerializer()],
+        ['size', u32()],
         [
           'constraints',
           array(getConstraintSerializer(), { size: 'remainder' }),
         ],
-      ]).serialize(valueForSerialization);
-    },
+      ]).serialize(value),
     deserialize: (buffer: Uint8Array) => {
-      // Slice off the type and size to get the actual constraint data.
-      buffer = buffer.slice(8);
-      const [valueForSerialization, offset] = struct<OrForSerialization>([
+      const [value, offset] = struct<Or>([
+        ['type', getOperatorTypeSerializer()],
+        ['size', u32()],
         [
           'constraints',
           array(getConstraintSerializer(), { size: 'remainder' }),
         ],
       ]).deserialize(buffer);
-      const value: Or = {
-        type: OperatorType.Or,
-        ...valueForSerialization,
-      };
       return [value, offset + 8];
     },
   };
