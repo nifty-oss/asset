@@ -28,6 +28,13 @@ impl Assertable for Not<'_> {
             Assertion::Failure => Ok(Assertion::Pass),
         }
     }
+
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::with_capacity(self.constraint.size());
+        bytes.extend_from_slice(bytemuck::bytes_of(self.constraint.operator));
+        bytes.extend_from_slice(self.constraint.as_bytes().as_ref());
+        bytes
+    }
 }
 
 /// Builder for an `OwnedBy` constraint.

@@ -38,6 +38,14 @@ impl Assertable for OwnedBy<'_> {
             Assertion::Failure
         })
     }
+
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes =
+            Vec::with_capacity(size_of::<Account>() + self.owners.len() * size_of::<Pubkey>());
+        bytes.extend_from_slice(bytemuck::bytes_of(self.account));
+        bytes.extend_from_slice(bytemuck::cast_slice(self.owners));
+        bytes
+    }
 }
 
 /// Builder for an `OwnedBy` constraint.

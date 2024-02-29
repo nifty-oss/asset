@@ -38,6 +38,14 @@ impl Assertable for And<'_> {
 
         Ok(Assertion::Pass)
     }
+
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        for constraint in &self.constraints {
+            bytes.extend_from_slice(constraint.as_bytes().as_ref());
+        }
+        bytes
+    }
 }
 
 /// Builder for an `And` constraint.

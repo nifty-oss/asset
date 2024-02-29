@@ -7,7 +7,13 @@ import {
   publicKey as publicKeySerializer,
   string,
 } from '@metaplex-foundation/umi/serializers';
-import { Asset, ExtensionType, fetchAsset } from '@nifty-oss/asset';
+import {
+  Account,
+  Asset,
+  ExtensionType,
+  fetchAsset,
+  OperatorType,
+} from '@nifty-oss/asset';
 import test from 'ava';
 import {
   BRIDGE_PROGRAM_ID,
@@ -22,6 +28,7 @@ import {
 import {
   createCollectionNft,
   createNft,
+  createProgrammableNft,
   createUmi,
   createVerifiedNft,
 } from './_setup';
@@ -44,7 +51,7 @@ test('it can create an asset on the bridge', async (t) => {
     updateAuthority: umi.identity,
   }).sendAndConfirm(umi);
 
-  // Then the birdge vault is created.
+  // Then the bridge vault is created.
   const vault = await fetchVault(
     umi,
     findVaultPda(umi, { mint: mint.publicKey })
@@ -67,6 +74,62 @@ test('it can create an asset on the bridge', async (t) => {
         type: ExtensionType.Metadata,
         symbol: 'BA',
         uri: 'https://asset.bridge',
+      },
+    ],
+  });
+});
+
+test('it can create a asset on the bridge for a pNFT', async (t) => {
+  // Given a Umi instance.
+  const umi = await createUmi();
+
+  // And a Token Metadata programmable non-fungible.
+  const mint = await createProgrammableNft(umi, {
+    name: 'Bridge Asset',
+    symbol: 'BA',
+    uri: 'https://asset.bridge',
+    sellerFeeBasisPoints: percentAmount(5.5),
+    mint: undefined,
+  });
+
+  // When we create the asset on the bridge.
+  await create(umi, {
+    mint: mint.publicKey,
+    updateAuthority: umi.identity,
+  }).sendAndConfirm(umi);
+
+  // Then the bridge vault is created.
+  const vault = await fetchVault(
+    umi,
+    findVaultPda(umi, { mint: mint.publicKey })
+  );
+
+  t.like(vault, <Vault>{
+    discriminator: Discriminator.Vault,
+    state: State.Idle,
+    mint: mint.publicKey,
+  });
+
+  // And the asset is created.
+  const asset = umi.eddsa.findPda(BRIDGE_PROGRAM_ID, [
+    string({ size: 'variable' }).serialize('nifty::bridge::asset'),
+    publicKeySerializer().serialize(mint.publicKey),
+  ]);
+  t.like(await fetchAsset(umi, asset), <Asset>{
+    extensions: [
+      {
+        type: ExtensionType.Metadata,
+        symbol: 'BA',
+        uri: 'https://asset.bridge',
+      },
+      {
+        type: ExtensionType.Royalties,
+        basisPoints: BigInt(550),
+        constraint: {
+          type: OperatorType.PubkeyMatch,
+          account: Account.Asset,
+          pubkeys: [],
+        },
       },
     ],
   });

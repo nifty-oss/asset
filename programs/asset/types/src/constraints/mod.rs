@@ -40,6 +40,12 @@ pub enum Account {
     Recipient,
 }
 
+impl Account {
+    pub fn into_bytes(self) -> [u8; 8] {
+        (self as u64).to_le_bytes()
+    }
+}
+
 impl From<&str> for Account {
     fn from(value: &str) -> Self {
         match value {
@@ -95,6 +101,8 @@ pub enum Assertion {
 
 pub trait Assertable {
     fn assert(&self, context: &Context) -> AssertionResult;
+
+    fn as_bytes(&self) -> Vec<u8>;
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -189,15 +197,24 @@ impl<'a> Constraint<'a> {
     pub fn size(&self) -> usize {
         std::mem::size_of::<Operator>() + self.operator.size() as usize
     }
+
+    pub fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::with_capacity(self.size());
+        bytes.extend_from_slice(bytemuck::bytes_of(self.operator));
+        bytes.extend_from_slice(self.assertable.as_bytes().as_ref());
+        bytes
+    }
 }
 
 impl<'a> FromBytes<'a> for Constraint<'a> {
     fn from_bytes(bytes: &'a [u8]) -> Self {
         let (operator, assertable) = bytes.split_at(std::mem::size_of::<Operator>());
-        let operator = Operator::load(operator);
 
-        let operator_type = operator.operator_type();
-        let length = operator.size() as usize;
+        let operator_type: OperatorType =
+            u32::from_be_bytes([operator[0], operator[1], operator[2], operator[3]]).into();
+
+        let length =
+            u32::from_be_bytes([operator[4], operator[5], operator[6], operator[7]]) as usize;
 
         let assertable = assertable_from_bytes!(
             operator_type,
@@ -219,6 +236,10 @@ impl<'a> FromBytes<'a> for Constraint<'a> {
 impl Assertable for Constraint<'_> {
     fn assert(&self, context: &Context) -> AssertionResult {
         self.assertable.assert(context)
+    }
+
+    fn as_bytes(&self) -> Vec<u8> {
+        self.as_bytes()
     }
 }
 

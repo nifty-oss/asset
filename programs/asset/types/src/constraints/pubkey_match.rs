@@ -1,7 +1,7 @@
 use std::{mem::size_of, ops::Deref};
 
 use podded::ZeroCopy;
-use solana_program::pubkey::Pubkey;
+use solana_program::{msg, pubkey::Pubkey};
 
 use crate::{
     constraints::{
@@ -38,6 +38,14 @@ impl Assertable for PubkeyMatch<'_> {
             Assertion::Failure
         })
     }
+
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes =
+            Vec::with_capacity(size_of::<Account>() + std::mem::size_of_val(self.pubkeys));
+        bytes.extend_from_slice(bytemuck::bytes_of(self.account));
+        bytes.extend_from_slice(bytemuck::cast_slice(self.pubkeys));
+        bytes
+    }
 }
 
 /// Builder for an `PubkeyMatch` constraint.
@@ -48,13 +56,14 @@ impl PubkeyMatchBuilder {
     /// Set the list of addresses (pubkeys).
     pub fn set(&mut self, account: Account, addresses: &[Pubkey]) {
         // clear any previous value
+        msg!("clearing previous value");
         self.0.resize(std::mem::size_of::<Operator>(), 0);
 
-        let offset = self.0.len();
-        self.0.append(&mut vec![0u8; size_of::<Account>()]);
-        let account_ref = bytemuck::from_bytes_mut(&mut self.0[offset..]);
-        *account_ref = account;
+        msg!("setting new value");
+        // add the account to the data buffer.
+        self.0.extend_from_slice(account.into_bytes().as_ref());
 
+        msg!("adding addresses to the data buffer");
         // add the addresses to the data buffer.
         addresses.iter().for_each(|address| {
             self.0.extend_from_slice(address.as_ref());
@@ -65,9 +74,10 @@ impl PubkeyMatchBuilder {
 impl ConstraintBuilder for PubkeyMatchBuilder {
     fn build(&mut self) -> Vec<u8> {
         let length = self.0.len() - std::mem::size_of::<Operator>();
-        let operator = Operator::load_mut(&mut self.0);
-        operator.set_operator_type(OperatorType::PubkeyMatch);
-        operator.set_size(length as u32);
+        // let operator = Operator::load_mut(&mut self.0);
+
+        self.0[0..4].copy_from_slice(&u32::to_be_bytes(OperatorType::PubkeyMatch as u32));
+        self.0[4..8].copy_from_slice(&u32::to_be_bytes(length as u32));
 
         std::mem::take(&mut self.0)
     }

@@ -1,7 +1,9 @@
 use std::{path::PathBuf, vec};
 
 use borsh::BorshDeserialize;
-use nifty_asset_types::constraints::{Account, ConstraintBuilder, NotBuilder, OwnedByBuilder};
+use nifty_asset_types::constraints::{
+    Account, ConstraintBuilder, NotBuilder, OwnedByBuilder, PubkeyMatch, PubkeyMatchBuilder,
+};
 use solana_program::{instruction::Instruction, pubkey::Pubkey};
 use thiserror::Error;
 
@@ -255,7 +257,7 @@ impl JsonRoyalties {
 
         match self.kind {
             RoyaltiesKind::Allowlist => {
-                let mut builder = OwnedByBuilder::default();
+                let mut builder = PubkeyMatchBuilder::default();
                 builder.set(Account::Asset, &self.items);
                 let bytes = builder.build();
                 data.extend(bytes);
