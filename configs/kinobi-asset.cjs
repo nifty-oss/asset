@@ -274,10 +274,6 @@ kinobi.update(
                   name: "share",
                   child: k.numberTypeNode("u8"),
                 }),
-                k.structFieldTypeNode({
-                  name: "padding",
-                  child: k.bytesTypeNode(k.fixedSize(6)),
-                }),
               ]),
             }),
             // metadata

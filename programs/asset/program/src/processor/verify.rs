@@ -48,7 +48,7 @@ pub fn process_verify(program_id: &Pubkey, ctx: Context<VerifyAccounts>) -> Prog
 
     extension.creators.iter_mut().for_each(|creator| {
         if creator.address == *ctx.accounts.creator.key {
-            creator.set_verified(true);
+            creator.verified = true.into();
             found = true;
         }
     });

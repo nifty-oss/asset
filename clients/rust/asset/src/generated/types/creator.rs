@@ -19,5 +19,4 @@ pub struct Creator {
     pub address: Pubkey,
     pub verified: bool,
     pub share: u8,
-    pub padding: [u8; 6],
 }

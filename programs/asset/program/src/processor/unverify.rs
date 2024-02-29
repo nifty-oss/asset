@@ -50,7 +50,7 @@ pub fn process_unverify(program_id: &Pubkey, ctx: Context<UnverifyAccounts>) -> 
 
     extension.creators.iter_mut().for_each(|creator| {
         if creator.address == *ctx.accounts.creator.key {
-            creator.set_verified(false);
+            creator.verified = false.into();
             found = true;
         }
     });
