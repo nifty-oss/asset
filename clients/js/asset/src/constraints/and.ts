@@ -34,18 +34,21 @@ export function getAndSerializer(): Serializer<And, And> {
         ],
       ]).serialize(valueForSerialization);
     },
-    deserialize: (buffer: Uint8Array) => {
-      const [valueForSerialization, bytesRead] = struct<AndForSerialization>([
-        [
-          'constraints',
-          array(getConstraintSerializer(), { size: 'remainder' }),
-        ],
-      ]).deserialize(buffer);
+    deserialize: (buffer: Uint8Array, offset = 0) => {
+      // Slice off the type and size to get the actual constraint data.
+      buffer = buffer.slice(8);
+      const [valueForSerialization, constraintOffset] =
+        struct<AndForSerialization>([
+          [
+            'constraints',
+            array(getConstraintSerializer(), { size: 'remainder' }),
+          ],
+        ]).deserialize(buffer, offset);
       const value: And = {
         type: OperatorType.And,
         ...valueForSerialization,
       };
-      return [value, bytesRead];
+      return [value, constraintOffset + 8];
     },
   };
 }

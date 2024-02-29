@@ -35,7 +35,9 @@ export function getOrSerializer(): Serializer<Or, Or> {
       ]).serialize(valueForSerialization);
     },
     deserialize: (buffer: Uint8Array) => {
-      const [valueForSerialization, bytesRead] = struct<OrForSerialization>([
+      // Slice off the type and size to get the actual constraint data.
+      buffer = buffer.slice(8);
+      const [valueForSerialization, offset] = struct<OrForSerialization>([
         [
           'constraints',
           array(getConstraintSerializer(), { size: 'remainder' }),
@@ -45,7 +47,7 @@ export function getOrSerializer(): Serializer<Or, Or> {
         type: OperatorType.Or,
         ...valueForSerialization,
       };
-      return [value, bytesRead];
+      return [value, offset + 8];
     },
   };
 }

@@ -47,17 +47,29 @@ export function getPubkeyMatchSerializer(): Serializer<
         ['pubkeys', array(publicKeySerializer(), { size: 'remainder' })],
       ]).serialize(valueForSerialization);
     },
-    deserialize: (buffer: Uint8Array) => {
-      const [valueForSerialization, bytesRead] =
+    deserialize: (buffer: Uint8Array, offset = 0) => {
+      const dataView = new DataView(
+        buffer.buffer,
+        buffer.byteOffset,
+        buffer.length
+      );
+      const size = dataView.getUint32(offset + 4, true);
+
+      // Slice off the type and size to get the actual constraint data.
+      const numItems = (size - 8) / 32;
+
+      // Slice off the type and size to get the actual constraint data.
+      buffer = buffer.slice(8);
+      const [valueForSerialization, constraintOffset] =
         struct<PubkeyMatchForSerialization>([
           ['account', getAccountSerializer()],
-          ['pubkeys', array(publicKeySerializer(), { size: 'remainder' })],
-        ]).deserialize(buffer);
+          ['pubkeys', array(publicKeySerializer(), { size: numItems })],
+        ]).deserialize(buffer, offset);
       const value: PubkeyMatch = {
         type: OperatorType.PubkeyMatch,
         ...valueForSerialization,
       };
-      return [value, bytesRead];
+      return [value, constraintOffset + 7];
     },
   };
 }

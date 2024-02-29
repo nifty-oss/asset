@@ -256,7 +256,7 @@ mod mint {
         assert_eq!(*extension, NiftyExtensionType::Royalties);
 
         let royalties = Asset::get::<Royalties>(account_data).unwrap();
-        assert_eq!(royalties.basis_points, expected_basis_points);
+        assert_eq!(royalties.basis_points, &expected_basis_points);
     }
 
     #[tokio::test]
@@ -336,6 +336,6 @@ mod mint {
         assert_eq!(*extension, NiftyExtensionType::Royalties);
 
         let royalties = Asset::get::<Royalties>(account_data).unwrap();
-        assert_eq!(royalties.basis_points, expected_basis_points);
+        assert_eq!(royalties.basis_points, &expected_basis_points);
     }
 }

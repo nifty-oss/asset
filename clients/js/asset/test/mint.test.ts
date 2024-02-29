@@ -16,7 +16,6 @@ import {
   not,
   ownedBy,
   pubkeyMatch,
-  // pubkeyMatch,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -167,6 +166,12 @@ test('it can mint a new asset with a royalties extension', async (t) => {
           publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
         ]),
       }),
+      links([
+        {
+          name: 'metadata',
+          uri: 'https://arweave.net/ebBV1qEYt65AKmM2J5wH_Vg-gjBa9YcwSYWFVt0rw9w',
+        },
+      ]),
     ],
   }).sendAndConfirm(umi);
 
@@ -186,6 +191,15 @@ test('it can mint a new asset with a royalties extension', async (t) => {
           account: Account.Asset,
           pubkeys: [publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8')],
         },
+      },
+      {
+        type: ExtensionType.Links,
+        values: [
+          {
+            name: 'metadata',
+            uri: 'https://arweave.net/ebBV1qEYt65AKmM2J5wH_Vg-gjBa9YcwSYWFVt0rw9w',
+          },
+        ],
       },
     ],
   }));
@@ -236,3 +250,52 @@ test('it can mint a new asset with a royalties extension with nested constraints
     ],
   }));
 });
+
+// test('it can mint a new asset with a royalties extension with an AND constraint', async (t) => {
+//   // Given a Umi instance and a new signer.
+//   const umi = await createUmi();
+//   const asset = generateSigner(umi);
+//   const holder = generateSigner(umi);
+
+//   const basisPoints = BigInt(500);
+
+//   const ownedByConstraint = ownedBy(Account.Asset, [
+//     publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
+//   ]);
+//   const pubkeyMatchConstraint = pubkeyMatch(Account.Asset, [
+//     '8UWRNwLHxD5DmEJ2cjVFdVpCNhfxL7bLkYpXG1o9srEN',
+//   ]);
+//   const andConstraint = and([ownedByConstraint, pubkeyMatchConstraint]);
+
+//   // When we create a new asset.
+//   await mint(umi, {
+//     asset,
+//     holder: holder.publicKey,
+//     payer: umi.identity,
+//     name: 'Digital Asset',
+//     mutable: true,
+//     standard: Standard.NonFungible,
+//     extensions: [
+//       royalties({
+//         basisPoints,
+//         constraint: andConstraint,
+//       }),
+//     ],
+//   }).sendAndConfirm(umi);
+
+//   // Then an asset was created with the correct data.
+//   t.like(await fetchAsset(umi, asset.publicKey), <Asset>(<unknown>{
+//     discriminator: Discriminator.Asset,
+//     state: State.Unlocked,
+//     standard: Standard.NonFungible,
+//     holder: holder.publicKey,
+//     authority: umi.identity.publicKey,
+//     extensions: [
+//       {
+//         type: ExtensionType.Royalties,
+//         basisPoints,
+//         constraint: andConstraint,
+//       },
+//     ],
+//   }));
+// });

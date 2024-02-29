@@ -150,6 +150,7 @@ pub fn handle_decode(args: DecodeArgs) -> Result<()> {
 
 fn handle_constraints(constraint: &Constraint, mut index: usize, extension_data: &[u8]) -> Value {
     let operator_type = constraint.operator.operator_type();
+    let constraint_size = constraint.operator.size() as usize;
     // Operator: [u32; 2]
     index += std::mem::size_of::<Operator>();
 
@@ -161,7 +162,6 @@ fn handle_constraints(constraint: &Constraint, mut index: usize, extension_data:
                 .iter()
                 .map(|constraint| handle_constraints(constraint, index, extension_data))
                 .collect();
-
             json!({
                 "AND": constraints
             })
@@ -179,13 +179,12 @@ fn handle_constraints(constraint: &Constraint, mut index: usize, extension_data:
                 .iter()
                 .map(|constraint| handle_constraints(constraint, index, extension_data))
                 .collect();
-
             json!({
                 "OR": constraints
             })
         }
         OperatorType::OwnedBy => {
-            let owned_by = OwnedBy::from_bytes(&extension_data[index..]);
+            let owned_by = OwnedBy::from_bytes(&extension_data[index..index + constraint_size]);
             json!({
                 "OWNED_BY": {
                     "account": owned_by.account.to_string(),
@@ -194,7 +193,8 @@ fn handle_constraints(constraint: &Constraint, mut index: usize, extension_data:
             })
         }
         OperatorType::PubkeyMatch => {
-            let pubkey_match = PubkeyMatch::from_bytes(&extension_data[index..]);
+            let pubkey_match =
+                PubkeyMatch::from_bytes(&extension_data[index..index + constraint_size]);
             json!({
                 "PUBKEY_MATCH": {
                     "account": pubkey_match.account.to_string(),

@@ -53,46 +53,45 @@ export function getConstraintSerializer(): Serializer<Constraint, Constraint> {
       buffer.set(constraintBuffer, 8);
       return buffer;
     },
-    deserialize: (buffer: Uint8Array) => {
+    deserialize: (buffer: Uint8Array, offset = 0) => {
+      // console.log('constraint buffer before', buffer);
+      // console.log('constraint offset', offset);
+      // console.log('constraint buffer length', buffer.length);
+      buffer = buffer.slice(offset, buffer.length);
       const dataView = new DataView(
         buffer.buffer,
         buffer.byteOffset,
         buffer.length
       );
-      const constraintType = dataView.getUint32(8, true) as OperatorType;
-      const size = dataView.getUint32(12, true);
+      // Manually parse the constraint type and size. We need the type for our
+      // switch statement and the size to slice the buffer.
+      const constraintType = dataView.getUint32(0, true) as OperatorType;
 
-      // For some reason the royalty basis points are still on the buffer for the first
-      // constraint, so we need to slice it off.
-      // However, this stops nested constraints from working, so we need to find a better solution.
-      // Unsure why the u64 deserializer doesn't seem to actually remove the basis points from the buffer.
-      const constraintData = buffer.slice(16, size + 16);
       let constraint;
-
       switch (constraintType) {
         case OperatorType.And: {
           const serializer = getAndSerializer();
-          constraint = serializer.deserialize(constraintData);
+          constraint = serializer.deserialize(buffer);
           break;
         }
         case OperatorType.Not: {
           const serializer = getNotSerializer();
-          constraint = serializer.deserialize(constraintData);
+          constraint = serializer.deserialize(buffer);
           break;
         }
         case OperatorType.Or: {
           const serializer = getOrSerializer();
-          constraint = serializer.deserialize(constraintData);
+          constraint = serializer.deserialize(buffer);
           break;
         }
         case OperatorType.OwnedBy: {
           const serializer = getOwnedBySerializer();
-          constraint = serializer.deserialize(constraintData);
+          constraint = serializer.deserialize(buffer);
           break;
         }
         case OperatorType.PubkeyMatch: {
           const serializer = getPubkeyMatchSerializer();
-          constraint = serializer.deserialize(constraintData);
+          constraint = serializer.deserialize(buffer);
           break;
         }
         default:

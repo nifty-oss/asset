@@ -7,45 +7,12 @@
   "owner": "PanbgtcTiZ2PveV96t2FHSffiLHXXjMuhvoabUUKKm8",
   "extensions": [
     {
-      "extension_type": "Creators",
-      "value": [
-        {
-          "address": "AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8",
-          "verified": true,
-          "share": 70
-        },
-        {
-          "address": "8UWRNwLHxD5DmEJ2cjVFdVpCNhfxL7bLkYpXG1o9srEN",
-          "verified": false,
-          "share": 20
-        },
-        {
-          "address": "5rH8qo7XzGaR5N8tMVQ32GuSw4HvwdBdnGN37ZGgsHnC",
-          "verified": false,
-          "share": 5
-        },
-        {
-          "address": "5Bw5EaQrCvgom3HFQ3ojUg2jd87nwzonPj4r5dVZKj7F",
-          "verified": false,
-          "share": 5
-        },
-        {
-          "address": "6367jssNbexBy38ydoZjBQJPGVN9oP6yteyfK5HCERki",
-          "verified": false,
-          "share": 0
-        }
-      ]
-    },
-    {
       "extension_type": "Royalties",
       "value": {
-        "kind": "Allowlist",
-        "basis_points": 1000,
+        "kind": "Denylist",
+        "basis_points": 500,
         "items": [
-          "AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8",
-          "8UWRNwLHxD5DmEJ2cjVFdVpCNhfxL7bLkYpXG1o9srEN",
-          "5rH8qo7XzGaR5N8tMVQ32GuSw4HvwdBdnGN37ZGgsHnC",
-          "5Bw5EaQrCvgom3HFQ3ojUg2jd87nwzonPj4r5dVZKj7F"
+          "AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8"
         ]
       }
     }
