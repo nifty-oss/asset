@@ -4,6 +4,16 @@ import {
   publicKey,
 } from '@metaplex-foundation/umi';
 import test from 'ava';
+import { Asset, fetchAsset } from '@nifty-oss/asset';
+import {
+  TokenStandard,
+  createProgrammableNft,
+  fetchDigitalAssetWithToken,
+} from '@metaplex-foundation/mpl-token-metadata';
+import {
+  TokenState,
+  findAssociatedTokenPda,
+} from '@metaplex-foundation/mpl-toolbox';
 import {
   Discriminator,
   State,
@@ -15,16 +25,6 @@ import {
   findVaultPda,
 } from '../src';
 import { createNft, createUmi } from './_setup';
-import { Asset, fetchAsset } from '@nifty-oss/asset';
-import {
-  TokenStandard,
-  createProgrammableNft,
-  fetchDigitalAssetWithToken,
-} from '@metaplex-foundation/mpl-token-metadata';
-import {
-  TokenState,
-  findAssociatedTokenPda,
-} from '@metaplex-foundation/mpl-toolbox';
 
 test('it can bridge an asset to a token (NFT)', async (t) => {
   // Given a Umi instance.
