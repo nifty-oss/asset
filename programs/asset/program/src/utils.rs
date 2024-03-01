@@ -67,12 +67,18 @@ macro_rules! process_royalties {
                 let is_wallet_to_wallet = !is_cpi && sender_is_wallet && recipient_is_wallet;
 
                 if !is_wallet_to_wallet {
+                    msg!("Checking royalties constraint");
                     // We pass in the Constraint context and validate the royalties constraint.
-                    royalties.constraint.assertable.assert(&ConstraintContext {
+                    let result = royalties.constraint.assertable.assert(&ConstraintContext {
                         asset: $ctx.accounts.asset,
                         authority: $ctx.accounts.signer,
                         recipient: Some($ctx.accounts.recipient),
                     })?;
+                    require!(
+                        result == Assertion::Pass,
+                        AssetError::AssertionFailure,
+                        "recipient is not allowed to receive the asset"
+                    );
                 }
             }
         }

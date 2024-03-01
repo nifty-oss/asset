@@ -1,5 +1,6 @@
 import { getSplSystemProgramId } from '@metaplex-foundation/mpl-toolbox';
 import { generateSigner } from '@metaplex-foundation/umi';
+import { httpDownloader } from '@metaplex-foundation/umi-downloader-http';
 import test from 'ava';
 import {
   Asset,
@@ -15,7 +16,6 @@ import {
   updateWithBuffer,
 } from '../src';
 import { createUmi } from './_setup';
-import { httpDownloader } from '@metaplex-foundation/umi-downloader-http';
 
 test('it can update the name of an asset', async (t) => {
   // Given a Umi instance and a new signer.

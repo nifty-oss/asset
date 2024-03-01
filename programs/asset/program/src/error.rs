@@ -79,6 +79,10 @@ pub enum AssetError {
     /// 17 - Invalid group.
     #[error("Invalid group")]
     InvalidGroup,
+
+    /// 18 - Assertion Failure
+    #[error("Assertion Failure")]
+    AssertionFailure,
 }
 
 impl PrintProgramError for AssetError {

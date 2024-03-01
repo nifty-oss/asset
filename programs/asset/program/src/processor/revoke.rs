@@ -36,7 +36,7 @@ pub fn process_revoke(
     let mut data = (*ctx.accounts.asset.data).borrow_mut();
 
     require!(
-        data[0] == Discriminator::Asset.into(),
+        data[0] == Discriminator::Asset as u8,
         ProgramError::UninitializedAccount,
         "asset"
     );

@@ -1,5 +1,5 @@
 use nifty_asset_types::{
-    constraints::Context as ConstraintContext,
+    constraints::{Assertion, Context as ConstraintContext},
     extensions::Royalties,
     podded::{
         pod::{Nullable, PodOption},
@@ -12,6 +12,7 @@ use std::ops::Deref;
 use solana_program::{
     entrypoint::ProgramResult,
     instruction::{get_stack_height, TRANSACTION_LEVEL_STACK_HEIGHT},
+    msg,
     program_error::ProgramError,
     pubkey::Pubkey,
 };
