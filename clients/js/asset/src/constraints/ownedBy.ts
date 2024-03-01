@@ -8,63 +8,34 @@ import {
   array,
   publicKey as publicKeySerializer,
   struct,
-  u32,
 } from '@metaplex-foundation/umi/serializers';
-import { Account, getAccountSerializer } from './account';
 import {
-  OperatorType,
-  getOperatorTypeSerializer,
-} from '../extensions/operatorType';
-
-const ACCOUNT_SIZE = 8;
+  Account,
+  getAccountSerializer,
+  wrapSerializerInConstraintHeader,
+} from '.';
+import { OperatorType } from '../extensions';
 
 export type OwnedBy = {
-  type: OperatorType;
-  size: number;
+  type: OperatorType.OwnedBy;
   account: Account;
   owners: PublicKey[];
 };
 
 export const ownedBy = (
   account: Account,
-  owners: PublicKeyInput[]
+  publicKeys: PublicKeyInput[]
 ): OwnedBy => ({
   type: OperatorType.OwnedBy,
-  size: ACCOUNT_SIZE + 32 * owners.length,
   account,
-  owners: owners.map((pubkey) => toPublicKey(pubkey, true)),
+  owners: publicKeys.map((owner) => toPublicKey(owner)),
 });
 
-export function getOwnedBySerializer(): Serializer<OwnedBy, OwnedBy> {
-  return {
-    description: 'OwnedBy',
-    fixedSize: null,
-    maxSize: null,
-    serialize: (value: OwnedBy) =>
-      struct<OwnedBy>([
-        ['type', getOperatorTypeSerializer()],
-        ['size', u32()],
-        ['account', getAccountSerializer()],
-        ['owners', array(publicKeySerializer(), { size: 'remainder' })],
-      ]).serialize(value),
-    deserialize: (buffer: Uint8Array, offset = 0) => {
-      const dataView = new DataView(
-        buffer.buffer,
-        buffer.byteOffset,
-        buffer.length
-      );
-      const size = dataView.getUint32(4, true);
-
-      const numItems = size / 40;
-
-      const [value, constraintOffset] = struct<OwnedBy>([
-        ['type', getOperatorTypeSerializer()],
-        ['size', u32()],
-        ['account', getAccountSerializer()],
-        ['owners', array(publicKeySerializer(), { size: numItems })],
-      ]).deserialize(buffer, offset);
-
-      return [value, constraintOffset];
-    },
-  };
-}
+export const getOwnedBySerializer = (): Serializer<OwnedBy> =>
+  wrapSerializerInConstraintHeader(
+    OperatorType.OwnedBy,
+    struct([
+      ['account', getAccountSerializer()],
+      ['owners', array(publicKeySerializer(), { size: 'remainder' })],
+    ])
+  );
