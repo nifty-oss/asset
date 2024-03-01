@@ -15,7 +15,7 @@
     "emitDeclarationOnly": false,
     "importHelpers": false,
     "strict": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "noFallthroughCasesInSwitch": true,
     "downlevelIteration": true,
     "esModuleInterop": true,

@@ -201,7 +201,7 @@ test('it can create an asset on the bridge with a collection', async (t) => {
     updateAuthority: umi.identity,
   }).sendAndConfirm(umi);
 
-  // Then the birdge vault is created.
+  // Then the bridge vault is created.
   const vault = await fetchVault(
     umi,
     findVaultPda(umi, { mint: mint.publicKey })
