@@ -36,24 +36,24 @@ client_common: &client_common
 asset_js_client: &asset_js_client
   - *client_common
   - ".github/workflows/test-js-client.yml"
-  - "clients/asset/js/**"
+  - "clients/js/asset/**"
 
 bridge_js_client: &bridge_js_client
   - *client_common
   - ".github/workflows/test-js-client.yml"
-  - "clients/bridge/js/**"
+  - "clients/js/bridge/**"
 
 asset_rust_client: &asset_rust_client
   - *client_common
   - ".github/workflows/test-rust-client.yml"
   - ".github/workflows/build-rust-client.yml"
-  - "clients/asset/rust/**"
+  - "clients/rust/asset/**"
 
 bridge_rust_client: &bridge_rust_client
   - *client_common
   - ".github/workflows/test-rust-client.yml"
   - ".github/workflows/build-rust-client.yml"
-  - "clients/bridge/rust/**"
+  - "clients/rust/bridge/**"
 
 js_clients: &js_clients
   - *asset_js_client
