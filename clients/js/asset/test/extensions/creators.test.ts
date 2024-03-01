@@ -1,5 +1,4 @@
 import { generateSigner } from '@metaplex-foundation/umi';
-import { httpDownloader } from '@metaplex-foundation/umi-downloader-http';
 import test from 'ava';
 import {
   Asset,
@@ -19,7 +18,7 @@ import { createUmi } from '../_setup';
 
 test('it can create a new asset with a creator', async (t) => {
   // Given a Umi instance and a new signer.
-  const umi = (await createUmi()).use(httpDownloader());
+  const umi = await createUmi();
   const asset = generateSigner(umi);
   const holder = generateSigner(umi);
 
@@ -64,7 +63,7 @@ test('it can create a new asset with a creator', async (t) => {
 
 test('it can create a new asset with multiple creators', async (t) => {
   // Given a Umi instance and a new signer.
-  const umi = (await createUmi()).use(httpDownloader());
+  const umi = await createUmi();
   const asset = generateSigner(umi);
   const holder = generateSigner(umi);
 
@@ -113,7 +112,7 @@ test('it can create a new asset with multiple creators', async (t) => {
 
 test("it cannot create an asset with invalid creators' total share", async (t) => {
   // Given a Umi instance and a new signer.
-  const umi = (await createUmi()).use(httpDownloader());
+  const umi = await createUmi();
   const asset = generateSigner(umi);
 
   // And a list of creators with a total share of 99.
@@ -134,7 +133,7 @@ test("it cannot create an asset with invalid creators' total share", async (t) =
 
 test('it maintain a creator verified status on update', async (t) => {
   // Given a Umi instance and a new signer.
-  const umi = (await createUmi()).use(httpDownloader());
+  const umi = await createUmi();
   const asset = generateSigner(umi);
   const holder = generateSigner(umi);
 
@@ -248,7 +247,7 @@ test('it maintain a creator verified status on update', async (t) => {
 
 test('it cannot remove a verified creator on update', async (t) => {
   // Given a Umi instance and a new signer.
-  const umi = (await createUmi()).use(httpDownloader());
+  const umi = await createUmi();
   const asset = generateSigner(umi);
   const holder = generateSigner(umi);
 
@@ -319,7 +318,7 @@ test('it cannot remove a verified creator on update', async (t) => {
 
 test('it can remove an unverified creator on update', async (t) => {
   // Given a Umi instance and a new signer.
-  const umi = (await createUmi()).use(httpDownloader());
+  const umi = await createUmi();
   const asset = generateSigner(umi);
   const holder = generateSigner(umi);
 
@@ -397,7 +396,7 @@ test('it can remove an unverified creator on update', async (t) => {
 
 test('it cannot update creators with invalid total share', async (t) => {
   // Given a Umi instance and a new signer.
-  const umi = (await createUmi()).use(httpDownloader());
+  const umi = await createUmi();
   const asset = generateSigner(umi);
   const holder = generateSigner(umi);
 

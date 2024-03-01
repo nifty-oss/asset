@@ -1,5 +1,4 @@
 import { generateSigner } from '@metaplex-foundation/umi';
-import { httpDownloader } from '@metaplex-foundation/umi-downloader-http';
 import test from 'ava';
 import {
   Asset,
@@ -16,22 +15,22 @@ import { createUmi } from '../_setup';
 
 test('it can create a new asset with a blob', async (t) => {
   // Given a Umi instance and a new signer.
-  const umi = (await createUmi()).use(httpDownloader());
+  const umi = await createUmi();
   const asset = generateSigner(umi);
   const holder = generateSigner(umi);
 
   // And we initialize an asset with a blob (image) extension.
-  const image = (
-    await umi.downloader.download([
-      'https://arweave.net/Y8MBS8tqo9XJ_Z1l9V6BIMvhknWxhzP0UxSNBk1OXSs',
-    ])
-  )[0];
+  const response = await fetch(
+    'https://arweave.net/Y8MBS8tqo9XJ_Z1l9V6BIMvhknWxhzP0UxSNBk1OXSs'
+  );
+  const image = new Uint8Array(await response.arrayBuffer());
+  const contentType = response.headers.get('content-type') ?? 'image/png';
 
   // And we initialize an image extension.
   await initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: blob(image.contentType ?? 'image/png', image.buffer),
+    extension: blob(contentType, image),
   }).sendAndConfirm(umi);
 
   t.true(await umi.rpc.accountExists(asset.publicKey), 'asset exists');
@@ -59,8 +58,8 @@ test('it can create a new asset with a blob', async (t) => {
 
   // And the blob (image) has the correct data.
   if (extension.type === ExtensionType.Blob) {
-    t.is(extension.contentType, image.contentType ?? 'image/png');
-    t.is(extension.data.length, image.buffer.length);
-    t.deepEqual(extension.data, Array.from(image.buffer));
+    t.is(extension.contentType, contentType);
+    t.is(extension.data.length, image.length);
+    t.deepEqual(extension.data, Array.from(image));
   }
 });

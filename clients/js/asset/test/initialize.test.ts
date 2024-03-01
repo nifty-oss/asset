@@ -1,5 +1,4 @@
 import { generateSigner } from '@metaplex-foundation/umi';
-import { httpDownloader } from '@metaplex-foundation/umi-downloader-http';
 import test from 'ava';
 import { attributes, blob, initialize } from '../src';
 import { createUmi } from './_setup';
@@ -44,7 +43,7 @@ test('it cannot initialize the same extension', async (t) => {
 
 test('it can initialize a new asset with multiple extensions', async (t) => {
   // Given a Umi instance and a new signer.
-  const umi = (await createUmi()).use(httpDownloader());
+  const umi = await createUmi();
   const asset = generateSigner(umi);
 
   // And we initialize an asset with an attributes extension.
@@ -65,17 +64,17 @@ test('it can initialize a new asset with multiple extensions', async (t) => {
     }
   });
 
-  const image = (
-    await umi.downloader.download([
-      'https://arweave.net/Y8MBS8tqo9XJ_Z1l9V6BIMvhknWxhzP0UxSNBk1OXSs',
-    ])
-  )[0];
+  const response = await fetch(
+    'https://arweave.net/Y8MBS8tqo9XJ_Z1l9V6BIMvhknWxhzP0UxSNBk1OXSs'
+  );
+  const image = new Uint8Array(await response.arrayBuffer());
+  const contentType = response.headers.get('content-type') ?? 'image/png';
 
   // When we initialize an image extension.
   await initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: blob(image.contentType!, image.buffer),
+    extension: blob(contentType, image),
   }).sendAndConfirm(umi);
 
   // Then an account was created.
