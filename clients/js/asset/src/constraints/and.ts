@@ -2,7 +2,6 @@ import {
   Serializer,
   array,
   struct,
-  u64,
 } from '@metaplex-foundation/umi/serializers';
 import {
   Constraint,
@@ -24,5 +23,7 @@ export const and = (constraints: Constraint[]): And => ({
 export const getAndSerializer = (): Serializer<And> =>
   wrapSerializerInConstraintHeader(
     OperatorType.And,
-    struct([['constraints', array(getConstraintSerializer(), { size: u64() })]])
+    struct([
+      ['constraints', array(getConstraintSerializer(), { size: 'remainder' })],
+    ])
   );

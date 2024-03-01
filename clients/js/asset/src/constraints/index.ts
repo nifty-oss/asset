@@ -84,20 +84,20 @@ export const wrapSerializerInConstraintHeader = <
       serializer.fixedSize === null ? null : serializer.fixedSize + HEADER_SIZE,
     maxSize:
       serializer.maxSize === null ? null : serializer.maxSize + HEADER_SIZE,
-    serialize: (rule: T): Uint8Array => {
-      const serializedRule = serializer.serialize(rule);
+    serialize: (constraint: T): Uint8Array => {
+      const serializedConstaint = serializer.serialize(constraint);
       const serializedHeader = headerSerializer.serialize({
         type,
-        size: serializedRule.length,
+        size: serializedConstaint.length,
       });
-      return mergeBytes([serializedHeader, serializedRule]);
+      return mergeBytes([serializedHeader, serializedConstaint]);
     },
     deserialize: (buffer: Uint8Array, offset = 0): [T, number] => {
       const [header] = headerSerializer.deserialize(buffer, offset);
       offset += HEADER_SIZE;
       const slice = buffer.slice(offset, offset + header.size);
-      const [rule] = serializer.deserialize(slice);
-      return [{ ...rule, type } as T, offset + header.size];
+      const [constraint] = serializer.deserialize(slice);
+      return [{ ...constraint, type } as T, offset + header.size];
     },
   };
 };
