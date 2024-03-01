@@ -1,18 +1,18 @@
 import { Serializer, struct } from '@metaplex-foundation/umi/serializers';
+import { OperatorType } from '../extensions';
 import {
   Constraint,
   getConstraintSerializer,
   wrapSerializerInConstraintHeader,
 } from '.';
-import { OperatorType } from '../extensions';
 
 export type Not = {
-  type: OperatorType.Not;
+  type: 'Not';
   constraint: Constraint;
 };
 
 export const not = (constraint: Constraint): Not => ({
-  type: OperatorType.Not,
+  type: 'Not',
   constraint,
 });
 

@@ -32,9 +32,12 @@ export const getConstraintSerializer = (): Serializer<Constraint> => ({
   serialize: (constraint: Constraint) =>
     getConstraintSerializerFromType(constraint.type).serialize(constraint),
   deserialize: (buffer, offset = 0) => {
-    return getConstraintSerializerFromType(
-      buffer[offset] as OperatorType
-    ).deserialize(buffer, offset);
+    const type = buffer[offset] as OperatorType;
+    const typeAsString = getOperatorTypeAsString(type);
+    return getConstraintSerializerFromType(typeAsString).deserialize(
+      buffer,
+      offset
+    );
   },
 });
 
@@ -43,15 +46,15 @@ export const getConstraintSerializerFromType = <T extends Constraint>(
 ): Serializer<T> =>
   ((): Serializer<any> => {
     switch (type) {
-      case OperatorType.And:
+      case 'And':
         return getAndSerializer();
-      case OperatorType.Not:
+      case 'Not':
         return getNotSerializer();
-      case OperatorType.Or:
+      case 'Or':
         return getOrSerializer();
-      case OperatorType.OwnedBy:
+      case 'OwnedBy':
         return getOwnedBySerializer();
-      case OperatorType.PubkeyMatch:
+      case 'PubkeyMatch':
         return getPubkeyMatchSerializer();
       default:
         throw new Error(`Unknown operator type: ${type}`);
@@ -70,16 +73,15 @@ export const getConstraintHeaderSerializer = (): Serializer<ConstraintHeader> =>
     ['size', u32()],
   ]);
 
-export const wrapSerializerInConstraintHeader = <
-  T extends { type: OperatorType }
->(
+export const wrapSerializerInConstraintHeader = <T extends { type: string }>(
   type: OperatorType,
   serializer: Serializer<Omit<T, 'type'>>
 ): Serializer<T> => {
   const HEADER_SIZE = 8; // 8 bytes for the constraint header
+  const typeAsString = getOperatorTypeAsString(type);
   const headerSerializer = getConstraintHeaderSerializer();
   return {
-    description: getOperatorTypeAsString(type),
+    description: typeAsString,
     fixedSize:
       serializer.fixedSize === null ? null : serializer.fixedSize + HEADER_SIZE,
     maxSize:
@@ -97,12 +99,14 @@ export const wrapSerializerInConstraintHeader = <
       offset += HEADER_SIZE;
       const slice = buffer.slice(offset, offset + header.size);
       const [constraint] = serializer.deserialize(slice);
-      return [{ ...constraint, type } as T, offset + header.size];
+      return [{ ...constraint, type: typeAsString } as T, offset + header.size];
     },
   };
 };
 
-export const getOperatorTypeAsString = (type: OperatorType) => {
+export const getOperatorTypeAsString = (
+  type: OperatorType
+): Constraint['type'] => {
   switch (type) {
     case OperatorType.And:
       return 'And';

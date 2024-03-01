@@ -11,12 +11,12 @@ import {
 import { OperatorType } from '../extensions';
 
 export type And = {
-  type: OperatorType.And;
+  type: 'And';
   constraints: Constraint[];
 };
 
 export const and = (constraints: Constraint[]): And => ({
-  type: OperatorType.And,
+  type: 'And',
   constraints,
 });
 
