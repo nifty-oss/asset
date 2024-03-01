@@ -1,4 +1,3 @@
-use podded::ZeroCopy;
 use std::ops::Deref;
 
 use crate::constraints::{
@@ -28,6 +27,13 @@ impl Assertable for Not<'_> {
             Assertion::Failure => Ok(Assertion::Pass),
         }
     }
+
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::with_capacity(self.constraint.size());
+        bytes.extend_from_slice(bytemuck::bytes_of(self.constraint.operator));
+        bytes.extend_from_slice(self.constraint.as_bytes().as_ref());
+        bytes
+    }
 }
 
 /// Builder for an `OwnedBy` constraint.
@@ -45,10 +51,16 @@ impl NotBuilder {
 
 impl ConstraintBuilder for NotBuilder {
     fn build(&mut self) -> Vec<u8> {
+        if self.0.is_empty() {
+            self.0.resize(std::mem::size_of::<Operator>(), 0);
+        }
+
         let length = self.0.len() - std::mem::size_of::<Operator>();
-        let operator = Operator::load_mut(&mut self.0);
-        operator.set_operator_type(OperatorType::Not);
-        operator.set_size(length as u32);
+
+        // manual byte wrangling because bytemuck doesn't work with newly
+        // allocated Vec in BPF.
+        self.0[0..4].copy_from_slice(&u32::to_le_bytes(OperatorType::Not as u32));
+        self.0[4..8].copy_from_slice(&u32::to_le_bytes(length as u32));
 
         std::mem::take(&mut self.0)
     }

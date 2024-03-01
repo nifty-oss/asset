@@ -9,7 +9,7 @@
     {
       "extension_type": "Royalties",
       "value": {
-        "kind": "Denylist",
+        "kind": "Allowlist",
         "basis_points": 500,
         "items": [
           "AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8"

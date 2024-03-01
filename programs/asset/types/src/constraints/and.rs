@@ -1,7 +1,5 @@
 use std::ops::Deref;
 
-use podded::ZeroCopy;
-
 use crate::constraints::{
     Assertable, Assertion, AssertionResult, Constraint, ConstraintBuilder, Context, FromBytes,
     Operator, OperatorType,
@@ -38,6 +36,14 @@ impl Assertable for And<'_> {
 
         Ok(Assertion::Pass)
     }
+
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        for constraint in &self.constraints {
+            bytes.extend_from_slice(constraint.as_bytes().as_ref());
+        }
+        bytes
+    }
 }
 
 /// Builder for an `And` constraint.
@@ -58,10 +64,16 @@ impl AndBuilder {
 
 impl ConstraintBuilder for AndBuilder {
     fn build(&mut self) -> Vec<u8> {
+        if self.0.is_empty() {
+            self.0.resize(std::mem::size_of::<Operator>(), 0);
+        }
+
         let length = self.0.len() - std::mem::size_of::<Operator>();
-        let operator = Operator::load_mut(&mut self.0);
-        operator.set_operator_type(OperatorType::And);
-        operator.set_size(length as u32);
+
+        // manual byte wrangling because bytemuck doesn't work with newly
+        // allocated Vec in BPF.
+        self.0[0..4].copy_from_slice(&u32::to_le_bytes(OperatorType::And as u32));
+        self.0[4..8].copy_from_slice(&u32::to_le_bytes(length as u32));
 
         std::mem::take(&mut self.0)
     }

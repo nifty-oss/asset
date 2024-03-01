@@ -222,4 +222,5 @@ validate_extension_type!(
     (Creators, CreatorsMut),
     (Grouping, GroupingMut),
     (Metadata, MetadataMut),
+    (Royalties, RoyaltiesMut),
 );

@@ -41,19 +41,6 @@ export function getAndSerializer(): Serializer<And, And> {
         ],
       ]).serialize(value),
     deserialize: (buffer: Uint8Array, offset = 0) => {
-      console.log('and buffer', buffer);
-      console.log('and offset', offset);
-      const dataView = new DataView(
-        buffer.buffer,
-        buffer.byteOffset,
-        buffer.length
-      );
-      const size = dataView.getUint32(offset + 4, true);
-      console.log('size', size);
-
-      const numItems = size / 48;
-      console.log('numItems', numItems);
-
       const [value, constraintOffset] = struct<And>([
         ['type', getOperatorTypeSerializer()],
         ['size', u32()],
