@@ -9,15 +9,15 @@ import {
   publicKey as publicKeySerializer,
   struct,
 } from '@metaplex-foundation/umi/serializers';
+import { OperatorType } from '../extensions';
 import {
   Account,
   getAccountSerializer,
   wrapSerializerInConstraintHeader,
 } from '.';
-import { OperatorType } from '../extensions';
 
 export type PubkeyMatch = {
-  type: OperatorType.PubkeyMatch;
+  type: 'PubkeyMatch';
   account: Account;
   pubkeys: PublicKey[];
 };
@@ -26,7 +26,7 @@ export const pubkeyMatch = (
   account: Account,
   publicKeys: PublicKeyInput[]
 ): PubkeyMatch => ({
-  type: OperatorType.PubkeyMatch,
+  type: 'PubkeyMatch',
   account,
   pubkeys: publicKeys.map((address) => toPublicKey(address)),
 });

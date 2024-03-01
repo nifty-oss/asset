@@ -17,7 +17,7 @@ import {
 import { OperatorType } from '../extensions';
 
 export type OwnedBy = {
-  type: OperatorType.OwnedBy;
+  type: 'OwnedBy';
   account: Account;
   owners: PublicKey[];
 };
@@ -26,7 +26,7 @@ export const ownedBy = (
   account: Account,
   publicKeys: PublicKeyInput[]
 ): OwnedBy => ({
-  type: OperatorType.OwnedBy,
+  type: 'OwnedBy',
   account,
   owners: publicKeys.map((owner) => toPublicKey(owner)),
 });

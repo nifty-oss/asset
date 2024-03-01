@@ -1,25 +1,24 @@
 import { generateSigner, publicKey } from '@metaplex-foundation/umi';
 import test from 'ava';
-import { royalties } from '../../src/extensions/royalties';
 import {
   Account,
   Asset,
+  Constraint,
   Discriminator,
   ExtensionType,
   Standard,
   State,
   and,
-  attributes,
   fetchAsset,
-  links,
   mint,
   not,
   or,
   ownedBy,
   pubkeyMatch,
 } from '../../src';
-import { createUmi } from '../_setup';
 import { OperatorType } from '../../src/extensions/operatorType';
+import { royalties } from '../../src/extensions/royalties';
+import { createUmi } from '../_setup';
 
 test('it can mint a new asset a royalties extension with a PubkeyMatch constraint', async (t) => {
   // Given a Umi instance and a new signer.
@@ -267,14 +266,48 @@ test('it can mint a new asset with a nested royalties extension', async (t) => {
 
   const basisPoints = BigInt(500);
 
-  const ownedByConstraint = ownedBy(Account.Asset, [
-    publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
-  ]);
-  const pubkeyMatchConstraint = pubkeyMatch(Account.Asset, [
-    '8UWRNwLHxD5DmEJ2cjVFdVpCNhfxL7bLkYpXG1o9srEN',
-  ]);
-  const orConstraint = or([ownedByConstraint, pubkeyMatchConstraint]);
-  const notConstraint = not(orConstraint);
+  const constraint: Constraint = {
+    type: 'And',
+    constraints: [
+      {
+        type: 'OwnedBy',
+        account: Account.Asset,
+        owners: [
+          publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
+          publicKey('BbSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
+          publicKey('CcSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
+        ],
+      },
+      {
+        type: 'Or',
+        constraints: [
+          {
+            type: 'PubkeyMatch',
+            account: Account.Asset,
+            pubkeys: [
+              publicKey('CcSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
+            ],
+          },
+          {
+            type: 'Not',
+            constraint: {
+              type: 'Not',
+              constraint: {
+                type: 'Not',
+                constraint: {
+                  type: 'PubkeyMatch',
+                  account: Account.Asset,
+                  pubkeys: [
+                    publicKey('8UWRNwLHxD5DmEJ2cjVFdVpCNhfxL7bLkYpXG1o9srEN'),
+                  ],
+                },
+              },
+            },
+          },
+        ],
+      },
+    ],
+  };
 
   // When we create a new asset.
   await mint(umi, {
@@ -287,7 +320,7 @@ test('it can mint a new asset with a nested royalties extension', async (t) => {
     extensions: [
       royalties({
         basisPoints,
-        constraint: notConstraint,
+        constraint,
       }),
     ],
   }).sendAndConfirm(umi);
@@ -303,7 +336,7 @@ test('it can mint a new asset with a nested royalties extension', async (t) => {
       {
         type: ExtensionType.Royalties,
         basisPoints,
-        constraint: notConstraint,
+        constraint,
       },
     ],
   }));

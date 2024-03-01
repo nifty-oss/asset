@@ -1,7 +1,7 @@
 import {
   Serializer,
   array,
-  struct
+  struct,
 } from '@metaplex-foundation/umi/serializers';
 import {
   Constraint,
@@ -11,17 +11,19 @@ import {
 import { OperatorType } from '../extensions';
 
 export type Or = {
-  type: OperatorType.Or;
+  type: 'Or';
   constraints: Constraint[];
 };
 
 export const or = (constraints: Constraint[]): Or => ({
-  type: OperatorType.Or,
+  type: 'Or',
   constraints,
 });
 
 export const getOrSerializer = (): Serializer<Or> =>
   wrapSerializerInConstraintHeader(
     OperatorType.Or,
-    struct([['constraints', array(getConstraintSerializer(), { size: 'remainder' })]])
+    struct([
+      ['constraints', array(getConstraintSerializer(), { size: 'remainder' })],
+    ])
   );
