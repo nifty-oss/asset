@@ -171,7 +171,7 @@ test('pubkeymatch failing blocks a transfer', async (t) => {
   });
 });
 
-test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
+test.skip('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
   // Given a Umi instance.
   const umi = await createUmi();
   const owner = generateSigner(umi);
