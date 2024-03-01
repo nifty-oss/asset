@@ -61,34 +61,34 @@ export function getConstraintSerializer(): Serializer<Constraint, Constraint> {
       switch (constraintType) {
         case OperatorType.And: {
           const serializer = getAndSerializer();
-          constraint = serializer.deserialize(buffer);
+          [constraint, offset] = serializer.deserialize(buffer);
           break;
         }
         case OperatorType.Not: {
           const serializer = getNotSerializer();
-          constraint = serializer.deserialize(buffer);
+          [constraint, offset] = serializer.deserialize(buffer);
           break;
         }
         case OperatorType.Or: {
           const serializer = getOrSerializer();
-          constraint = serializer.deserialize(buffer);
+          [constraint, offset] = serializer.deserialize(buffer);
           break;
         }
         case OperatorType.OwnedBy: {
           const serializer = getOwnedBySerializer();
-          constraint = serializer.deserialize(buffer);
+          [constraint, offset] = serializer.deserialize(buffer);
           break;
         }
         case OperatorType.PubkeyMatch: {
           const serializer = getPubkeyMatchSerializer();
-          constraint = serializer.deserialize(buffer);
+          [constraint, offset] = serializer.deserialize(buffer);
           break;
         }
         default:
           throw new Error('Invalid constraint type');
       }
 
-      return constraint;
+      return [constraint, offset];
     },
   };
 }

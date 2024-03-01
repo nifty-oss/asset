@@ -41,15 +41,27 @@ export function getAndSerializer(): Serializer<And, And> {
         ],
       ]).serialize(value),
     deserialize: (buffer: Uint8Array, offset = 0) => {
-      const [value, constraintOffset] = struct<And>([
-        ['type', getOperatorTypeSerializer()],
-        ['size', u32()],
-        [
-          'constraints',
-          array(getConstraintSerializer(), { size: 'remainder' }),
-        ],
-      ]).deserialize(buffer, offset);
-      return [value, constraintOffset + 8];
+      const [type, o] = getOperatorTypeSerializer().deserialize(buffer, offset);
+      offset = o;
+      const [size, o2] = u32().deserialize(buffer, offset);
+      offset = o2;
+
+      const constraints = [];
+
+      while (offset < buffer.length) {
+        const [constraint, constraintOffset] =
+          getConstraintSerializer().deserialize(buffer, offset);
+        constraints.push(constraint);
+        offset += constraintOffset;
+      }
+
+      const value = {
+        type,
+        size,
+        constraints,
+      };
+
+      return [value, offset];
     },
   };
 }

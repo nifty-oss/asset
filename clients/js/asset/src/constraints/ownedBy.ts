@@ -63,6 +63,7 @@ export function getOwnedBySerializer(): Serializer<OwnedBy, OwnedBy> {
         ['account', getAccountSerializer()],
         ['owners', array(publicKeySerializer(), { size: numItems })],
       ]).deserialize(buffer, offset);
+
       return [value, constraintOffset];
     },
   };

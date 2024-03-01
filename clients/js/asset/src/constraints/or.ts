@@ -21,7 +21,7 @@ export const or = (constraints: Constraint[]): Or => ({
   size: constraints.reduce(
     (acc, constraint) =>
       acc + getConstraintSerializer().serialize(constraint).length,
-    8
+    0
   ),
   constraints,
 });
@@ -40,16 +40,28 @@ export function getOrSerializer(): Serializer<Or, Or> {
           array(getConstraintSerializer(), { size: 'remainder' }),
         ],
       ]).serialize(value),
-    deserialize: (buffer: Uint8Array) => {
-      const [value, offset] = struct<Or>([
-        ['type', getOperatorTypeSerializer()],
-        ['size', u32()],
-        [
-          'constraints',
-          array(getConstraintSerializer(), { size: 'remainder' }),
-        ],
-      ]).deserialize(buffer);
-      return [value, offset + 8];
+    deserialize: (buffer: Uint8Array, offset = 0) => {
+      const [type, o] = getOperatorTypeSerializer().deserialize(buffer, offset);
+      offset = o;
+      const [size, o2] = u32().deserialize(buffer, offset);
+      offset = o2;
+
+      const constraints = [];
+
+      while (offset < buffer.length) {
+        const [constraint, constraintOffset] =
+          getConstraintSerializer().deserialize(buffer, offset);
+        constraints.push(constraint);
+        offset += constraintOffset;
+      }
+
+      const value = {
+        type,
+        size,
+        constraints,
+      };
+
+      return [value, offset];
     },
   };
 }

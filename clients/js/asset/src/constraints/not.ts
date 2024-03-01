@@ -28,13 +28,14 @@ export function getNotSerializer(): Serializer<Not, Not> {
         ['size', u32()],
         ['constraint', getConstraintSerializer()],
       ]).serialize(value),
-    deserialize: (buffer: Uint8Array) => {
-      const [value, offset] = struct<Not>([
+    deserialize: (buffer: Uint8Array, offset = 0) => {
+      const [value, constraintOffset] = struct<Not>([
         ['type', getOperatorTypeSerializer()],
         ['size', u32()],
         ['constraint', getConstraintSerializer()],
-      ]).deserialize(buffer);
-      return [value, offset];
+      ]).deserialize(buffer, offset);
+
+      return [value, constraintOffset];
     },
   };
 }

@@ -66,6 +66,7 @@ export function getPubkeyMatchSerializer(): Serializer<
         ['account', getAccountSerializer()],
         ['pubkeys', array(publicKeySerializer(), { size: numItems })],
       ]).deserialize(buffer, offset);
+
       return [value, constraintOffset];
     },
   };
