@@ -166,17 +166,14 @@ mod mint {
             first_creator.address
         );
         assert_eq!(
-            creators.creators.first().unwrap().share(),
+            creators.creators.first().unwrap().share,
             first_creator.share
         );
         assert_eq!(
             creators.creators.last().unwrap().address,
             last_creator.address
         );
-        assert_eq!(
-            creators.creators.last().unwrap().share(),
-            last_creator.share
-        );
+        assert_eq!(creators.creators.last().unwrap().share, last_creator.share);
     }
 
     #[tokio::test]
