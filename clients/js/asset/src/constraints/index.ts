@@ -32,9 +32,9 @@ export const getConstraintSerializer = (): Serializer<Constraint> => ({
   serialize: (constraint: Constraint) =>
     getConstraintSerializerFromType(constraint.type).serialize(constraint),
   deserialize: (buffer, offset = 0) => {
-    const type = buffer[offset] as OperatorType;
-    const typeAsString = getOperatorTypeAsString(type);
-    return getConstraintSerializerFromType(type).deserialize(buffer, offset);
+    return getConstraintSerializerFromType(
+      buffer[offset] as OperatorType
+    ).deserialize(buffer, offset);
   },
 });
 
@@ -54,7 +54,7 @@ export const getConstraintSerializerFromType = <T extends Constraint>(
       case OperatorType.PubkeyMatch:
         return getPubkeyMatchSerializer();
       default:
-        throw new Error(`Unknown constraint type: ${type}`);
+        throw new Error(`Unknown operator type: ${type}`);
     }
   })() as Serializer<T>;
 
