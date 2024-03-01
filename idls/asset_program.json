@@ -780,6 +780,11 @@
       "code": 17,
       "name": "InvalidGroup",
       "msg": "Invalid group"
+    },
+    {
+      "code": 18,
+      "name": "AssertionFailure",
+      "msg": "Assertion Failure"
     }
   ],
   "metadata": {

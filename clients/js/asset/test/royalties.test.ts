@@ -25,6 +25,7 @@ import {
   State as BridgeState,
   BRIDGE_PROGRAM_ID,
   bridge,
+  findBridgeAssetPda,
 } from '@nifty-oss/bridge';
 import {
   Account,
@@ -134,4 +135,39 @@ test('pubkeymatch failing blocks a transfer', async (t) => {
   await t.throwsAsync(promise, {
     message: /Assertion Failure/,
   });
+
+  // Now update the royalty extension to have the recipient be the pubkey match
+  const newConstraint = pubkeyMatch(Account.Recipient, [publicKey(owner)]);
+
+  // We update the default royalties extension.
+  const newData = getExtensionSerializerFromType(
+    ExtensionType.Royalties
+  ).serialize(royalties({ basisPoints, constraint: newConstraint }));
+  await update(umi, {
+    asset: asset[0],
+    payer: umi.identity,
+    extension: {
+      extensionType: ExtensionType.Royalties,
+      length: data.length,
+      data: newData,
+    },
+  }).sendAndConfirm(umi);
+
+  // Bridging the asset should succeed.
+  await bridge(umi, {
+    mint: mintSigner.publicKey,
+    owner,
+    tokenStandard: TokenStandard.ProgrammableNonFungible,
+  }).sendAndConfirm(umi);
+
+  // And we check that the asset was transferred.
+  const transferredAsset = await fetchAsset(
+    umi,
+    findBridgeAssetPda(umi, { mint: mintSigner.publicKey })
+  );
+
+  t.like(transferredAsset, <Asset>{
+    holder: owner.publicKey,
+  });
 });
+
