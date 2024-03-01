@@ -41,7 +41,7 @@ impl Assertable for OwnedBy<'_> {
 
     fn as_bytes(&self) -> Vec<u8> {
         let mut bytes =
-            Vec::with_capacity(size_of::<Account>() + self.owners.len() * size_of::<Pubkey>());
+            Vec::with_capacity(size_of::<Account>() + std::mem::size_of_val(self.owners));
         bytes.extend_from_slice(bytemuck::bytes_of(self.account));
         bytes.extend_from_slice(bytemuck::cast_slice(self.owners));
         bytes
@@ -58,10 +58,8 @@ impl OwnedByBuilder {
         // clear any previous value
         self.0.resize(std::mem::size_of::<Operator>(), 0);
 
-        let offset = self.0.len();
-        self.0.append(&mut vec![0u8; size_of::<Account>()]);
-        let account_ref = bytemuck::from_bytes_mut(&mut self.0[offset..]);
-        *account_ref = account;
+        // add the account to the data buffer.
+        self.0.extend_from_slice(account.into_bytes().as_ref());
 
         // add the addresses to the data buffer.
         addresses.iter().for_each(|address| {
@@ -72,10 +70,16 @@ impl OwnedByBuilder {
 
 impl ConstraintBuilder for OwnedByBuilder {
     fn build(&mut self) -> Vec<u8> {
+        if self.0.is_empty() {
+            self.0.resize(std::mem::size_of::<Operator>(), 0);
+        }
+
         let length = self.0.len() - std::mem::size_of::<Operator>();
-        let operator = Operator::load_mut(&mut self.0);
-        operator.set_operator_type(OperatorType::OwnedBy);
-        operator.set_size(length as u32);
+
+        // manual byte wrangling because bytemuck doesn't work with newly
+        // allocated Vec in BPF.
+        self.0[0..4].copy_from_slice(&u32::to_le_bytes(OperatorType::OwnedBy as u32));
+        self.0[4..8].copy_from_slice(&u32::to_le_bytes(length as u32));
 
         std::mem::take(&mut self.0)
     }

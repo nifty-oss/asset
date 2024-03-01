@@ -1,7 +1,7 @@
 use std::{mem::size_of, ops::Deref};
 
 use podded::ZeroCopy;
-use solana_program::{msg, pubkey::Pubkey};
+use solana_program::pubkey::Pubkey;
 
 use crate::{
     constraints::{
@@ -56,14 +56,11 @@ impl PubkeyMatchBuilder {
     /// Set the list of addresses (pubkeys).
     pub fn set(&mut self, account: Account, addresses: &[Pubkey]) {
         // clear any previous value
-        msg!("clearing previous value");
         self.0.resize(std::mem::size_of::<Operator>(), 0);
 
-        msg!("setting new value");
         // add the account to the data buffer.
         self.0.extend_from_slice(account.into_bytes().as_ref());
 
-        msg!("adding addresses to the data buffer");
         // add the addresses to the data buffer.
         addresses.iter().for_each(|address| {
             self.0.extend_from_slice(address.as_ref());
@@ -73,11 +70,16 @@ impl PubkeyMatchBuilder {
 
 impl ConstraintBuilder for PubkeyMatchBuilder {
     fn build(&mut self) -> Vec<u8> {
-        let length = self.0.len() - std::mem::size_of::<Operator>();
-        // let operator = Operator::load_mut(&mut self.0);
+        if self.0.is_empty() {
+            self.0.resize(std::mem::size_of::<Operator>(), 0);
+        }
 
-        self.0[0..4].copy_from_slice(&u32::to_be_bytes(OperatorType::PubkeyMatch as u32));
-        self.0[4..8].copy_from_slice(&u32::to_be_bytes(length as u32));
+        let length = self.0.len() - std::mem::size_of::<Operator>();
+
+        // manual byte wrangling because bytemuck doesn't work with newly
+        // allocated Vec in BPF.
+        self.0[0..4].copy_from_slice(&u32::to_le_bytes(OperatorType::PubkeyMatch as u32));
+        self.0[4..8].copy_from_slice(&u32::to_le_bytes(length as u32));
 
         std::mem::take(&mut self.0)
     }

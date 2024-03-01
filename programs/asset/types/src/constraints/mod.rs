@@ -209,12 +209,10 @@ impl<'a> Constraint<'a> {
 impl<'a> FromBytes<'a> for Constraint<'a> {
     fn from_bytes(bytes: &'a [u8]) -> Self {
         let (operator, assertable) = bytes.split_at(std::mem::size_of::<Operator>());
+        let operator = Operator::load(operator);
 
-        let operator_type: OperatorType =
-            u32::from_be_bytes([operator[0], operator[1], operator[2], operator[3]]).into();
-
-        let length =
-            u32::from_be_bytes([operator[4], operator[5], operator[6], operator[7]]) as usize;
+        let operator_type = operator.operator_type();
+        let length = operator.size() as usize;
 
         let assertable = assertable_from_bytes!(
             operator_type,

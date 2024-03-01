@@ -1,4 +1,4 @@
-use crate::constraints::{Constraint, FromBytes};
+use crate::constraints::{Constraint, ConstraintBuilder, FromBytes};
 
 use super::{ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle};
 
@@ -56,12 +56,12 @@ impl Lifecycle for RoyaltiesMut<'_> {}
 pub struct RoyaltiesBuilder(Vec<u8>);
 
 impl RoyaltiesBuilder {
-    pub fn set(&mut self, basis_points: u64, constraint: Constraint) {
+    pub fn set(&mut self, basis_points: u64, constraint: &mut dyn ConstraintBuilder) {
         // setting the data replaces any existing data
         self.0.clear();
 
         self.0.extend_from_slice(&basis_points.to_le_bytes());
-        self.0.extend_from_slice(&constraint.as_bytes());
+        self.0.extend_from_slice(&constraint.build());
     }
 
     pub fn build(&self) -> Royalties {

@@ -2,7 +2,7 @@ use std::{path::PathBuf, vec};
 
 use borsh::BorshDeserialize;
 use nifty_asset_types::constraints::{
-    Account, ConstraintBuilder, NotBuilder, OwnedByBuilder, PubkeyMatch, PubkeyMatchBuilder,
+    Account, ConstraintBuilder, NotBuilder, OwnedByBuilder, PubkeyMatchBuilder,
 };
 use solana_program::{instruction::Instruction, pubkey::Pubkey};
 use thiserror::Error;

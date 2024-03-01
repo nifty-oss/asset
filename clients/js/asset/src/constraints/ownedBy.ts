@@ -48,8 +48,6 @@ export function getOwnedBySerializer(): Serializer<OwnedBy, OwnedBy> {
         ['owners', array(publicKeySerializer(), { size: 'remainder' })],
       ]).serialize(value),
     deserialize: (buffer: Uint8Array, offset = 0) => {
-      console.log('ownedBy buffer', buffer);
-      console.log('ownedBy offset', offset);
       const dataView = new DataView(
         buffer.buffer,
         buffer.byteOffset,
@@ -58,7 +56,6 @@ export function getOwnedBySerializer(): Serializer<OwnedBy, OwnedBy> {
       const size = dataView.getUint32(4, true);
 
       const numItems = size / 40;
-      console.log('numItems', numItems);
 
       const [value, constraintOffset] = struct<OwnedBy>([
         ['type', getOperatorTypeSerializer()],
@@ -66,8 +63,6 @@ export function getOwnedBySerializer(): Serializer<OwnedBy, OwnedBy> {
         ['account', getAccountSerializer()],
         ['owners', array(publicKeySerializer(), { size: numItems })],
       ]).deserialize(buffer, offset);
-      console.log('ownedBy value', value);
-      console.log('ownedBy constraintOffset', constraintOffset);
       return [value, constraintOffset];
     },
   };

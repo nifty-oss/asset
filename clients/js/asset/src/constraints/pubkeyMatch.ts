@@ -59,7 +59,6 @@ export function getPubkeyMatchSerializer(): Serializer<
       const size = dataView.getUint32(offset + 4, true);
 
       const numItems = size / 40;
-      console.log('numItems', numItems);
 
       const [value, constraintOffset] = struct<PubkeyMatch>([
         ['type', getOperatorTypeSerializer()],

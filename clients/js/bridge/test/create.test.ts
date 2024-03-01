@@ -1,3 +1,4 @@
+import { PublicKey } from '@solana/web3.js';
 import {
   generateSigner,
   percentAmount,
@@ -12,7 +13,8 @@ import {
   Asset,
   ExtensionType,
   fetchAsset,
-  OperatorType,
+  pubkeyMatch,
+  not,
 } from '@nifty-oss/asset';
 import test from 'ava';
 import {
@@ -115,6 +117,14 @@ test('it can create a asset on the bridge for a pNFT', async (t) => {
     string({ size: 'variable' }).serialize('nifty::bridge::asset'),
     publicKeySerializer().serialize(mint.publicKey),
   ]);
+
+  // A Not(PubkeyMatch(Account::Asset, [Default PublicKey])) constraint is added to the asset,
+  // to represent a pass all constraint.
+  const pubkeyMatchConstraint = pubkeyMatch(Account.Asset, [
+    publicKey(PublicKey.default),
+  ]);
+  const constraint = not(pubkeyMatchConstraint);
+
   t.like(await fetchAsset(umi, asset), <Asset>{
     extensions: [
       {
@@ -125,11 +135,7 @@ test('it can create a asset on the bridge for a pNFT', async (t) => {
       {
         type: ExtensionType.Royalties,
         basisPoints: BigInt(550),
-        constraint: {
-          type: OperatorType.PubkeyMatch,
-          account: Account.Asset,
-          pubkeys: [],
-        },
+        constraint,
       },
     ],
   });
