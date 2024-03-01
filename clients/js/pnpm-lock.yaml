@@ -1,9 +1,5 @@
 lockfileVersion: '6.0'
 
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
-
 importers:
 
   .: {}
@@ -23,9 +19,6 @@ importers:
       '@metaplex-foundation/umi-bundle-tests':
         specifier: ^0.9.1
         version: 0.9.1(@metaplex-foundation/umi@0.9.1)(@solana/web3.js@1.89.1)
-      '@metaplex-foundation/umi-downloader-http':
-        specifier: ^0.9.1
-        version: 0.9.1(@metaplex-foundation/umi@0.9.1)
       '@solana/web3.js':
         specifier: ^1.73.0
         version: 1.89.1
@@ -1997,14 +1990,6 @@ packages:
       '@solana/web3.js': 1.89.1
     transitivePeerDependencies:
       - encoding
-    dev: true
-
-  /@metaplex-foundation/umi-downloader-http@0.9.1(@metaplex-foundation/umi@0.9.1):
-    resolution: {integrity: sha512-T/t9YtkDxovIz5hG0SEBolzet0nTd77hZJSSGCNfrhhgJJtNeIHz+/0K+o7U+ubLddFmtPNxF4KBfmh1jCYCQQ==}
-    peerDependencies:
-      '@metaplex-foundation/umi': ^0.9.1
-    dependencies:
-      '@metaplex-foundation/umi': 0.9.1
     dev: true
 
   /@metaplex-foundation/umi-eddsa-web3js@0.9.1(@metaplex-foundation/umi@0.9.1)(@solana/web3.js@1.89.1):
@@ -9023,3 +9008,7 @@ packages:
   /zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
     dev: true
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
