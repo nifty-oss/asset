@@ -39,7 +39,7 @@ jobs:
           key: client-js
 
       - name: Build
-        working-directory: ./clients/js${{ matrix.client }}
+        working-directory: ./clients/js/${{ matrix.client }}
         run: pnpm build
 
       - name: Test
