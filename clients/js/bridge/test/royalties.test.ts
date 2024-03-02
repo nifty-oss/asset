@@ -127,6 +127,7 @@ test('pubkeymatch failing blocks a transfer', async (t) => {
   const data = getExtensionSerializerFromType(
     ExtensionType.Royalties
   ).serialize(royalties({ basisPoints, constraint }));
+
   await update(umi, {
     asset: asset[0],
     payer: umi.identity,
@@ -151,10 +152,10 @@ test('pubkeymatch failing blocks a transfer', async (t) => {
   // Now update the royalty extension to have the recipient be the pubkey match
   const newConstraint = pubkeyMatch(Account.Recipient, [publicKey(owner)]);
 
-  // We update the default royalties extension.
   const newData = getExtensionSerializerFromType(
     ExtensionType.Royalties
   ).serialize(royalties({ basisPoints, constraint: newConstraint }));
+
   await update(umi, {
     asset: asset[0],
     payer: umi.identity,
@@ -191,7 +192,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
 
   const basisPoints = BigInt(550);
 
-  // And a Token Metadata non-fungible representing a collection.
+  // Create a Token Metadata non-fungible representing a collection.
   const collectionMint = await createProgrammableNft(umi, {
     name: 'Bridge Collection',
     symbol: 'BA',
@@ -201,7 +202,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
     tokenOwner: owner.publicKey,
   });
 
-  // And we create the collection asset on the bridge.
+  // Create the corresponding collection asset on the bridge.
   await create(umi, {
     mint: collectionMint.publicKey,
     updateAuthority: umi.identity,
@@ -219,7 +220,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
     tokenOwner: owner.publicKey,
   });
 
-  // When we create the asset on the bridge.
+  // Create the corresponding asset on the bridge.
   await create(umi, {
     mint: itemMint.publicKey,
     collection: findBridgeAssetPda(umi, { mint: collectionMint.publicKey }),
@@ -329,7 +330,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
     ],
   });
 
-  // Bridging the asset should fail because the group asset has royalties constraints.
+  // Bridging the item asset should fail because the group asset has royalties constraints.
   const promise = bridge(umi, {
     mint: itemMint.publicKey,
     owner,
@@ -338,5 +339,75 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
 
   await t.throwsAsync(promise, {
     message: /Assertion Failure/,
+  });
+
+  // And we check that the asset was not transferred.
+  const untransferredAsset = await fetchAsset(
+    umi,
+    findBridgeAssetPda(umi, { mint: itemMint.publicKey })
+  );
+
+  t.like(untransferredAsset, <Asset>{
+    holder: assetVaultPda[0],
+  });
+
+  // Now update the royalty extension on the group asset to have the recipient be the pubkey match
+  const newConstraint = pubkeyMatch(Account.Recipient, [publicKey(owner)]);
+
+  const newData = getExtensionSerializerFromType(
+    ExtensionType.Royalties
+  ).serialize(royalties({ basisPoints, constraint: newConstraint }));
+
+  await update(umi, {
+    asset: collectionAsset,
+    payer: umi.identity,
+    extension: {
+      extensionType: ExtensionType.Royalties,
+      length: newData.length,
+      data: newData,
+    },
+  }).sendAndConfirm(umi);
+
+  const finalCollectionAsset = await fetchAsset(
+    umi,
+    findBridgeAssetPda(umi, { mint: collectionMint.publicKey })
+  );
+
+  // It's successfully updated
+  t.like(finalCollectionAsset, <Asset>{
+    discriminator: AssetDiscriminator.Asset,
+    state: AssetState.Unlocked,
+    standard: AssetStandard.NonFungible,
+    holder: collectionVaultPda[0],
+    authority: umi.identity.publicKey,
+    extensions: [
+      {
+        type: ExtensionType.Metadata,
+        symbol: 'BA',
+        uri: 'https://collection.bridge',
+      },
+      grouping(10, 1), // 1 item in the group
+      royalties({
+        basisPoints,
+        constraint: newConstraint,
+      }),
+    ],
+  });
+
+  // Bridging the asset should succeed.
+  await bridge(umi, {
+    mint: itemMint.publicKey,
+    owner,
+    groupAsset: collectionAsset,
+  }).sendAndConfirm(umi);
+
+  // And we check that the asset was transferred.
+  const transferredAsset = await fetchAsset(
+    umi,
+    findBridgeAssetPda(umi, { mint: itemMint.publicKey })
+  );
+
+  t.like(transferredAsset, <Asset>{
+    holder: owner.publicKey,
   });
 });
