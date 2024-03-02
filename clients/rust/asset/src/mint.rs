@@ -128,7 +128,6 @@ impl JsonCreator {
         let mut data = vec![];
         data.extend(self.address.to_bytes());
         data.extend([self.verified as u8, self.share]);
-        data.extend([0; 6]);
         data
     }
 
