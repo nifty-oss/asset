@@ -48,6 +48,8 @@ pub struct Bridge {
     pub authorization_rules_program: Option<solana_program::pubkey::Pubkey>,
     /// Token Auth Rules account
     pub authorization_rules: Option<solana_program::pubkey::Pubkey>,
+    /// Group asset account
+    pub group_asset: Option<solana_program::pubkey::Pubkey>,
 }
 
 impl Bridge {
@@ -59,7 +61,7 @@ impl Bridge {
         &self,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(19 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(20 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.asset, false,
         ));
@@ -158,6 +160,17 @@ impl Bridge {
                 false,
             ));
         }
+        if let Some(group_asset) = self.group_asset {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                group_asset,
+                false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::BRIDGE_ID,
+                false,
+            ));
+        }
         accounts.extend_from_slice(remaining_accounts);
         let data = BridgeInstructionData::new().try_to_vec().unwrap();
 
@@ -203,6 +216,7 @@ impl BridgeInstructionData {
 ///   16. `[optional]` spl_ata_program (default to `ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL`)
 ///   17. `[optional]` authorization_rules_program
 ///   18. `[optional]` authorization_rules
+///   19. `[optional]` group_asset
 #[derive(Default)]
 pub struct BridgeBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
@@ -224,6 +238,7 @@ pub struct BridgeBuilder {
     spl_ata_program: Option<solana_program::pubkey::Pubkey>,
     authorization_rules_program: Option<solana_program::pubkey::Pubkey>,
     authorization_rules: Option<solana_program::pubkey::Pubkey>,
+    group_asset: Option<solana_program::pubkey::Pubkey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -382,6 +397,16 @@ impl BridgeBuilder {
         self.authorization_rules = authorization_rules;
         self
     }
+    /// `[optional account]`
+    /// Group asset account
+    #[inline(always)]
+    pub fn group_asset(
+        &mut self,
+        group_asset: Option<solana_program::pubkey::Pubkey>,
+    ) -> &mut Self {
+        self.group_asset = group_asset;
+        self
+    }
     /// Add an aditional account to the instruction.
     #[inline(always)]
     pub fn add_remaining_account(
@@ -435,6 +460,7 @@ impl BridgeBuilder {
                 )),
                 authorization_rules_program: self.authorization_rules_program,
                 authorization_rules: self.authorization_rules,
+                group_asset: self.group_asset,
             };
 
         accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
@@ -481,6 +507,8 @@ pub struct BridgeCpiAccounts<'a, 'b> {
     pub authorization_rules_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// Token Auth Rules account
     pub authorization_rules: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// Group asset account
+    pub group_asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
 /// `bridge` CPI instruction.
@@ -525,6 +553,8 @@ pub struct BridgeCpi<'a, 'b> {
     pub authorization_rules_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// Token Auth Rules account
     pub authorization_rules: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// Group asset account
+    pub group_asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
 impl<'a, 'b> BridgeCpi<'a, 'b> {
@@ -553,6 +583,7 @@ impl<'a, 'b> BridgeCpi<'a, 'b> {
             spl_ata_program: accounts.spl_ata_program,
             authorization_rules_program: accounts.authorization_rules_program,
             authorization_rules: accounts.authorization_rules,
+            group_asset: accounts.group_asset,
         }
     }
     #[inline(always)]
@@ -588,7 +619,7 @@ impl<'a, 'b> BridgeCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(19 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(20 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.asset.key,
             false,
@@ -693,6 +724,17 @@ impl<'a, 'b> BridgeCpi<'a, 'b> {
                 false,
             ));
         }
+        if let Some(group_asset) = self.group_asset {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                *group_asset.key,
+                false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::BRIDGE_ID,
+                false,
+            ));
+        }
         remaining_accounts.iter().for_each(|remaining_account| {
             accounts.push(solana_program::instruction::AccountMeta {
                 pubkey: *remaining_account.0.key,
@@ -707,7 +749,7 @@ impl<'a, 'b> BridgeCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(19 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(20 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset.clone());
         account_infos.push(self.vault.clone());
@@ -735,6 +777,9 @@ impl<'a, 'b> BridgeCpi<'a, 'b> {
         }
         if let Some(authorization_rules) = self.authorization_rules {
             account_infos.push(authorization_rules.clone());
+        }
+        if let Some(group_asset) = self.group_asset {
+            account_infos.push(group_asset.clone());
         }
         remaining_accounts
             .iter()
@@ -771,6 +816,7 @@ impl<'a, 'b> BridgeCpi<'a, 'b> {
 ///   16. `[]` spl_ata_program
 ///   17. `[optional]` authorization_rules_program
 ///   18. `[optional]` authorization_rules
+///   19. `[optional]` group_asset
 pub struct BridgeCpiBuilder<'a, 'b> {
     instruction: Box<BridgeCpiBuilderInstruction<'a, 'b>>,
 }
@@ -798,6 +844,7 @@ impl<'a, 'b> BridgeCpiBuilder<'a, 'b> {
             spl_ata_program: None,
             authorization_rules_program: None,
             authorization_rules: None,
+            group_asset: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -959,6 +1006,16 @@ impl<'a, 'b> BridgeCpiBuilder<'a, 'b> {
         self.instruction.authorization_rules = authorization_rules;
         self
     }
+    /// `[optional account]`
+    /// Group asset account
+    #[inline(always)]
+    pub fn group_asset(
+        &mut self,
+        group_asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    ) -> &mut Self {
+        self.instruction.group_asset = group_asset;
+        self
+    }
     /// Add an additional account to the instruction.
     #[inline(always)]
     pub fn add_remaining_account(
@@ -1064,6 +1121,8 @@ impl<'a, 'b> BridgeCpiBuilder<'a, 'b> {
             authorization_rules_program: self.instruction.authorization_rules_program,
 
             authorization_rules: self.instruction.authorization_rules,
+
+            group_asset: self.instruction.group_asset,
         };
         instruction.invoke_signed_with_remaining_accounts(
             signers_seeds,
@@ -1093,6 +1152,7 @@ struct BridgeCpiBuilderInstruction<'a, 'b> {
     spl_ata_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     authorization_rules_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     authorization_rules: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    group_asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

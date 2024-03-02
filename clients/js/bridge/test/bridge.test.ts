@@ -27,6 +27,11 @@ import {
 } from '../src';
 import { createNft, createUmi } from './_setup';
 
+const defaultCreateArgs = {
+  isCollection: false,
+  maxCollectionSize: null,
+};
+
 test('it can bridge an asset to a token (NFT)', async (t) => {
   // Given a Umi instance.
   const umi = await createUmi();
@@ -44,6 +49,7 @@ test('it can bridge an asset to a token (NFT)', async (t) => {
   await create(umi, {
     mint: mint.publicKey,
     updateAuthority: umi.identity,
+    ...defaultCreateArgs,
   }).sendAndConfirm(umi);
 
   // And we bridge the asset.
@@ -138,6 +144,7 @@ test('it can bridge a token (NFT) to an asset', async (t) => {
   await create(umi, {
     mint: mint.publicKey,
     updateAuthority: umi.identity,
+    ...defaultCreateArgs,
   }).sendAndConfirm(umi);
 
   // When we bridge the asset.
@@ -204,6 +211,7 @@ test('it can bridge an asset to a token (pNFT)', async (t) => {
   await create(umi, {
     mint: mint.publicKey,
     updateAuthority: umi.identity,
+    ...defaultCreateArgs,
   }).sendAndConfirm(umi);
 
   // And we bridge the asset.
@@ -302,6 +310,7 @@ test('it can bridge a token (pNFT) to an asset', async (t) => {
   await create(umi, {
     mint: mint.publicKey,
     updateAuthority: umi.identity,
+    ...defaultCreateArgs,
   }).sendAndConfirm(umi);
 
   // When we bridge the asset.

@@ -79,6 +79,8 @@ export type BridgeInstructionAccounts = {
   authorizationRulesProgram?: PublicKey | Pda;
   /** Token Auth Rules account */
   authorizationRules?: PublicKey | Pda;
+  /** Group asset account */
+  groupAsset?: PublicKey | Pda;
 };
 
 // Data.
@@ -210,6 +212,11 @@ export function bridge(
       index: 18,
       isWritable: false as boolean,
       value: input.authorizationRules ?? null,
+    },
+    groupAsset: {
+      index: 19,
+      isWritable: false as boolean,
+      value: input.groupAsset ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
 

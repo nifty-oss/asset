@@ -17,13 +17,14 @@ import {
   ExtensionType,
   fetchAsset,
   getExtensionSerializerFromType,
-  group,
   niftyAsset,
   not,
   pubkeyMatch,
   royalties,
   Standard as AssetStandard,
   update,
+  group,
+  grouping,
 } from '@nifty-oss/asset';
 import { mplToolbox } from '@metaplex-foundation/mpl-toolbox';
 import { PublicKey } from '@solana/web3.js';
@@ -41,6 +42,16 @@ import {
   niftyBridge,
 } from '../src';
 import { createProgrammableNft, createVerifiedNft } from './_setup';
+
+const defaultCreateArgs = {
+  isCollection: false,
+  maxCollectionSize: null,
+};
+
+const collectionCreateArgs = {
+  isCollection: true,
+  maxCollectionSize: 10,
+};
 
 const createUmi = async () =>
   (await basecreateUmi())
@@ -68,6 +79,7 @@ test('pubkeymatch failing blocks a transfer', async (t) => {
   await create(umi, {
     mint: mint.publicKey,
     updateAuthority: umi.identity,
+    ...defaultCreateArgs,
   }).sendAndConfirm(umi);
 
   // And the asset is created.
@@ -171,7 +183,7 @@ test('pubkeymatch failing blocks a transfer', async (t) => {
   });
 });
 
-test.skip('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
+test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
   // Given a Umi instance.
   const umi = await createUmi();
   const owner = generateSigner(umi);
@@ -193,6 +205,7 @@ test.skip('pubkeymatch failing blocks a transfer on a group asset', async (t) =>
   await create(umi, {
     mint: collectionMint.publicKey,
     updateAuthority: umi.identity,
+    ...collectionCreateArgs,
   }).sendAndConfirm(umi);
 
   // And we create a Token Metadata non-fungible representing an asset
@@ -211,6 +224,7 @@ test.skip('pubkeymatch failing blocks a transfer on a group asset', async (t) =>
     mint: itemMint.publicKey,
     collection: findBridgeAssetPda(umi, { mint: collectionMint.publicKey }),
     updateAuthority: umi.identity,
+    ...defaultCreateArgs,
   }).sendAndConfirm(umi);
 
   // Then the bridge vaults are created.
@@ -307,6 +321,7 @@ test.skip('pubkeymatch failing blocks a transfer on a group asset', async (t) =>
         symbol: 'BA',
         uri: 'https://collection.bridge',
       },
+      grouping(10, 1), // 1 item in the group
       royalties({
         basisPoints,
         constraint,
@@ -318,6 +333,7 @@ test.skip('pubkeymatch failing blocks a transfer on a group asset', async (t) =>
   const promise = bridge(umi, {
     mint: itemMint.publicKey,
     owner,
+    groupAsset: collectionAsset,
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(promise, {

@@ -35,6 +35,11 @@ import {
   createVerifiedNft,
 } from './_setup';
 
+const defaultCreateArgs = {
+  isCollection: false,
+  maxCollectionSize: null,
+};
+
 test('it can create an asset on the bridge', async (t) => {
   // Given a Umi instance.
   const umi = await createUmi();
@@ -51,6 +56,7 @@ test('it can create an asset on the bridge', async (t) => {
   await create(umi, {
     mint: mint.publicKey,
     updateAuthority: umi.identity,
+    ...defaultCreateArgs,
   }).sendAndConfirm(umi);
 
   // Then the bridge vault is created.
@@ -98,6 +104,7 @@ test('it can create a asset on the bridge for a pNFT', async (t) => {
   await create(umi, {
     mint: mint.publicKey,
     updateAuthority: umi.identity,
+    ...defaultCreateArgs,
   }).sendAndConfirm(umi);
 
   // Then the bridge vault is created.
@@ -160,6 +167,7 @@ test('it cannot create an asset on the bridge without the update authority as si
   const promise = create(umi, {
     mint: publicKey(mint),
     updateAuthority: authority.publicKey,
+    ...defaultCreateArgs,
   }).sendAndConfirm(umi);
 
   // Then we get an error.
@@ -183,6 +191,7 @@ test('it can create an asset on the bridge with a collection', async (t) => {
   await create(umi, {
     mint: collection.publicKey,
     updateAuthority: umi.identity,
+    ...defaultCreateArgs,
   }).sendAndConfirm(umi);
 
   // And we create a Token Metadata non-fungible representing an asset
@@ -199,6 +208,7 @@ test('it can create an asset on the bridge with a collection', async (t) => {
     mint: mint.publicKey,
     collection: findBridgeAssetPda(umi, { mint: collection.publicKey }),
     updateAuthority: umi.identity,
+    ...defaultCreateArgs,
   }).sendAndConfirm(umi);
 
   // Then the bridge vault is created.

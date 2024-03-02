@@ -9,6 +9,8 @@
 import { findMetadataPda } from '@metaplex-foundation/mpl-token-metadata';
 import {
   Context,
+  Option,
+  OptionOrNullable,
   Pda,
   PublicKey,
   Signer,
@@ -17,8 +19,11 @@ import {
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
+  bool,
   mapSerializer,
+  option,
   struct,
+  u64,
   u8,
 } from '@metaplex-foundation/umi/serializers';
 import { resolveBridgeAsset } from '../../hooked';
@@ -54,18 +59,30 @@ export type CreateInstructionAccounts = {
 };
 
 // Data.
-export type CreateInstructionData = { discriminator: number };
+export type CreateInstructionData = {
+  discriminator: number;
+  isCollection: boolean;
+  maxCollectionSize: Option<bigint>;
+};
 
-export type CreateInstructionDataArgs = {};
+export type CreateInstructionDataArgs = {
+  isCollection: boolean;
+  maxCollectionSize: OptionOrNullable<number | bigint>;
+};
 
 export function getCreateInstructionDataSerializer(): Serializer<
   CreateInstructionDataArgs,
   CreateInstructionData
 > {
   return mapSerializer<CreateInstructionDataArgs, any, CreateInstructionData>(
-    struct<CreateInstructionData>([['discriminator', u8()]], {
-      description: 'CreateInstructionData',
-    }),
+    struct<CreateInstructionData>(
+      [
+        ['discriminator', u8()],
+        ['isCollection', bool()],
+        ['maxCollectionSize', option(u64())],
+      ],
+      { description: 'CreateInstructionData' }
+    ),
     (value) => ({ ...value, discriminator: 1 })
   ) as Serializer<CreateInstructionDataArgs, CreateInstructionData>;
 }
@@ -75,7 +92,7 @@ export type CreateInstructionExtraArgs = { version: number };
 
 // Args.
 export type CreateInstructionArgs = PickPartial<
-  CreateInstructionExtraArgs,
+  CreateInstructionDataArgs & CreateInstructionExtraArgs,
   'version'
 >;
 
@@ -198,7 +215,9 @@ export function create(
   );
 
   // Data.
-  const data = getCreateInstructionDataSerializer().serialize({});
+  const data = getCreateInstructionDataSerializer().serialize(
+    resolvedArgs as CreateInstructionDataArgs
+  );
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

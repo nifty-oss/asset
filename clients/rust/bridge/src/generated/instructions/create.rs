@@ -31,12 +31,16 @@ pub struct Create {
 }
 
 impl Create {
-    pub fn instruction(&self) -> solana_program::instruction::Instruction {
-        self.instruction_with_remaining_accounts(&[])
+    pub fn instruction(
+        &self,
+        args: CreateInstructionArgs,
+    ) -> solana_program::instruction::Instruction {
+        self.instruction_with_remaining_accounts(args, &[])
     }
     #[allow(clippy::vec_init_then_push)]
     pub fn instruction_with_remaining_accounts(
         &self,
+        args: CreateInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
         let mut accounts = Vec::with_capacity(9 + remaining_accounts.len());
@@ -79,7 +83,9 @@ impl Create {
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let data = CreateInstructionData::new().try_to_vec().unwrap();
+        let mut data = CreateInstructionData::new().try_to_vec().unwrap();
+        let mut args = args.try_to_vec().unwrap();
+        data.append(&mut args);
 
         solana_program::instruction::Instruction {
             program_id: crate::BRIDGE_ID,
@@ -98,6 +104,13 @@ impl CreateInstructionData {
     fn new() -> Self {
         Self { discriminator: 1 }
     }
+}
+
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct CreateInstructionArgs {
+    pub is_collection: bool,
+    pub max_collection_size: Option<u64>,
 }
 
 /// Instruction builder for `Create`.
@@ -124,6 +137,8 @@ pub struct CreateBuilder {
     payer: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     nifty_asset_program: Option<solana_program::pubkey::Pubkey>,
+    is_collection: Option<bool>,
+    max_collection_size: Option<u64>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -195,6 +210,17 @@ impl CreateBuilder {
         self.nifty_asset_program = Some(nifty_asset_program);
         self
     }
+    #[inline(always)]
+    pub fn is_collection(&mut self, is_collection: bool) -> &mut Self {
+        self.is_collection = Some(is_collection);
+        self
+    }
+    /// `[optional argument]`
+    #[inline(always)]
+    pub fn max_collection_size(&mut self, max_collection_size: u64) -> &mut Self {
+        self.max_collection_size = Some(max_collection_size);
+        self
+    }
     /// Add an aditional account to the instruction.
     #[inline(always)]
     pub fn add_remaining_account(
@@ -230,8 +256,15 @@ impl CreateBuilder {
                 "AssetGtQBTSgm5s91d1RAQod5JmaZiJDxqsgtqrZud73"
             )),
         };
+        let args = CreateInstructionArgs {
+            is_collection: self
+                .is_collection
+                .clone()
+                .expect("is_collection is not set"),
+            max_collection_size: self.max_collection_size.clone(),
+        };
 
-        accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
+        accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
     }
 }
 
@@ -279,12 +312,15 @@ pub struct CreateCpi<'a, 'b> {
     pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
     /// Nifty Asset program
     pub nifty_asset_program: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The arguments for the instruction.
+    pub __args: CreateInstructionArgs,
 }
 
 impl<'a, 'b> CreateCpi<'a, 'b> {
     pub fn new(
         program: &'b solana_program::account_info::AccountInfo<'a>,
         accounts: CreateCpiAccounts<'a, 'b>,
+        args: CreateInstructionArgs,
     ) -> Self {
         Self {
             __program: program,
@@ -297,6 +333,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
             payer: accounts.payer,
             system_program: accounts.system_program,
             nifty_asset_program: accounts.nifty_asset_program,
+            __args: args,
         }
     }
     #[inline(always)]
@@ -383,7 +420,9 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let data = CreateInstructionData::new().try_to_vec().unwrap();
+        let mut data = CreateInstructionData::new().try_to_vec().unwrap();
+        let mut args = self.__args.try_to_vec().unwrap();
+        data.append(&mut args);
 
         let instruction = solana_program::instruction::Instruction {
             program_id: crate::BRIDGE_ID,
@@ -445,6 +484,8 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
             payer: None,
             system_program: None,
             nifty_asset_program: None,
+            is_collection: None,
+            max_collection_size: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -520,6 +561,17 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
         self.instruction.nifty_asset_program = Some(nifty_asset_program);
         self
     }
+    #[inline(always)]
+    pub fn is_collection(&mut self, is_collection: bool) -> &mut Self {
+        self.instruction.is_collection = Some(is_collection);
+        self
+    }
+    /// `[optional argument]`
+    #[inline(always)]
+    pub fn max_collection_size(&mut self, max_collection_size: u64) -> &mut Self {
+        self.instruction.max_collection_size = Some(max_collection_size);
+        self
+    }
     /// Add an additional account to the instruction.
     #[inline(always)]
     pub fn add_remaining_account(
@@ -561,6 +613,14 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
         &self,
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
+        let args = CreateInstructionArgs {
+            is_collection: self
+                .instruction
+                .is_collection
+                .clone()
+                .expect("is_collection is not set"),
+            max_collection_size: self.instruction.max_collection_size.clone(),
+        };
         let instruction = CreateCpi {
             __program: self.instruction.__program,
 
@@ -590,6 +650,7 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
                 .instruction
                 .nifty_asset_program
                 .expect("nifty_asset_program is not set"),
+            __args: args,
         };
         instruction.invoke_signed_with_remaining_accounts(
             signers_seeds,
@@ -609,6 +670,8 @@ struct CreateCpiBuilderInstruction<'a, 'b> {
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     nifty_asset_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    is_collection: Option<bool>,
+    max_collection_size: Option<u64>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

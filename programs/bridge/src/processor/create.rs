@@ -3,7 +3,7 @@ use mpl_token_metadata::{
     types::{Collection, TokenStandard},
 };
 use nifty_asset::{
-    extensions::{ExtensionBuilder, MetadataBuilder, RoyaltiesBuilder},
+    extensions::{ExtensionBuilder, GroupBuilder, MetadataBuilder, RoyaltiesBuilder},
     instructions::{AllocateCpiBuilder, CreateCpiBuilder},
     types::{Extension, ExtensionType},
 };
@@ -17,7 +17,10 @@ use solana_program::{
 use crate::{
     err,
     error::BridgeError,
-    instruction::accounts::{Context, CreateAccounts},
+    instruction::{
+        accounts::{Context, CreateAccounts},
+        CreateArgs,
+    },
     processor::SPL_TOKEN_PROGRAM_IDS,
     require,
     state::{
@@ -26,7 +29,11 @@ use crate::{
     },
 };
 
-pub fn process_create(program_id: &Pubkey, ctx: Context<CreateAccounts>) -> ProgramResult {
+pub fn process_create(
+    program_id: &Pubkey,
+    ctx: Context<CreateAccounts>,
+    args: CreateArgs,
+) -> ProgramResult {
     // account validation
 
     require!(
@@ -200,6 +207,31 @@ pub fn process_create(program_id: &Pubkey, ctx: Context<CreateAccounts>) -> Prog
         })
         .invoke_signed(&[&signer_seeds])?;
 
+    // If this is a collection NFT, we add the group extension
+    if args.is_collection {
+        if let Some(max_collection_size) = args.max_collection_size {
+            let mut extension = GroupBuilder::default();
+            extension.set_max_size(max_collection_size);
+            let data = extension.build();
+
+            AllocateCpiBuilder::new(ctx.accounts.nifty_asset_program)
+                .asset(ctx.accounts.asset)
+                .payer(Some(ctx.accounts.payer))
+                .system_program(Some(ctx.accounts.system_program))
+                .extension(Extension {
+                    extension_type: ExtensionType::Grouping,
+                    length: data.len() as u32,
+                    data: Some(data),
+                })
+                .invoke_signed(&[&signer_seeds])?;
+        } else {
+            return err!(
+                ProgramError::InvalidArgument,
+                "max_collection_size is required for collection NFTs"
+            );
+        }
+    }
+
     // For pNFTs we also add a default Royalties extension
     if metadata.token_standard == Some(TokenStandard::ProgrammableNonFungible) {
         // We set a not pubkey match with the system pubkey as the default, as this should be a
@@ -233,5 +265,18 @@ pub fn process_create(program_id: &Pubkey, ctx: Context<CreateAccounts>) -> Prog
         .payer(Some(ctx.accounts.payer))
         .system_program(Some(ctx.accounts.system_program))
         .name(metadata.name)
-        .invoke_signed(&[&signer_seeds])
+        .invoke_signed(&[&signer_seeds])?;
+
+    // // Verified collection members should have the group set.
+    // If we want to set the group here, we need the update authority as a signer,
+    // even in the case of a verified collection item. This means the create is no longer
+    // permissionless in the case where the collection has already been bridged.
+    // if !authority_as_signer {
+    //     GroupCpiBuilder::new(ctx.accounts.nifty_asset_program)
+    //         .asset(ctx.accounts.asset)
+    //         .group(ctx.accounts.collection.unwrap())
+    //         .authority(ctx.accounts.update_authority)
+    //         .invoke_signed(&[&signer_seeds])?;
+    // }
+    Ok(())
 }
