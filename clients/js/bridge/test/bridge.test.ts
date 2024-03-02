@@ -13,6 +13,7 @@ import {
 import {
   TokenState,
   findAssociatedTokenPda,
+  setComputeUnitLimit,
 } from '@metaplex-foundation/mpl-toolbox';
 import {
   Discriminator,
@@ -308,7 +309,9 @@ test('it can bridge a token (pNFT) to an asset', async (t) => {
     mint: mint.publicKey,
     owner,
     tokenStandard: TokenStandard.ProgrammableNonFungible,
-  }).sendAndConfirm(umi);
+  })
+    .prepend(setComputeUnitLimit(umi, { units: 400_000 }))
+    .sendAndConfirm(umi);
 
   // Then the bridge vault is created.
   const vault = await fetchVault(
