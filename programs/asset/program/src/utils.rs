@@ -80,7 +80,11 @@ macro_rules! process_royalties {
                         "recipient is not allowed to receive the asset"
                     );
                 }
+
+                true // royalties checked
+            } else {
+                false // no royalties extension
             }
         }
-    };
+    }
 }

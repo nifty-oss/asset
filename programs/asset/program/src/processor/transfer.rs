@@ -48,7 +48,7 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
     );
 
     // First we check if the asset itself has the royalties extension, and validate the constraint.
-    process_royalties!(ctx, &data);
+    let royalties_checked = process_royalties!(ctx, &data);
 
     let asset = Asset::load_mut(&mut data);
 
@@ -79,7 +79,8 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
     // If the asset the asset is part of a group we need to check if royalties
     // are enabled and if so, if the destination account is allowed to receive the asset.
     if let Some(group) = asset.group.value() {
-        if (*group).is_some() {
+        // If royalties were not checked yet, we need to check them now.
+        if (*group).is_some() && !royalties_checked {
             // We need collection asset account to be provided.
             require!(
                 ctx.accounts.group_asset.is_some(),
