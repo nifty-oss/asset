@@ -32,11 +32,13 @@ impl Assertable for OwnedBy<'_> {
     fn assert(&self, context: &Context) -> AssertionResult {
         let account = get_account!(self.account, context);
 
-        Ok(if self.owners.contains(account.owner) {
-            Assertion::Pass
-        } else {
-            Assertion::Failure
-        })
+        Ok(
+            if self.owners.contains(account.owner) && !account.data_is_empty() {
+                Assertion::Pass
+            } else {
+                Assertion::Failure
+            },
+        )
     }
 
     fn as_bytes(&self) -> Vec<u8> {
