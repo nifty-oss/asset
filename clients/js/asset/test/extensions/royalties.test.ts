@@ -16,7 +16,6 @@ import {
   ownedBy,
   pubkeyMatch,
 } from '../../src';
-import { OperatorType } from '../../src/extensions/operatorType';
 import { royalties } from '../../src/extensions/royalties';
 import { createUmi } from '../_setup';
 

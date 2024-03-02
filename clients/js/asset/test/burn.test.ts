@@ -66,7 +66,7 @@ test('it can burn an asset as a delegate', async (t) => {
   }).sendAndConfirm(umi);
 
   // the holder is correct.
-  let asset = await fetchAsset(umi, assetSigner.publicKey);
+  const asset = await fetchAsset(umi, assetSigner.publicKey);
   t.true(asset.holder === holderSigner.publicKey);
 
   // Now we delegate burn authority of the asset
