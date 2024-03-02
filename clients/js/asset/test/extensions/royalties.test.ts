@@ -58,7 +58,7 @@ test('it can mint a new asset a royalties extension with a PubkeyMatch constrain
         type: ExtensionType.Royalties,
         basisPoints,
         constraint: {
-          type: OperatorType.PubkeyMatch,
+          type: 'PubkeyMatch',
           account: Account.Asset,
           pubkeys: [publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8')],
         },
@@ -105,7 +105,7 @@ test('it can mint a new asset with royalties extension with a OwnedBy constraint
         type: ExtensionType.Royalties,
         basisPoints,
         constraint: {
-          type: OperatorType.OwnedBy,
+          type: 'OwnedBy',
           account: Account.Asset,
           owners: [publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8')],
         },

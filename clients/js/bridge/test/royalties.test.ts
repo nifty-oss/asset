@@ -9,28 +9,12 @@ import {
   string,
   publicKey as publicKeySerializer,
 } from '@metaplex-foundation/umi/serializers';
-import { mplToolbox } from '@metaplex-foundation/mpl-toolbox';
-import { PublicKey } from '@solana/web3.js';
-import test from 'ava';
-import {
-  Vault,
-  create,
-  fetchVault,
-  findVaultPda,
-  niftyBridge,
-  Discriminator as BridgeDiscriminator,
-  State as BridgeState,
-  BRIDGE_PROGRAM_ID,
-  bridge,
-  findBridgeAssetPda,
-} from '@nifty-oss/bridge';
 import {
   Account,
   Asset,
-  Discriminator,
+  State as AssetState,
+  Discriminator as AssetDiscriminator,
   ExtensionType,
-  Standard,
-  State,
   fetchAsset,
   getExtensionSerializerFromType,
   group,
@@ -38,9 +22,25 @@ import {
   not,
   pubkeyMatch,
   royalties,
+  Standard as AssetStandard,
   update,
+} from '@nifty-oss/asset';
+import { mplToolbox } from '@metaplex-foundation/mpl-toolbox';
+import { PublicKey } from '@solana/web3.js';
+import test from 'ava';
+import {
+  BRIDGE_PROGRAM_ID,
+  Discriminator,
+  State,
+  Vault,
+  bridge,
+  create,
+  fetchVault,
+  findBridgeAssetPda,
+  findVaultPda,
+  niftyBridge,
 } from '../src';
-import { createNft, createProgrammableNft, createVerifiedNft } from './_setup';
+import { createProgrammableNft, createVerifiedNft } from './_setup';
 
 const createUmi = async () =>
   (await basecreateUmi())
@@ -103,8 +103,8 @@ test('pubkeymatch failing blocks a transfer', async (t) => {
   );
 
   t.like(vault, <Vault>{
-    discriminator: BridgeDiscriminator.Vault,
-    state: BridgeState.Idle,
+    discriminator: Discriminator.Vault,
+    state: State.Idle,
     mint: mint.publicKey,
   });
 
@@ -223,14 +223,14 @@ test.skip('pubkeymatch failing blocks a transfer on a group asset', async (t) =>
   const assetVault = await fetchVault(umi, assetVaultPda);
 
   t.like(collectionVault, <Vault>{
-    discriminator: BridgeDiscriminator.Vault,
-    state: BridgeState.Idle,
+    discriminator: Discriminator.Vault,
+    state: State.Idle,
     mint: collectionMint.publicKey,
   });
 
   t.like(assetVault, <Vault>{
-    discriminator: BridgeDiscriminator.Vault,
-    state: BridgeState.Idle,
+    discriminator: Discriminator.Vault,
+    state: State.Idle,
     mint: itemMint.publicKey,
   });
 
@@ -260,9 +260,9 @@ test.skip('pubkeymatch failing blocks a transfer on a group asset', async (t) =>
   );
 
   t.like(asset, <Asset>{
-    discriminator: Discriminator.Asset,
-    state: State.Unlocked,
-    standard: Standard.NonFungible,
+    discriminator: AssetDiscriminator.Asset,
+    state: AssetState.Unlocked,
+    standard: AssetStandard.NonFungible,
     holder: assetVaultPda[0],
     authority: umi.identity.publicKey,
     extensions: [
@@ -296,9 +296,9 @@ test.skip('pubkeymatch failing blocks a transfer on a group asset', async (t) =>
   );
 
   t.like(updatedCollectionAsset, <Asset>{
-    discriminator: Discriminator.Asset,
-    state: State.Unlocked,
-    standard: Standard.NonFungible,
+    discriminator: AssetDiscriminator.Asset,
+    state: AssetState.Unlocked,
+    standard: AssetStandard.NonFungible,
     holder: collectionVaultPda[0],
     authority: umi.identity.publicKey,
     extensions: [

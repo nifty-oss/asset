@@ -29,9 +29,6 @@ importers:
       '@metaplex-foundation/umi-downloader-http':
         specifier: ^0.9.1
         version: 0.9.1(@metaplex-foundation/umi@0.9.1)
-      '@nifty-oss/bridge':
-        specifier: workspace:*
-        version: link:../bridge
       '@solana/web3.js':
         specifier: ^1.73.0
         version: 1.89.1
