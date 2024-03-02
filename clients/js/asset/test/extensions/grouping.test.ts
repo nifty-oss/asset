@@ -1,5 +1,4 @@
 import { generateSigner, transactionBuilder } from '@metaplex-foundation/umi';
-import { httpDownloader } from '@metaplex-foundation/umi-downloader-http';
 import test from 'ava';
 import {
   Asset,
@@ -20,7 +19,7 @@ import { createUmi } from '../_setup';
 
 test('it can create a new group asset with a maximum size', async (t) => {
   // Given a Umi instance and a new signer.
-  const umi = (await createUmi()).use(httpDownloader());
+  const umi = await createUmi();
   const asset = generateSigner(umi);
   const holder = generateSigner(umi);
 
@@ -60,7 +59,7 @@ test('it can create a new group asset with a maximum size', async (t) => {
 
 test('it can create a new group asset of unlimited size', async (t) => {
   // Given a Umi instance and a new signer.
-  const umi = (await createUmi()).use(httpDownloader());
+  const umi = await createUmi();
   const asset = generateSigner(umi);
   const holder = generateSigner(umi);
 

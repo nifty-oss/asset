@@ -1,5 +1,4 @@
 import { generateSigner } from '@metaplex-foundation/umi';
-import { httpDownloader } from '@metaplex-foundation/umi-downloader-http';
 import test from 'ava';
 import {
   Asset,
@@ -16,7 +15,7 @@ import { createUmi } from '../_setup';
 
 test('it can create a new asset with a metadata', async (t) => {
   // Given a Umi instance and a new signer.
-  const umi = (await createUmi()).use(httpDownloader());
+  const umi = await createUmi();
   const asset = generateSigner(umi);
   const holder = generateSigner(umi);
 
