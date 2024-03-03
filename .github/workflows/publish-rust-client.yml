@@ -49,7 +49,7 @@ jobs:
     uses: ./.github/workflows/build-rust-client.yml
     secrets: inherit
     with:
-      client_matrix: "[${{ inputs.client }}]"
+      client_matrix: "[\"${{ inputs.client }}\"]"
 
   test_rust_client:
     name: Rust Client
