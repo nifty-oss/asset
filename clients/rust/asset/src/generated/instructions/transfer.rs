@@ -16,6 +16,8 @@ pub struct Transfer {
     pub signer: solana_program::pubkey::Pubkey,
     /// The recipient of the asset
     pub recipient: solana_program::pubkey::Pubkey,
+    /// The asset defining the group, if applicable
+    pub group_asset: Option<solana_program::pubkey::Pubkey>,
 }
 
 impl Transfer {
@@ -27,7 +29,7 @@ impl Transfer {
         &self,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(4 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.asset, false,
         ));
@@ -39,6 +41,17 @@ impl Transfer {
             self.recipient,
             false,
         ));
+        if let Some(group_asset) = self.group_asset {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                group_asset,
+                false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::ASSET_ID,
+                false,
+            ));
+        }
         accounts.extend_from_slice(remaining_accounts);
         let data = TransferInstructionData::new().try_to_vec().unwrap();
 
@@ -68,11 +81,13 @@ impl TransferInstructionData {
 ///   0. `[writable]` asset
 ///   1. `[signer]` signer
 ///   2. `[]` recipient
+///   3. `[optional]` group_asset
 #[derive(Default)]
 pub struct TransferBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
     signer: Option<solana_program::pubkey::Pubkey>,
     recipient: Option<solana_program::pubkey::Pubkey>,
+    group_asset: Option<solana_program::pubkey::Pubkey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -96,6 +111,16 @@ impl TransferBuilder {
     #[inline(always)]
     pub fn recipient(&mut self, recipient: solana_program::pubkey::Pubkey) -> &mut Self {
         self.recipient = Some(recipient);
+        self
+    }
+    /// `[optional account]`
+    /// The asset defining the group, if applicable
+    #[inline(always)]
+    pub fn group_asset(
+        &mut self,
+        group_asset: Option<solana_program::pubkey::Pubkey>,
+    ) -> &mut Self {
+        self.group_asset = group_asset;
         self
     }
     /// Add an aditional account to the instruction.
@@ -122,6 +147,7 @@ impl TransferBuilder {
             asset: self.asset.expect("asset is not set"),
             signer: self.signer.expect("signer is not set"),
             recipient: self.recipient.expect("recipient is not set"),
+            group_asset: self.group_asset,
         };
 
         accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
@@ -136,6 +162,8 @@ pub struct TransferCpiAccounts<'a, 'b> {
     pub signer: &'b solana_program::account_info::AccountInfo<'a>,
     /// The recipient of the asset
     pub recipient: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The asset defining the group, if applicable
+    pub group_asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
 /// `transfer` CPI instruction.
@@ -148,6 +176,8 @@ pub struct TransferCpi<'a, 'b> {
     pub signer: &'b solana_program::account_info::AccountInfo<'a>,
     /// The recipient of the asset
     pub recipient: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The asset defining the group, if applicable
+    pub group_asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
 impl<'a, 'b> TransferCpi<'a, 'b> {
@@ -160,6 +190,7 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
             asset: accounts.asset,
             signer: accounts.signer,
             recipient: accounts.recipient,
+            group_asset: accounts.group_asset,
         }
     }
     #[inline(always)]
@@ -195,7 +226,7 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(4 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.asset.key,
             false,
@@ -208,6 +239,17 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
             *self.recipient.key,
             false,
         ));
+        if let Some(group_asset) = self.group_asset {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                *group_asset.key,
+                false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::ASSET_ID,
+                false,
+            ));
+        }
         remaining_accounts.iter().for_each(|remaining_account| {
             accounts.push(solana_program::instruction::AccountMeta {
                 pubkey: *remaining_account.0.key,
@@ -222,11 +264,14 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(3 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(4 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset.clone());
         account_infos.push(self.signer.clone());
         account_infos.push(self.recipient.clone());
+        if let Some(group_asset) = self.group_asset {
+            account_infos.push(group_asset.clone());
+        }
         remaining_accounts
             .iter()
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
@@ -246,6 +291,7 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
 ///   0. `[writable]` asset
 ///   1. `[signer]` signer
 ///   2. `[]` recipient
+///   3. `[optional]` group_asset
 pub struct TransferCpiBuilder<'a, 'b> {
     instruction: Box<TransferCpiBuilderInstruction<'a, 'b>>,
 }
@@ -257,6 +303,7 @@ impl<'a, 'b> TransferCpiBuilder<'a, 'b> {
             asset: None,
             signer: None,
             recipient: None,
+            group_asset: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -283,6 +330,16 @@ impl<'a, 'b> TransferCpiBuilder<'a, 'b> {
         recipient: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
         self.instruction.recipient = Some(recipient);
+        self
+    }
+    /// `[optional account]`
+    /// The asset defining the group, if applicable
+    #[inline(always)]
+    pub fn group_asset(
+        &mut self,
+        group_asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    ) -> &mut Self {
+        self.instruction.group_asset = group_asset;
         self
     }
     /// Add an additional account to the instruction.
@@ -334,6 +391,8 @@ impl<'a, 'b> TransferCpiBuilder<'a, 'b> {
             signer: self.instruction.signer.expect("signer is not set"),
 
             recipient: self.instruction.recipient.expect("recipient is not set"),
+
+            group_asset: self.instruction.group_asset,
         };
         instruction.invoke_signed_with_remaining_accounts(
             signers_seeds,
@@ -347,6 +406,7 @@ struct TransferCpiBuilderInstruction<'a, 'b> {
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     signer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     recipient: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    group_asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

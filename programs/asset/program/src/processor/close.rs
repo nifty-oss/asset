@@ -33,7 +33,7 @@ pub fn process_close(program_id: &Pubkey, ctx: Context<CloseAccounts>) -> Progra
 
     // make sure that the asset is uninitialized
     require!(
-        data[0] == Discriminator::Uninitialized as u8,
+        data[0] == Discriminator::Uninitialized.into(),
         AssetError::AlreadyInitialized,
         "asset"
     );

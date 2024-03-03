@@ -31,7 +31,7 @@ pub fn process_burn(program_id: &Pubkey, ctx: Context<BurnAccounts>) -> ProgramR
 
     // Must be an initialized asset.
     require!(
-        data[0] == Discriminator::Asset as u8,
+        data[0] == Discriminator::Asset.into(),
         AssetError::Uninitialized,
         "unitialized asset"
     );

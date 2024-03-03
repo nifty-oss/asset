@@ -1,13 +1,26 @@
 use nifty_asset_types::{
-    podded::{pod::PodOption, ZeroCopy},
+    constraints::{Assertion, Context as ConstraintContext},
+    extensions::Royalties,
+    podded::{
+        pod::{Nullable, PodOption},
+        ZeroCopy,
+    },
     state::{Asset, Delegate, DelegateRole, Discriminator, Standard},
 };
-use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pubkey::Pubkey};
+use std::ops::Deref;
+
+use solana_program::{
+    entrypoint::ProgramResult,
+    instruction::{get_stack_height, TRANSACTION_LEVEL_STACK_HEIGHT},
+    msg,
+    program_error::ProgramError,
+    pubkey::Pubkey,
+};
 
 use crate::{
     error::AssetError,
     instruction::accounts::{Context, TransferAccounts},
-    require,
+    process_royalties, require,
     utils::assert_delegate,
 };
 
@@ -29,10 +42,13 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
 
     // Must be an initialized asset.
     require!(
-        data[0] == Discriminator::Asset as u8,
+        data[0] == Discriminator::Asset.into(),
         AssetError::Uninitialized,
         "unitialized asset"
     );
+
+    // First we check if the asset itself has the royalties extension, and validate the constraint.
+    let royalties_checked = process_royalties!(ctx, &data);
 
     let asset = Asset::load_mut(&mut data);
 
@@ -58,6 +74,46 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
     // Self transfer short-circuits so as not to clear the delegate.
     if asset.holder == *ctx.accounts.recipient.key {
         return Ok(());
+    }
+
+    // If the asset the asset is part of a group we need to check if royalties
+    // are enabled and if so, if the destination account is allowed to receive the asset.
+    if let Some(group) = asset.group.value() {
+        // If royalties were not checked yet, we need to check them now.
+        if (*group).is_some() && !royalties_checked {
+            // We need collection asset account to be provided.
+            require!(
+                ctx.accounts.group_asset.is_some(),
+                AssetError::InvalidGroup,
+                "asset is part of a group but no collection account was provided"
+            );
+
+            let group_asset_info = ctx.accounts.group_asset.unwrap();
+
+            // Collection asset account must be owned by the program.
+            require!(
+                group_asset_info.owner == program_id,
+                AssetError::InvalidGroup,
+                "collection account is not owned by the program"
+            );
+
+            // Collection asset account must match the group.
+            require!(
+                (*group).deref() == ctx.accounts.group_asset.unwrap().key,
+                AssetError::InvalidGroup,
+                "collection account does not match the group"
+            );
+
+            // Collection asset account must be initialized.
+            require!(
+                (*group_asset_info.data).borrow()[0] == Discriminator::Asset.into(),
+                AssetError::InvalidGroup,
+                "collection account is not initialized"
+            );
+
+            // Check if royalties extension is present on the group asset and validate the constraint.
+            process_royalties!(ctx, &(*group_asset_info.data).borrow());
+        }
     }
 
     // Transfer the asset.

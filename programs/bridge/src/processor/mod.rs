@@ -30,9 +30,9 @@ pub fn process_instruction<'a>(
             msg!("Instruction: Bridge");
             bridge::process_bridge(program_id, BridgeAccounts::context(accounts)?)
         }
-        Instruction::Create => {
+        Instruction::Create(args) => {
             msg!("Instruction: Create");
-            create::process_create(program_id, CreateAccounts::context(accounts)?)
+            create::process_create(program_id, CreateAccounts::context(accounts)?, args)
         }
     }
 }

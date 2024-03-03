@@ -1,6 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import {
   createNft as baseCreateNft,
+  createProgrammableNft as baseCreateProgrammableNft,
   findMetadataPda,
   verifyCollectionV1,
 } from '@metaplex-foundation/mpl-token-metadata';
@@ -29,6 +30,22 @@ export const createNft = async (
 ): Promise<Signer> => {
   input.mint = input.mint ?? generateSigner(umi);
   await baseCreateNft(umi, {
+    ...input,
+    mint: input.mint,
+  }).sendAndConfirm(umi);
+
+  return input.mint;
+};
+
+export const createProgrammableNft = async (
+  umi: Umi,
+  input: Omit<
+    Parameters<typeof baseCreateNft>[1],
+    'mint' | 'amount' | 'tokenStandard'
+  > & { mint?: Signer }
+): Promise<Signer> => {
+  input.mint = input.mint ?? generateSigner(umi);
+  await baseCreateProgrammableNft(umi, {
     ...input,
     mint: input.mint,
   }).sendAndConfirm(umi);

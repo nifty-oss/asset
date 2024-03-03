@@ -1,3 +1,4 @@
+import { PublicKey } from '@solana/web3.js';
 import {
   generateSigner,
   percentAmount,
@@ -7,7 +8,14 @@ import {
   publicKey as publicKeySerializer,
   string,
 } from '@metaplex-foundation/umi/serializers';
-import { Asset, ExtensionType, fetchAsset } from '@nifty-oss/asset';
+import {
+  Account,
+  Asset,
+  ExtensionType,
+  fetchAsset,
+  pubkeyMatch,
+  not,
+} from '@nifty-oss/asset';
 import test from 'ava';
 import {
   BRIDGE_PROGRAM_ID,
@@ -22,9 +30,18 @@ import {
 import {
   createCollectionNft,
   createNft,
+  createProgrammableNft,
   createUmi,
   createVerifiedNft,
 } from './_setup';
+
+const defaultCreateArgs = {
+  isCollection: false,
+};
+
+const collectionCreateArgs = {
+  isCollection: true,
+};
 
 test('it can create an asset on the bridge', async (t) => {
   // Given a Umi instance.
@@ -42,9 +59,10 @@ test('it can create an asset on the bridge', async (t) => {
   await create(umi, {
     mint: mint.publicKey,
     updateAuthority: umi.identity,
+    ...defaultCreateArgs,
   }).sendAndConfirm(umi);
 
-  // Then the birdge vault is created.
+  // Then the bridge vault is created.
   const vault = await fetchVault(
     umi,
     findVaultPda(umi, { mint: mint.publicKey })
@@ -72,6 +90,122 @@ test('it can create an asset on the bridge', async (t) => {
   });
 });
 
+test('it can create a collection asset on the bridge for a pNFT', async (t) => {
+  // Given a Umi instance.
+  const umi = await createUmi();
+
+  // And a Token Metadata programmable non-fungible.
+  const mint = await createProgrammableNft(umi, {
+    name: 'Bridge Asset',
+    symbol: 'BA',
+    uri: 'https://asset.bridge',
+    sellerFeeBasisPoints: percentAmount(5.5),
+    mint: undefined,
+  });
+
+  // When we create the asset on the bridge.
+  await create(umi, {
+    mint: mint.publicKey,
+    updateAuthority: umi.identity,
+    ...collectionCreateArgs,
+  }).sendAndConfirm(umi);
+
+  // Then the bridge vault is created.
+  const vault = await fetchVault(
+    umi,
+    findVaultPda(umi, { mint: mint.publicKey })
+  );
+
+  t.like(vault, <Vault>{
+    discriminator: Discriminator.Vault,
+    state: State.Idle,
+    mint: mint.publicKey,
+  });
+
+  // And the asset is created.
+  const asset = umi.eddsa.findPda(BRIDGE_PROGRAM_ID, [
+    string({ size: 'variable' }).serialize('nifty::bridge::asset'),
+    publicKeySerializer().serialize(mint.publicKey),
+  ]);
+
+  // A Not(PubkeyMatch(Account::Asset, [Default PublicKey])) constraint is added to the asset,
+  // to represent a pass all constraint.
+  const pubkeyMatchConstraint = pubkeyMatch(Account.Asset, [
+    publicKey(PublicKey.default),
+  ]);
+  const constraint = not(pubkeyMatchConstraint);
+
+  t.like(await fetchAsset(umi, asset), <Asset>{
+    extensions: [
+      {
+        type: ExtensionType.Metadata,
+        symbol: 'BA',
+        uri: 'https://asset.bridge',
+      },
+      {
+        type: ExtensionType.Grouping,
+        size: BigInt(0),
+        maxSize: BigInt(0),
+      },
+      {
+        type: ExtensionType.Royalties,
+        basisPoints: BigInt(550),
+        constraint,
+      },
+    ],
+  });
+});
+
+test('it can create an asset on the bridge for a pNFT', async (t) => {
+  // Given a Umi instance.
+  const umi = await createUmi();
+
+  // And a Token Metadata programmable non-fungible.
+  const mint = await createProgrammableNft(umi, {
+    name: 'Bridge Asset',
+    symbol: 'BA',
+    uri: 'https://asset.bridge',
+    sellerFeeBasisPoints: percentAmount(5.5),
+    mint: undefined,
+  });
+
+  // When we create the asset on the bridge.
+  await create(umi, {
+    mint: mint.publicKey,
+    updateAuthority: umi.identity,
+    ...defaultCreateArgs,
+  }).sendAndConfirm(umi);
+
+  // Then the bridge vault is created.
+  const vault = await fetchVault(
+    umi,
+    findVaultPda(umi, { mint: mint.publicKey })
+  );
+
+  t.like(vault, <Vault>{
+    discriminator: Discriminator.Vault,
+    state: State.Idle,
+    mint: mint.publicKey,
+  });
+
+  // And the asset is created.
+  const asset = umi.eddsa.findPda(BRIDGE_PROGRAM_ID, [
+    string({ size: 'variable' }).serialize('nifty::bridge::asset'),
+    publicKeySerializer().serialize(mint.publicKey),
+  ]);
+
+  t.like(await fetchAsset(umi, asset), <Asset>{
+    extensions: [
+      {
+        type: ExtensionType.Metadata,
+        symbol: 'BA',
+        uri: 'https://asset.bridge',
+      },
+      // Not a collection asset, so no royalties extension.
+    ],
+  });
+});
+
 test('it cannot create an asset on the bridge without the update authority as signer', async (t) => {
   // Given a Umi instance.
   const umi = await createUmi();
@@ -91,6 +225,7 @@ test('it cannot create an asset on the bridge without the update authority as si
   const promise = create(umi, {
     mint: publicKey(mint),
     updateAuthority: authority.publicKey,
+    ...defaultCreateArgs,
   }).sendAndConfirm(umi);
 
   // Then we get an error.
@@ -114,6 +249,7 @@ test('it can create an asset on the bridge with a collection', async (t) => {
   await create(umi, {
     mint: collection.publicKey,
     updateAuthority: umi.identity,
+    ...defaultCreateArgs,
   }).sendAndConfirm(umi);
 
   // And we create a Token Metadata non-fungible representing an asset
@@ -130,9 +266,10 @@ test('it can create an asset on the bridge with a collection', async (t) => {
     mint: mint.publicKey,
     collection: findBridgeAssetPda(umi, { mint: collection.publicKey }),
     updateAuthority: umi.identity,
+    ...defaultCreateArgs,
   }).sendAndConfirm(umi);
 
-  // Then the birdge vault is created.
+  // Then the bridge vault is created.
   const vault = await fetchVault(
     umi,
     findVaultPda(umi, { mint: mint.publicKey })

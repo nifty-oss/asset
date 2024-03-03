@@ -93,6 +93,25 @@ pub enum State {
     Locked,
 }
 
+impl From<u8> for State {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => State::Unlocked,
+            1 => State::Locked,
+            _ => panic!("invalid state value: {value}"),
+        }
+    }
+}
+
+impl From<State> for u8 {
+    fn from(value: State) -> Self {
+        match value {
+            State::Unlocked => 0,
+            State::Locked => 1,
+        }
+    }
+}
+
 unsafe impl Pod for State {}
 
 unsafe impl Zeroable for State {}

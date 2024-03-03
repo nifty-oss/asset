@@ -17,6 +17,7 @@ import {
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
+  bool,
   mapSerializer,
   struct,
   u8,
@@ -54,18 +55,25 @@ export type CreateInstructionAccounts = {
 };
 
 // Data.
-export type CreateInstructionData = { discriminator: number };
+export type CreateInstructionData = {
+  discriminator: number;
+  isCollection: boolean;
+};
 
-export type CreateInstructionDataArgs = {};
+export type CreateInstructionDataArgs = { isCollection: boolean };
 
 export function getCreateInstructionDataSerializer(): Serializer<
   CreateInstructionDataArgs,
   CreateInstructionData
 > {
   return mapSerializer<CreateInstructionDataArgs, any, CreateInstructionData>(
-    struct<CreateInstructionData>([['discriminator', u8()]], {
-      description: 'CreateInstructionData',
-    }),
+    struct<CreateInstructionData>(
+      [
+        ['discriminator', u8()],
+        ['isCollection', bool()],
+      ],
+      { description: 'CreateInstructionData' }
+    ),
     (value) => ({ ...value, discriminator: 1 })
   ) as Serializer<CreateInstructionDataArgs, CreateInstructionData>;
 }
@@ -75,7 +83,7 @@ export type CreateInstructionExtraArgs = { version: number };
 
 // Args.
 export type CreateInstructionArgs = PickPartial<
-  CreateInstructionExtraArgs,
+  CreateInstructionDataArgs & CreateInstructionExtraArgs,
   'version'
 >;
 
@@ -198,7 +206,9 @@ export function create(
   );
 
   // Data.
-  const data = getCreateInstructionDataSerializer().serialize({});
+  const data = getCreateInstructionDataSerializer().serialize(
+    resolvedArgs as CreateInstructionDataArgs
+  );
 
   // Bytes Created On Chain.
   const bytesCreatedOnChain = 0;

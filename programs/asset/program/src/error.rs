@@ -75,6 +75,14 @@ pub enum AssetError {
     /// 16 - Extension data invalid.
     #[error("Extension data invalid")]
     ExtensionDataInvalid,
+
+    /// 17 - Invalid group.
+    #[error("Invalid group")]
+    InvalidGroup,
+
+    /// 18 - Assertion Failure
+    #[error("Assertion Failure")]
+    AssertionFailure,
 }
 
 impl PrintProgramError for AssetError {

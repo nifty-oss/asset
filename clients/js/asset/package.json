@@ -31,6 +31,7 @@
   },
   "devDependencies": {
     "@ava/typescript": "^3.0.1",
+    "@metaplex-foundation/mpl-token-metadata": "^3.1.2",
     "@metaplex-foundation/umi": "^0.9.1",
     "@metaplex-foundation/umi-bundle-tests": "^0.9.1",
     "@solana/web3.js": "^1.73.0",

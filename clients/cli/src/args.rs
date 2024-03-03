@@ -58,6 +58,10 @@ pub enum Commands {
         /// If not specified, the entire asset will be decoded.
         #[arg(short, long)]
         field: Option<String>,
+
+        /// Output the raw account data.
+        #[arg(long)]
+        raw: bool,
     },
     /// Set a delegate on an asset with specific roles.
     Approve {

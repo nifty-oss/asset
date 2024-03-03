@@ -133,7 +133,7 @@ fn is_locked<'a>(program_id: &Pubkey, accounts: &'a [AccountInfo]) -> Option<&'a
         if account_info.owner == program_id && !account_info.data_is_empty() {
             let data = account_info.data.borrow();
             if (data[DISCRIMINATOR_INDEX] == Discriminator::Asset.into())
-                && (data[STATE_INDEX] == State::Locked as u8)
+                && (data[STATE_INDEX] == State::Locked.into())
             {
                 return Some(account_info.key);
             }

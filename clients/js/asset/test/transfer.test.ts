@@ -160,7 +160,7 @@ test('holder transfer clears delegate', async (t) => {
   t.true(asset.holder === recipient);
 
   // and the delegate is cleared.
-  asset.delegate === null;
+  t.true(asset.delegate === null);
 });
 
 test('delegate transfer clears delegate', async (t) => {
@@ -205,7 +205,7 @@ test('delegate transfer clears delegate', async (t) => {
   t.true(asset.holder === recipient);
 
   // and the delegate is cleared.
-  asset.delegate === null;
+  t.true(asset.delegate === null);
 });
 
 test('self-transfer does not clear delegate', async (t) => {
@@ -224,7 +224,7 @@ test('self-transfer does not clear delegate', async (t) => {
   }).sendAndConfirm(umi);
 
   // the holder is correct.
-  let asset = await fetchAsset(umi, assetSigner.publicKey);
+  const asset = await fetchAsset(umi, assetSigner.publicKey);
   t.true(asset.holder === holderSigner.publicKey);
 
   // Now we set a delegate on the asset
@@ -269,7 +269,7 @@ test('it cannot transfer a soulbound asset', async (t) => {
   }).sendAndConfirm(umi);
 
   // Holder is correct.
-  let asset = await fetchAsset(umi, assetSigner.publicKey);
+  const asset = await fetchAsset(umi, assetSigner.publicKey);
   t.true(asset.holder === holderSigner.publicKey);
 
   // When we try to transfer the asset.

@@ -3,10 +3,11 @@ use mpl_token_metadata::{
     types::{Collection, TokenStandard},
 };
 use nifty_asset::{
-    extensions::{ExtensionBuilder, MetadataBuilder},
+    extensions::{ExtensionBuilder, GroupBuilder, MetadataBuilder, RoyaltiesBuilder},
     instructions::{AllocateCpiBuilder, CreateCpiBuilder},
     types::{Extension, ExtensionType},
 };
+use nifty_asset_types::constraints::{Account, NotBuilder, PubkeyMatchBuilder};
 use podded::ZeroCopy;
 use solana_program::{
     entrypoint::ProgramResult, msg, program::invoke_signed, program_error::ProgramError,
@@ -16,7 +17,10 @@ use solana_program::{
 use crate::{
     err,
     error::BridgeError,
-    instruction::accounts::{Context, CreateAccounts},
+    instruction::{
+        accounts::{Context, CreateAccounts},
+        CreateArgs,
+    },
     processor::SPL_TOKEN_PROGRAM_IDS,
     require,
     state::{
@@ -25,7 +29,11 @@ use crate::{
     },
 };
 
-pub fn process_create(program_id: &Pubkey, ctx: Context<CreateAccounts>) -> ProgramResult {
+pub fn process_create(
+    program_id: &Pubkey,
+    ctx: Context<CreateAccounts>,
+    args: CreateArgs,
+) -> ProgramResult {
     // account validation
 
     require!(
@@ -93,7 +101,7 @@ pub fn process_create(program_id: &Pubkey, ctx: Context<CreateAccounts>) -> Prog
 
             require!(
                 !collection_data.is_empty()
-                    && collection_data[0] == nifty_asset::types::Discriminator::Asset as u8,
+                    && collection_data[0] == nifty_asset::state::Discriminator::Asset.into(),
                 ProgramError::UninitializedAccount,
                 "collection"
             );
@@ -199,6 +207,49 @@ pub fn process_create(program_id: &Pubkey, ctx: Context<CreateAccounts>) -> Prog
         })
         .invoke_signed(&[&signer_seeds])?;
 
+    // If this is a collection NFT, we add the group extension
+    if args.is_collection || metadata.collection_details.is_some() {
+        let mut extension = GroupBuilder::default();
+        let data = extension.build();
+
+        AllocateCpiBuilder::new(ctx.accounts.nifty_asset_program)
+            .asset(ctx.accounts.asset)
+            .payer(Some(ctx.accounts.payer))
+            .system_program(Some(ctx.accounts.system_program))
+            .extension(Extension {
+                extension_type: ExtensionType::Grouping,
+                length: data.len() as u32,
+                data: Some(data),
+            })
+            .invoke_signed(&[&signer_seeds])?;
+
+        // For pNFTs we also add a default Royalties extension
+        if metadata.token_standard == Some(TokenStandard::ProgrammableNonFungible) {
+            // We set a not pubkey match with the system pubkey as the default, as this should be a
+            // pass-all rule.
+            let mut pubkey_match_builder = PubkeyMatchBuilder::default();
+            pubkey_match_builder.set(Account::Asset, &[Pubkey::default()]);
+
+            let mut not_builder = NotBuilder::default();
+            not_builder.set(&mut pubkey_match_builder);
+
+            let mut extension = RoyaltiesBuilder::default();
+            extension.set(metadata.seller_fee_basis_points as u64, &mut not_builder);
+            let royalties_data = extension.data();
+
+            AllocateCpiBuilder::new(ctx.accounts.nifty_asset_program)
+                .asset(ctx.accounts.asset)
+                .payer(Some(ctx.accounts.payer))
+                .system_program(Some(ctx.accounts.system_program))
+                .extension(Extension {
+                    extension_type: ExtensionType::Royalties,
+                    length: royalties_data.len() as u32,
+                    data: Some(royalties_data),
+                })
+                .invoke_signed(&[&signer_seeds])?;
+        }
+    }
+
     CreateCpiBuilder::new(ctx.accounts.nifty_asset_program)
         .asset(ctx.accounts.asset)
         .authority(ctx.accounts.update_authority)
@@ -206,5 +257,7 @@ pub fn process_create(program_id: &Pubkey, ctx: Context<CreateAccounts>) -> Prog
         .payer(Some(ctx.accounts.payer))
         .system_program(Some(ctx.accounts.system_program))
         .name(metadata.name)
-        .invoke_signed(&[&signer_seeds])
+        .invoke_signed(&[&signer_seeds])?;
+
+    Ok(())
 }

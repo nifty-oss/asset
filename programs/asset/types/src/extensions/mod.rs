@@ -19,6 +19,7 @@ mod creators;
 mod grouping;
 mod links;
 mod metadata;
+mod royalties;
 
 pub use attributes::*;
 pub use blob::*;
@@ -26,6 +27,7 @@ pub use creators::*;
 pub use grouping::*;
 pub use links::*;
 pub use metadata::*;
+pub use royalties::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
 use bytemuck::{Pod, Zeroable};
@@ -119,6 +121,7 @@ pub enum ExtensionType {
     Links,
     Metadata,
     Grouping,
+    Royalties,
 }
 
 impl From<u32> for ExtensionType {
@@ -131,6 +134,7 @@ impl From<u32> for ExtensionType {
             4 => ExtensionType::Links,
             5 => ExtensionType::Metadata,
             6 => ExtensionType::Grouping,
+            7 => ExtensionType::Royalties,
             _ => panic!("invalid extension value: {value}"),
         }
     }
@@ -146,6 +150,7 @@ impl From<ExtensionType> for u32 {
             ExtensionType::Links => 4,
             ExtensionType::Metadata => 5,
             ExtensionType::Grouping => 6,
+            ExtensionType::Royalties => 7,
         }
     }
 }
@@ -217,4 +222,5 @@ validate_extension_type!(
     (Creators, CreatorsMut),
     (Grouping, GroupingMut),
     (Metadata, MetadataMut),
+    (Royalties, RoyaltiesMut),
 );

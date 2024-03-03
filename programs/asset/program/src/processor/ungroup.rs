@@ -36,7 +36,7 @@ pub fn process_ungroup(program_id: &Pubkey, ctx: Context<UngroupAccounts>) -> Pr
     let mut asset_data = (*ctx.accounts.asset.data).borrow_mut();
 
     require!(
-        asset_data[0] == Discriminator::Asset as u8,
+        asset_data[0] == Discriminator::Asset.into(),
         ProgramError::UninitializedAccount,
         "asset"
     );
@@ -44,7 +44,7 @@ pub fn process_ungroup(program_id: &Pubkey, ctx: Context<UngroupAccounts>) -> Pr
     let mut group_data = (*ctx.accounts.group.data).borrow_mut();
 
     require!(
-        group_data[0] == Discriminator::Asset as u8,
+        group_data[0] == Discriminator::Asset.into(),
         ProgramError::UninitializedAccount,
         "group"
     );

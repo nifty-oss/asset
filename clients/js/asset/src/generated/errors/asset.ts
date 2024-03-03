@@ -236,6 +236,32 @@ export class ExtensionDataInvalidError extends ProgramError {
 codeToErrorMap.set(0x10, ExtensionDataInvalidError);
 nameToErrorMap.set('ExtensionDataInvalid', ExtensionDataInvalidError);
 
+/** InvalidGroup: Invalid group */
+export class InvalidGroupError extends ProgramError {
+  override readonly name: string = 'InvalidGroup';
+
+  readonly code: number = 0x11; // 17
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid group', program, cause);
+  }
+}
+codeToErrorMap.set(0x11, InvalidGroupError);
+nameToErrorMap.set('InvalidGroup', InvalidGroupError);
+
+/** AssertionFailure: Assertion Failure */
+export class AssertionFailureError extends ProgramError {
+  override readonly name: string = 'AssertionFailure';
+
+  readonly code: number = 0x12; // 18
+
+  constructor(program: Program, cause?: Error) {
+    super('Assertion Failure', program, cause);
+  }
+}
+codeToErrorMap.set(0x12, AssertionFailureError);
+nameToErrorMap.set('AssertionFailure', AssertionFailureError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

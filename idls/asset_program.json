@@ -309,6 +309,15 @@
           "docs": [
             "The recipient of the asset"
           ]
+        },
+        {
+          "name": "groupAsset",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The asset defining the group, if applicable"
+          ]
         }
       ],
       "args": [],
@@ -766,6 +775,16 @@
       "code": 16,
       "name": "ExtensionDataInvalid",
       "msg": "Extension data invalid"
+    },
+    {
+      "code": 17,
+      "name": "InvalidGroup",
+      "msg": "Invalid group"
+    },
+    {
+      "code": 18,
+      "name": "AssertionFailure",
+      "msg": "Assertion Failure"
     }
   ],
   "metadata": {

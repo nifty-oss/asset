@@ -10,6 +10,8 @@ pub use or::*;
 pub use owned_by::*;
 pub use pubkey_match::*;
 
+use std::fmt::{self, Debug};
+
 use bytemuck::{Pod, Zeroable};
 use podded::ZeroCopy;
 use solana_program::{account_info::AccountInfo, program_error::ProgramError};
@@ -31,11 +33,17 @@ pub struct Context<'a, 'b> {
 
 #[repr(u64)]
 /// Account types involved in a constraint evaluation.
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum Account {
     Asset,
     Authority,
     Recipient,
+}
+
+impl Account {
+    pub fn into_bytes(self) -> [u8; 8] {
+        (self as u64).to_le_bytes()
+    }
 }
 
 impl From<&str> for Account {
@@ -49,13 +57,14 @@ impl From<&str> for Account {
     }
 }
 
-impl From<Account> for &str {
-    fn from(account: Account) -> Self {
-        match account {
+impl fmt::Display for Account {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let account_str = match self {
             Account::Asset => "asset",
             Account::Authority => "authority",
             Account::Recipient => "recipient",
-        }
+        };
+        write!(f, "{}", account_str)
     }
 }
 
@@ -92,6 +101,8 @@ pub enum Assertion {
 
 pub trait Assertable {
     fn assert(&self, context: &Context) -> AssertionResult;
+
+    fn as_bytes(&self) -> Vec<u8>;
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -130,7 +141,7 @@ impl From<OperatorType> for u32 {
 
 /// An operator defines the header information for a constraint.
 #[repr(C)]
-#[derive(Clone, Copy, Pod, Zeroable)]
+#[derive(Debug, Clone, Copy, Pod, Zeroable)]
 pub struct Operator {
     /// Header data.
     ///   0. operator type
@@ -159,6 +170,7 @@ impl Operator {
 impl ZeroCopy<'_, Operator> for Operator {}
 
 /// Macro to automate the code required to deserialize a constraint from a byte array.
+#[macro_export]
 macro_rules! assertable_from_bytes {
     ( $operator_type:ident, $slice:expr, $( $available:ident ),+ $(,)? ) => {
         match $operator_type {
@@ -184,6 +196,13 @@ pub struct Constraint<'a> {
 impl<'a> Constraint<'a> {
     pub fn size(&self) -> usize {
         std::mem::size_of::<Operator>() + self.operator.size() as usize
+    }
+
+    pub fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::with_capacity(self.size());
+        bytes.extend_from_slice(bytemuck::bytes_of(self.operator));
+        bytes.extend_from_slice(self.assertable.as_bytes().as_ref());
+        bytes
     }
 }
 
@@ -215,6 +234,10 @@ impl<'a> FromBytes<'a> for Constraint<'a> {
 impl Assertable for Constraint<'_> {
     fn assert(&self, context: &Context) -> AssertionResult {
         self.assertable.assert(context)
+    }
+
+    fn as_bytes(&self) -> Vec<u8> {
+        self.as_bytes()
     }
 }
 

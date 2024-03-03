@@ -1,6 +1,11 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::{ShankContext, ShankInstruction};
 
+#[derive(BorshDeserialize, BorshSerialize, Clone, Debug)]
+pub struct CreateArgs {
+    pub is_collection: bool,
+}
+
 #[rustfmt::skip]
 #[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankContext, ShankInstruction)]
 pub enum Instruction {
@@ -24,6 +29,7 @@ pub enum Instruction {
     #[account(16, name="spl_ata_program", desc="SPL ATA program")]
     #[account(17, optional, name="authorization_rules_program", desc="Token Auth Rules program")]
     #[account(18, optional, name="authorization_rules", desc="Token Auth Rules account")]
+    #[account(19, optional, name="group_asset", desc="Group asset account")]
     Bridge,
 
     /// Create an asset on the bridge from an existing non-fungible token.
@@ -36,5 +42,5 @@ pub enum Instruction {
     #[account(6, signer, writable, name="payer", desc="The account paying for the storage fees")]
     #[account(7, name="system_program", desc = "System program")]
     #[account(8, name="nifty_asset_program", desc = "Nifty Asset program")]
-    Create,
+    Create(CreateArgs),
 }

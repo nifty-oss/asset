@@ -1,3 +1,4 @@
+export * from './constraints';
 export * from './generated';
 export * from './hooked';
 export * from './initialize';

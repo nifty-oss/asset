@@ -4,6 +4,17 @@ import {
   publicKey,
 } from '@metaplex-foundation/umi';
 import test from 'ava';
+import { Asset, fetchAsset } from '@nifty-oss/asset';
+import {
+  TokenStandard,
+  createProgrammableNft,
+  fetchDigitalAssetWithToken,
+} from '@metaplex-foundation/mpl-token-metadata';
+import {
+  TokenState,
+  findAssociatedTokenPda,
+  setComputeUnitLimit,
+} from '@metaplex-foundation/mpl-toolbox';
 import {
   Discriminator,
   State,
@@ -15,16 +26,10 @@ import {
   findVaultPda,
 } from '../src';
 import { createNft, createUmi } from './_setup';
-import { Asset, fetchAsset } from '@nifty-oss/asset';
-import {
-  TokenStandard,
-  createProgrammableNft,
-  fetchDigitalAssetWithToken,
-} from '@metaplex-foundation/mpl-token-metadata';
-import {
-  TokenState,
-  findAssociatedTokenPda,
-} from '@metaplex-foundation/mpl-toolbox';
+
+const defaultCreateArgs = {
+  isCollection: false,
+};
 
 test('it can bridge an asset to a token (NFT)', async (t) => {
   // Given a Umi instance.
@@ -43,6 +48,7 @@ test('it can bridge an asset to a token (NFT)', async (t) => {
   await create(umi, {
     mint: mint.publicKey,
     updateAuthority: umi.identity,
+    ...defaultCreateArgs,
   }).sendAndConfirm(umi);
 
   // And we bridge the asset.
@@ -137,6 +143,7 @@ test('it can bridge a token (NFT) to an asset', async (t) => {
   await create(umi, {
     mint: mint.publicKey,
     updateAuthority: umi.identity,
+    ...defaultCreateArgs,
   }).sendAndConfirm(umi);
 
   // When we bridge the asset.
@@ -203,6 +210,7 @@ test('it can bridge an asset to a token (pNFT)', async (t) => {
   await create(umi, {
     mint: mint.publicKey,
     updateAuthority: umi.identity,
+    ...defaultCreateArgs,
   }).sendAndConfirm(umi);
 
   // And we bridge the asset.
@@ -301,6 +309,7 @@ test('it can bridge a token (pNFT) to an asset', async (t) => {
   await create(umi, {
     mint: mint.publicKey,
     updateAuthority: umi.identity,
+    ...defaultCreateArgs,
   }).sendAndConfirm(umi);
 
   // When we bridge the asset.
@@ -308,7 +317,9 @@ test('it can bridge a token (pNFT) to an asset', async (t) => {
     mint: mint.publicKey,
     owner,
     tokenStandard: TokenStandard.ProgrammableNonFungible,
-  }).sendAndConfirm(umi);
+  })
+    .prepend(setComputeUnitLimit(umi, { units: 400_000 }))
+    .sendAndConfirm(umi);
 
   // Then the bridge vault is created.
   const vault = await fetchVault(

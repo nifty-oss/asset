@@ -61,6 +61,12 @@ pub enum AssetError {
     /// 16 (0x10) - Extension data invalid
     #[error("Extension data invalid")]
     ExtensionDataInvalid,
+    /// 17 (0x11) - Invalid group
+    #[error("Invalid group")]
+    InvalidGroup,
+    /// 18 (0x12) - Assertion Failure
+    #[error("Assertion Failure")]
+    AssertionFailure,
 }
 
 impl solana_program::program_error::PrintProgramError for AssetError {

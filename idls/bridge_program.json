@@ -160,6 +160,15 @@
           "docs": [
             "Token Auth Rules account"
           ]
+        },
+        {
+          "name": "groupAsset",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "Group asset account"
+          ]
         }
       ],
       "args": [],
@@ -246,7 +255,14 @@
           ]
         }
       ],
-      "args": [],
+      "args": [
+        {
+          "name": "createArgs",
+          "type": {
+            "defined": "CreateArgs"
+          }
+        }
+      ],
       "discriminant": {
         "type": "u8",
         "value": 1
@@ -254,6 +270,18 @@
     }
   ],
   "types": [
+    {
+      "name": "CreateArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "isCollection",
+            "type": "bool"
+          }
+        ]
+      }
+    },
     {
       "name": "Discriminator",
       "type": {

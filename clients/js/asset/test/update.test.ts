@@ -380,7 +380,7 @@ test('it can update an asset with a buffer', async (t) => {
 
   // Then the asset was updated correctly.
   assetAccount = await fetchAsset(umi, asset.publicKey);
-  extension = assetAccount.extensions[0];
+  [extension] = assetAccount.extensions;
   t.true(extension.type === ExtensionType.Blob);
 
   if (extension.type === ExtensionType.Blob) {

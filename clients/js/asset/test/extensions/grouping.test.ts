@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 import { generateSigner, transactionBuilder } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {

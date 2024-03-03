@@ -1,6 +1,9 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, vec};
 
 use borsh::BorshDeserialize;
+use nifty_asset_types::constraints::{
+    Account, ConstraintBuilder, NotBuilder, OwnedByBuilder, PubkeyMatchBuilder,
+};
 use solana_program::{instruction::Instruction, pubkey::Pubkey};
 use thiserror::Error;
 
@@ -80,6 +83,7 @@ pub enum ExtensionValue {
     JsonLink(Vec<JsonLink>),
     JsonBlob(JsonBlob),
     JsonMetadata(JsonMetadata),
+    JsonRoyalities(JsonRoyalties),
 }
 
 impl ExtensionValue {
@@ -99,6 +103,7 @@ impl ExtensionValue {
             }),
             Self::JsonBlob(value) => value.into_data(),
             Self::JsonMetadata(value) => value.into_data(),
+            Self::JsonRoyalities(value) => value.into_data(),
         }
     }
 }
@@ -111,9 +116,9 @@ pub struct JsonCreator {
         feature = "serde",
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
-    address: Pubkey,
-    verified: bool,
-    share: u8,
+    pub address: Pubkey,
+    pub verified: bool,
+    pub share: u8,
 }
 
 impl JsonCreator {
@@ -123,7 +128,6 @@ impl JsonCreator {
         let mut data = vec![];
         data.extend(self.address.to_bytes());
         data.extend([self.verified as u8, self.share]);
-        data.extend([0; 6]);
         data
     }
 
@@ -229,6 +233,60 @@ impl JsonMetadata {
         data.extend(uri_bytes);
 
         data
+    }
+}
+
+/// A type suitable for JSON serde de/serialization.
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct JsonRoyalties {
+    pub kind: RoyaltiesKind,
+    pub basis_points: u64,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "serde_with::As::<Vec<serde_with::DisplayFromStr>>")
+    )]
+    pub items: Vec<Pubkey>,
+}
+
+impl JsonRoyalties {
+    pub fn into_data(self) -> Vec<u8> {
+        let mut data = vec![];
+        data.extend(self.basis_points.to_le_bytes());
+
+        match self.kind {
+            RoyaltiesKind::Allowlist => {
+                let mut builder = PubkeyMatchBuilder::default();
+                builder.set(Account::Asset, &self.items);
+                let bytes = builder.build();
+                data.extend(bytes);
+            }
+            RoyaltiesKind::Denylist => {
+                let mut owned_by_builder = OwnedByBuilder::default();
+                owned_by_builder.set(Account::Asset, &self.items);
+                let mut builder = NotBuilder::default();
+                builder.set(&mut owned_by_builder);
+                let bytes = builder.build();
+                data.extend(bytes);
+            }
+        }
+        data
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RoyaltiesKind {
+    Allowlist,
+    Denylist,
+}
+
+impl RoyaltiesKind {
+    pub fn into_data(self) -> u8 {
+        match self {
+            Self::Allowlist => 0,
+            Self::Denylist => 1,
+        }
     }
 }
 

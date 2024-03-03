@@ -110,7 +110,7 @@ pub fn process_allocate(
     let data = (*ctx.accounts.asset.data).borrow();
     // make sure that the asset is not already initialized
     require!(
-        data[0] == Discriminator::Uninitialized as u8,
+        data[0] == Discriminator::Uninitialized.into(),
         AssetError::AlreadyInitialized,
         "asset"
     );
