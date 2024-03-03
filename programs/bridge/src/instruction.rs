@@ -4,7 +4,6 @@ use shank::{ShankContext, ShankInstruction};
 #[derive(BorshDeserialize, BorshSerialize, Clone, Debug)]
 pub struct CreateArgs {
     pub is_collection: bool,
-    pub max_collection_size: Option<u64>,
 }
 
 #[rustfmt::skip]

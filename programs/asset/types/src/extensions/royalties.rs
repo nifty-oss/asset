@@ -27,8 +27,6 @@ impl<'a> ExtensionData<'a> for Royalties<'a> {
     }
 }
 
-impl Lifecycle for Royalties<'_> {}
-
 pub struct RoyaltiesMut<'a> {
     pub basis_points: &'a mut u64,
     pub constraint: Constraint<'a>,

@@ -29,7 +29,6 @@ import { createNft, createUmi } from './_setup';
 
 const defaultCreateArgs = {
   isCollection: false,
-  maxCollectionSize: null,
 };
 
 test('it can bridge an asset to a token (NFT)', async (t) => {

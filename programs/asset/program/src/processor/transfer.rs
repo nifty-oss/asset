@@ -42,7 +42,7 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
 
     // Must be an initialized asset.
     require!(
-        data[0] == Discriminator::Asset as u8,
+        data[0] == Discriminator::Asset.into(),
         AssetError::Uninitialized,
         "unitialized asset"
     );
@@ -106,7 +106,7 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
 
             // Collection asset account must be initialized.
             require!(
-                (*group_asset_info.data).borrow()[0] == Discriminator::Asset as u8,
+                (*group_asset_info.data).borrow()[0] == Discriminator::Asset.into(),
                 AssetError::InvalidGroup,
                 "collection account is not initialized"
             );

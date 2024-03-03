@@ -58,7 +58,7 @@ pub(crate) fn process_write(
     let asset_data = (*ctx.accounts.asset.data).borrow();
     // make sure that the asset is not already initialized
     require!(
-        asset_data[0] == Discriminator::Uninitialized as u8,
+        asset_data[0] == Discriminator::Uninitialized.into(),
         AssetError::AlreadyInitialized,
         "asset"
     );

@@ -37,7 +37,10 @@ import {
 
 const defaultCreateArgs = {
   isCollection: false,
-  maxCollectionSize: null,
+};
+
+const collectionCreateArgs = {
+  isCollection: true,
 };
 
 test('it can create an asset on the bridge', async (t) => {
@@ -87,7 +90,73 @@ test('it can create an asset on the bridge', async (t) => {
   });
 });
 
-test('it can create a asset on the bridge for a pNFT', async (t) => {
+test('it can create a collection asset on the bridge for a pNFT', async (t) => {
+  // Given a Umi instance.
+  const umi = await createUmi();
+
+  // And a Token Metadata programmable non-fungible.
+  const mint = await createProgrammableNft(umi, {
+    name: 'Bridge Asset',
+    symbol: 'BA',
+    uri: 'https://asset.bridge',
+    sellerFeeBasisPoints: percentAmount(5.5),
+    mint: undefined,
+  });
+
+  // When we create the asset on the bridge.
+  await create(umi, {
+    mint: mint.publicKey,
+    updateAuthority: umi.identity,
+    ...collectionCreateArgs,
+  }).sendAndConfirm(umi);
+
+  // Then the bridge vault is created.
+  const vault = await fetchVault(
+    umi,
+    findVaultPda(umi, { mint: mint.publicKey })
+  );
+
+  t.like(vault, <Vault>{
+    discriminator: Discriminator.Vault,
+    state: State.Idle,
+    mint: mint.publicKey,
+  });
+
+  // And the asset is created.
+  const asset = umi.eddsa.findPda(BRIDGE_PROGRAM_ID, [
+    string({ size: 'variable' }).serialize('nifty::bridge::asset'),
+    publicKeySerializer().serialize(mint.publicKey),
+  ]);
+
+  // A Not(PubkeyMatch(Account::Asset, [Default PublicKey])) constraint is added to the asset,
+  // to represent a pass all constraint.
+  const pubkeyMatchConstraint = pubkeyMatch(Account.Asset, [
+    publicKey(PublicKey.default),
+  ]);
+  const constraint = not(pubkeyMatchConstraint);
+
+  t.like(await fetchAsset(umi, asset), <Asset>{
+    extensions: [
+      {
+        type: ExtensionType.Metadata,
+        symbol: 'BA',
+        uri: 'https://asset.bridge',
+      },
+      {
+        type: ExtensionType.Grouping,
+        size: BigInt(0),
+        maxSize: BigInt(0),
+      },
+      {
+        type: ExtensionType.Royalties,
+        basisPoints: BigInt(550),
+        constraint,
+      },
+    ],
+  });
+});
+
+test('it can create an asset on the bridge for a pNFT', async (t) => {
   // Given a Umi instance.
   const umi = await createUmi();
 
@@ -125,13 +194,6 @@ test('it can create a asset on the bridge for a pNFT', async (t) => {
     publicKeySerializer().serialize(mint.publicKey),
   ]);
 
-  // A Not(PubkeyMatch(Account::Asset, [Default PublicKey])) constraint is added to the asset,
-  // to represent a pass all constraint.
-  const pubkeyMatchConstraint = pubkeyMatch(Account.Asset, [
-    publicKey(PublicKey.default),
-  ]);
-  const constraint = not(pubkeyMatchConstraint);
-
   t.like(await fetchAsset(umi, asset), <Asset>{
     extensions: [
       {
@@ -139,11 +201,7 @@ test('it can create a asset on the bridge for a pNFT', async (t) => {
         symbol: 'BA',
         uri: 'https://asset.bridge',
       },
-      {
-        type: ExtensionType.Royalties,
-        basisPoints: BigInt(550),
-        constraint,
-      },
+      // Not a collection asset, so no royalties extension.
     ],
   });
 });

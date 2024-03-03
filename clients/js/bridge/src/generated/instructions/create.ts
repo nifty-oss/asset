@@ -9,8 +9,6 @@
 import { findMetadataPda } from '@metaplex-foundation/mpl-token-metadata';
 import {
   Context,
-  Option,
-  OptionOrNullable,
   Pda,
   PublicKey,
   Signer,
@@ -21,9 +19,7 @@ import {
   Serializer,
   bool,
   mapSerializer,
-  option,
   struct,
-  u64,
   u8,
 } from '@metaplex-foundation/umi/serializers';
 import { resolveBridgeAsset } from '../../hooked';
@@ -62,13 +58,9 @@ export type CreateInstructionAccounts = {
 export type CreateInstructionData = {
   discriminator: number;
   isCollection: boolean;
-  maxCollectionSize: Option<bigint>;
 };
 
-export type CreateInstructionDataArgs = {
-  isCollection: boolean;
-  maxCollectionSize: OptionOrNullable<number | bigint>;
-};
+export type CreateInstructionDataArgs = { isCollection: boolean };
 
 export function getCreateInstructionDataSerializer(): Serializer<
   CreateInstructionDataArgs,
@@ -79,7 +71,6 @@ export function getCreateInstructionDataSerializer(): Serializer<
       [
         ['discriminator', u8()],
         ['isCollection', bool()],
-        ['maxCollectionSize', option(u64())],
       ],
       { description: 'CreateInstructionData' }
     ),

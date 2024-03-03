@@ -278,12 +278,6 @@
           {
             "name": "isCollection",
             "type": "bool"
-          },
-          {
-            "name": "maxCollectionSize",
-            "type": {
-              "option": "u64"
-            }
           }
         ]
       }
