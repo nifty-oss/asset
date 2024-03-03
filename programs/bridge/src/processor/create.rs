@@ -208,7 +208,7 @@ pub fn process_create(
         .invoke_signed(&[&signer_seeds])?;
 
     // If this is a collection NFT, we add the group extension
-    if args.is_collection {
+    if args.is_collection || metadata.collection_details.is_some() {
         let mut extension = GroupBuilder::default();
         let data = extension.build();
 
@@ -259,16 +259,5 @@ pub fn process_create(
         .name(metadata.name)
         .invoke_signed(&[&signer_seeds])?;
 
-    // // Verified collection members should have the group set.
-    // If we want to set the group here, we need the update authority as a signer,
-    // even in the case of a verified collection item. This means the create is no longer
-    // permissionless in the case where the collection has already been bridged.
-    // if !authority_as_signer {
-    //     GroupCpiBuilder::new(ctx.accounts.nifty_asset_program)
-    //         .asset(ctx.accounts.asset)
-    //         .group(ctx.accounts.collection.unwrap())
-    //         .authority(ctx.accounts.update_authority)
-    //         .invoke_signed(&[&signer_seeds])?;
-    // }
     Ok(())
 }

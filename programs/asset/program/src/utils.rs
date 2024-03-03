@@ -77,7 +77,7 @@ macro_rules! process_royalties {
                     require!(
                         result == Assertion::Pass,
                         AssetError::AssertionFailure,
-                        "recipient is not allowed to receive the asset"
+                        "constraint failed"
                     );
                 }
 
