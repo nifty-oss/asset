@@ -57,7 +57,7 @@ jobs:
     uses: ./.github/workflows/test-rust-client.yml
     secrets: inherit
     with:
-      client_matrix: "[${{ inputs.client }}]"
+      client_matrix: "[\"${{ inputs.client }}\"]"
 
   publish_crate:
     name: Rust Client / Publish Crate
