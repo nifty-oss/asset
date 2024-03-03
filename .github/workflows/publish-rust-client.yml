@@ -92,22 +92,22 @@ jobs:
           fi
 
           if [ "${{ inputs.dry_run }}" == "false" ]; then
-            OPTIONS="--no-push --no-tag --no-confirm --execute"
             git config user.name ${{ env.COMMIT_USER_NAME }}
             git config user.email ${{ env.COMMIT_USER_EMAIL }}
-          fi
-
-          cargo login ${{ secrets.CRATES_TOKEN }}
-          cargo release $BUMP $OPTIONS
-
-          if [ "${{ inputs.dry_run }}" == "false" ]; then
+      
+            cargo login ${{ secrets.CRATES_TOKEN }}
+            cargo release $BUMP --no-push --no-tag --no-confirm --execute
+        
             git reset --soft HEAD~1
-          fi
 
-          CLIENT_NAME=`grep -E '^name\s*=' Cargo.toml | awk -F '"' '{print $2}'`
-          CLIENT_VERSION=`grep -E '^version\s*=' Cargo.toml | awk -F '"' '{print $2}'`
-          echo CLIENT_NAME="${CLIENT_NAME}" >> $GITHUB_ENV
-          echo CLIENT_VERSION="${CLIENT_VERSION}" >> $GITHUB_ENV
+            CLIENT_NAME=`grep -E '^name\s*=' Cargo.toml | awk -F '"' '{print $2}'`
+            CLIENT_VERSION=`grep -E '^version\s*=' Cargo.toml | awk -F '"' '{print $2}'`
+            echo CLIENT_NAME="${CLIENT_NAME}" >> $GITHUB_ENV
+            echo CLIENT_VERSION="${CLIENT_VERSION}" >> $GITHUB_ENV
+          else
+            cargo login ${{ secrets.CRATES_TOKEN }}
+            cargo release $BUMP || true
+          fi
 
       - name: Commit and tag new version
         uses: stefanzweifel/git-auto-commit-action@v4
