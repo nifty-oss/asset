@@ -3,6 +3,14 @@ name: Publish Rust Client
 on:
   workflow_dispatch:
     inputs:
+      client:
+        description: Client
+        required: true
+        default: asset
+        type: choice
+        options:
+          - asset
+          - bridge
       level:
         description: Level
         required: true
@@ -40,12 +48,16 @@ jobs:
     name: Rust Client
     uses: ./.github/workflows/build-rust-client.yml
     secrets: inherit
+    with:
+      client_matrix: "[${{ inputs.client }}]"
 
   test_rust_client:
     name: Rust Client
     needs: [build_programs, build_rust_client]
     uses: ./.github/workflows/test-rust-client.yml
     secrets: inherit
+    with:
+      client_matrix: "[${{ inputs.client }}]"
 
   publish_crate:
     name: Rust Client / Publish Crate
@@ -71,7 +83,7 @@ jobs:
           cache: ${{ env.CACHE }}
 
       - name: Publish crate
-        working-directory: ./clients/rust
+        working-directory: ./clients/rust/${{ inputs.client }}
         run: |
           if [ "${{ inputs.level }}" == "version" ]; then
             BUMP=${{ inputs.version }}
