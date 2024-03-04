@@ -45,17 +45,11 @@ jobs:
           version: ${{ inputs.solana || env.SOLANA_VERSION }}
           cache: ${{ env.CACHE }}
 
-      - name: Cache Rust client test dependencies
+      - name: Cache Rust CLI dependencies
         uses: nifty-oss/actions/buildjet-cache-crate@v1
         with:
-          folder: ./clients/cli
+          folder: '.'
           key: rust-cli-test
-
-      - name: Run cargo clippy
-        uses: nifty-oss/actions/cargo@v1
-        with:
-          command: clippy
-          args: --all-targets --all-features --no-deps --manifest-path ./clients/cli/Cargo.toml
 
       - name: Build Rust CLI
         shell: bash

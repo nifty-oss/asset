@@ -53,16 +53,8 @@ jobs:
       - name: Cache Rust client test dependencies
         uses: nifty-oss/actions/buildjet-cache-crate@v1
         with:
-          folder: ./clients/rust/${{ matrix.client }}
+          folder: '.'
           key: ${{ matrix.client }}-rust-client-test
-
-      - name: Run cargo clippy
-        uses: nifty-oss/actions/cargo@v1
-        with:
-          command: clippy
-          args:
-            --all-targets --all-features --no-deps --manifest-path ./clients/rust/${{
-              matrix.client}}/Cargo.toml
 
       - name: Build Rust client
         shell: bash

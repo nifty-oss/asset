@@ -37,7 +37,7 @@ jobs:
       - name: Cache Rust client test dependencies
         uses: nifty-oss/actions/buildjet-cache-crate@v1
         with:
-          folder: ./clients/rust/${{ matrix.client }}
+          folder: '.'
           key: ${{ matrix.client }}-rust-client-test
 
       - name: Download program builds
