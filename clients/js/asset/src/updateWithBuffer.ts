@@ -39,7 +39,7 @@ export function updateWithBuffer(
         allocate(context, {
           ...input,
           asset: buffer,
-          extension: {
+          extensionInput: {
             extensionType: input.extension.type,
             length: data.length,
             data: null,

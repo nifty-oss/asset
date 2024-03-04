@@ -31,7 +31,11 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
-import { Extension, ExtensionArgs, getExtensionSerializer } from '../types';
+import {
+  ExtensionInput,
+  ExtensionInputArgs,
+  getExtensionInputSerializer,
+} from '../types';
 
 // Accounts.
 export type UpdateInstructionAccounts = {
@@ -52,13 +56,13 @@ export type UpdateInstructionData = {
   discriminator: number;
   name: Option<string>;
   mutable: Option<boolean>;
-  extension: Option<Extension>;
+  extension: Option<ExtensionInput>;
 };
 
 export type UpdateInstructionDataArgs = {
   name?: OptionOrNullable<string>;
   mutable?: OptionOrNullable<boolean>;
-  extension?: OptionOrNullable<ExtensionArgs>;
+  extension?: OptionOrNullable<ExtensionInputArgs>;
 };
 
 export function getUpdateInstructionDataSerializer(): Serializer<
@@ -71,7 +75,7 @@ export function getUpdateInstructionDataSerializer(): Serializer<
         ['discriminator', u8()],
         ['name', option(string())],
         ['mutable', option(bool())],
-        ['extension', option(getExtensionSerializer())],
+        ['extension', option(getExtensionInputSerializer())],
       ],
       { description: 'UpdateInstructionData' }
     ),
