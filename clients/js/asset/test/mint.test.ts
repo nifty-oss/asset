@@ -17,12 +17,12 @@ test('it can mint an asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // When we create a new asset.
   await mint(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
@@ -32,7 +32,7 @@ test('it can mint an asset', async (t) => {
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.NonFungible,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     authority: umi.identity.publicKey,
   });
 });
@@ -41,12 +41,12 @@ test('it can mint an asset with an extension', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // When we mint a new asset with an extension.
   await mint(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
     extensions: [attributes([{ traitType: 'head', value: 'hat' }])],
@@ -57,7 +57,7 @@ test('it can mint an asset with an extension', async (t) => {
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.NonFungible,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     authority: umi.identity.publicKey,
     extensions: [
       {
@@ -77,12 +77,12 @@ test('it can mint a new asset with multiple extensions', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // When we create a new asset.
   await mint(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
     extensions: [
@@ -109,7 +109,7 @@ test('it can mint a new asset with multiple extensions', async (t) => {
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.NonFungible,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     authority: umi.identity.publicKey,
     extensions: [
       {

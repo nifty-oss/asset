@@ -44,7 +44,7 @@
           "isMut": true,
           "isSigner": true,
           "docs": [
-            "The holder or burn delegate of the asset"
+            "The owner or burn delegate of the asset"
           ]
         },
         {
@@ -92,11 +92,11 @@
           ]
         },
         {
-          "name": "holder",
+          "name": "owner",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "The holder of the asset"
+            "The owner of the asset"
           ]
         },
         {
@@ -152,11 +152,11 @@
           ]
         },
         {
-          "name": "holder",
+          "name": "owner",
           "isMut": false,
           "isSigner": true,
           "docs": [
-            "The holder of the asset"
+            "The owner of the asset"
           ]
         },
         {
@@ -240,7 +240,7 @@
           "isMut": false,
           "isSigner": true,
           "docs": [
-            "Delegate or holder account"
+            "Delegate or owner account"
           ]
         }
       ],
@@ -266,7 +266,7 @@
           "isMut": false,
           "isSigner": true,
           "docs": [
-            "Current holder of the asset or delegate"
+            "Current owner of the asset or delegate"
           ]
         }
       ],
@@ -299,7 +299,7 @@
           "isMut": false,
           "isSigner": true,
           "docs": [
-            "Current holder of the asset or transfer delegate"
+            "Current owner of the asset or transfer delegate"
           ]
         },
         {
@@ -342,7 +342,7 @@
           "isMut": false,
           "isSigner": true,
           "docs": [
-            "Delegate ot holder account"
+            "Delegate or owner account"
           ]
         }
       ],

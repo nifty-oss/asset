@@ -21,12 +21,12 @@ test('it can burn an asset as a holder', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetSigner = generateSigner(umi);
-  const holderSigner = generateSigner(umi);
+  const ownerSigner = generateSigner(umi);
 
   // When we create a new asset.
   await create(umi, {
     asset: assetSigner,
-    holder: holderSigner.publicKey,
+    owner: ownerSigner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
@@ -36,14 +36,14 @@ test('it can burn an asset as a holder', async (t) => {
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.NonFungible,
-    holder: holderSigner.publicKey,
+    owner: ownerSigner.publicKey,
     authority: umi.identity.publicKey,
   });
 
   // Burn the asset.
   await burn(umi, {
     asset: assetSigner.publicKey,
-    signer: holderSigner,
+    signer: ownerSigner,
   }).sendAndConfirm(umi);
 
   // Then the asset is gone.
@@ -54,25 +54,25 @@ test('it can burn an asset as a delegate', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetSigner = generateSigner(umi);
-  const holderSigner = generateSigner(umi);
+  const ownerSigner = generateSigner(umi);
   const delegateSigner = generateSigner(umi);
 
   // When we create a new asset.
   await create(umi, {
     asset: assetSigner,
-    holder: holderSigner.publicKey,
+    owner: ownerSigner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
   // the holder is correct.
   const asset = await fetchAsset(umi, assetSigner.publicKey);
-  t.true(asset.holder === holderSigner.publicKey);
+  t.true(asset.owner === ownerSigner.publicKey);
 
   // Now we delegate burn authority of the asset
   await approve(umi, {
     asset: assetSigner.publicKey,
-    holder: holderSigner,
+    owner: ownerSigner,
     delegate: delegateSigner.publicKey,
     delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Burn],
@@ -93,13 +93,13 @@ test('invalid signer cannot burn', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
   const invalid = generateSigner(umi);
 
   // When we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
@@ -109,7 +109,7 @@ test('invalid signer cannot burn', async (t) => {
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.NonFungible,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     authority: umi.identity.publicKey,
   });
 

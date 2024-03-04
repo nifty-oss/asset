@@ -253,7 +253,7 @@ pub fn process_create(
     CreateCpiBuilder::new(ctx.accounts.nifty_asset_program)
         .asset(ctx.accounts.asset)
         .authority(ctx.accounts.update_authority)
-        .holder(ctx.accounts.vault)
+        .owner(ctx.accounts.vault)
         .payer(Some(ctx.accounts.payer))
         .system_program(Some(ctx.accounts.system_program))
         .name(metadata.name)

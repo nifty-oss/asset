@@ -362,7 +362,7 @@ pub fn mint(args: MintIxArgs) -> Result<Vec<Instruction>, MintError> {
         Create {
             asset: args.accounts.asset,
             authority: args.accounts.owner,
-            holder: args.accounts.owner,
+            owner: args.accounts.owner,
             payer: Some(payer),
             group: None,
             system_program: Some(solana_program::system_program::id()),

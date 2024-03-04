@@ -16,9 +16,9 @@ pub struct ApproveArgs {
 pub fn handle_approve(args: ApproveArgs) -> Result<()> {
     let config = CliConfig::new(args.keypair_path, args.rpc_url)?;
 
-    let holder_sk = config.keypair;
+    let owner_sk = config.keypair;
 
-    let holder = holder_sk.pubkey();
+    let owner = owner_sk.pubkey();
     let asset = args.asset;
     let delegate = args.delegate;
 
@@ -39,12 +39,12 @@ pub fn handle_approve(args: ApproveArgs) -> Result<()> {
 
     let ix = Approve {
         asset,
-        holder,
+        owner,
         delegate,
     }
     .instruction(args);
 
-    let sig = send_and_confirm_tx(&config.client, &[&holder_sk], &[ix])?;
+    let sig = send_and_confirm_tx(&config.client, &[&owner_sk], &[ix])?;
 
     println!("Setting {delegate} as a delegate on asset {asset} in tx: {sig}");
 

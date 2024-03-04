@@ -21,7 +21,7 @@ pub state: State,
 pub standard: Standard,
 pub mutable: bool,
 #[cfg_attr(feature = "serde", serde(with = "serde_with::As::<serde_with::DisplayFromStr>"))]
-pub holder: Pubkey,
+pub owner: Pubkey,
 #[cfg_attr(feature = "serde", serde(with = "serde_with::As::<serde_with::DisplayFromStr>"))]
 pub group: Pubkey,
 #[cfg_attr(feature = "serde", serde(with = "serde_with::As::<serde_with::DisplayFromStr>"))]
