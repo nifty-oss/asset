@@ -1,5 +1,7 @@
 {
   "scripts": {
-    "build": "pnpm --filter {asset} build && pnpm --filter {bridge} build"
+    "build": "pnpm --filter {asset} build && pnpm --filter {bridge} build",
+    "format": "pnpm --filter {asset} format && pnpm --filter {bridge} format",
+    "lint": "pnpm --filter {asset} lint && pnpm --filter {bridge} lint"
   }
 }
