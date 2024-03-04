@@ -3,6 +3,14 @@ name: Publish JS Client
 on:
   workflow_dispatch:
     inputs:
+      client:
+        description: Client
+        required: true
+        default: asset
+        type: choice
+        options:
+          - asset
+          - bridge
       bump:
         description: Version bump
         required: true
@@ -41,6 +49,8 @@ jobs:
     needs: build_programs
     uses: ./.github/workflows/test-js-client.yml
     secrets: inherit
+    with:
+      client_matrix: "[\"${{ inputs.client }}\"]"
 
   publish_js:
     name: JS client / Publish
@@ -69,12 +79,12 @@ jobs:
           key: clients-js
 
       - name: Build
-        working-directory: ./clients/js
+        working-directory: ./clients/js/${{ inputs.client }}
         run: pnpm build
 
       - name: Bump
         id: bump
-        working-directory: ./clients/js
+        working-directory: ./clients/js/${{ inputs.client }}
         run: |
           if [ "${{ startsWith(inputs.bump, 'pre') }}" == "true" ]; then
             pnpm version ${{ inputs.bump }} --preid ${{ inputs.tag }} --no-git-tag-version
@@ -89,7 +99,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish
-        working-directory: ./clients/js
+        working-directory: ./clients/js/${{ inputs.client }}
         run: pnpm publish --no-git-checks --tag ${{ inputs.tag }}
 
       - name: Commit and tag new version
@@ -125,7 +135,7 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        working-directory: ./clients/js
+        working-directory: ./clients/js/${{ inputs.client }}
         run:
           echo "url=$(vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }})" | tee
           $GITHUB_OUTPUT
