@@ -20,7 +20,7 @@ use crate::{
 pub fn process_allocate(
     program_id: &Pubkey,
     ctx: Context<AllocateAccounts>,
-    args: crate::instruction::Extension,
+    args: crate::instruction::ExtensionInput,
 ) -> ProgramResult {
     // account validation
 
@@ -171,7 +171,7 @@ pub fn process_allocate(
 
 fn save_extension_data(
     ctx: &Context<AllocateAccounts>,
-    args: &crate::instruction::Extension,
+    args: &crate::instruction::ExtensionInput,
     offset: usize,
     data: &[u8],
 ) -> ProgramResult {

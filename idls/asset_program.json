@@ -129,9 +129,9 @@
       ],
       "args": [
         {
-          "name": "metadata",
+          "name": "metadataInput",
           "type": {
-            "defined": "Metadata"
+            "defined": "MetadataInput"
           }
         }
       ],
@@ -213,9 +213,9 @@
       ],
       "args": [
         {
-          "name": "extension",
+          "name": "extensionInput",
           "type": {
-            "defined": "Extension"
+            "defined": "ExtensionInput"
           }
         }
       ],
@@ -494,9 +494,9 @@
       ],
       "args": [
         {
-          "name": "data",
+          "name": "dataInput",
           "type": {
-            "defined": "Data"
+            "defined": "DataInput"
           }
         }
       ],
@@ -576,29 +576,23 @@
   ],
   "types": [
     {
-      "name": "Metadata",
+      "name": "DataInput",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "name": "standard",
-            "type": {
-              "defined": "Standard"
-            }
-          },
-          {
-            "name": "mutable",
+            "name": "overwrite",
             "type": "bool"
+          },
+          {
+            "name": "bytes",
+            "type": "bytes"
           }
         ]
       }
     },
     {
-      "name": "Extension",
+      "name": "ExtensionInput",
       "type": {
         "kind": "struct",
         "fields": [
@@ -622,17 +616,23 @@
       }
     },
     {
-      "name": "Data",
+      "name": "MetadataInput",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "overwrite",
-            "type": "bool"
+            "name": "name",
+            "type": "string"
           },
           {
-            "name": "bytes",
-            "type": "bytes"
+            "name": "standard",
+            "type": {
+              "defined": "Standard"
+            }
+          },
+          {
+            "name": "mutable",
+            "type": "bool"
           }
         ]
       }
@@ -658,7 +658,7 @@
             "name": "extension",
             "type": {
               "option": {
-                "defined": "Extension"
+                "defined": "ExtensionInput"
               }
             }
           }

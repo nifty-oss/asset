@@ -5,7 +5,7 @@ use mpl_token_metadata::{
 use nifty_asset::{
     extensions::{ExtensionBuilder, GroupBuilder, MetadataBuilder, RoyaltiesBuilder},
     instructions::{AllocateCpiBuilder, CreateCpiBuilder},
-    types::{Extension, ExtensionType},
+    types::{ExtensionInput, ExtensionType},
 };
 use nifty_asset_types::constraints::{Account, NotBuilder, PubkeyMatchBuilder};
 use podded::ZeroCopy;
@@ -200,7 +200,7 @@ pub fn process_create(
         .asset(ctx.accounts.asset)
         .payer(Some(ctx.accounts.payer))
         .system_program(Some(ctx.accounts.system_program))
-        .extension(Extension {
+        .extension_input(ExtensionInput {
             extension_type: ExtensionType::Metadata,
             length: data.len() as u32,
             data: Some(data),
@@ -216,7 +216,7 @@ pub fn process_create(
             .asset(ctx.accounts.asset)
             .payer(Some(ctx.accounts.payer))
             .system_program(Some(ctx.accounts.system_program))
-            .extension(Extension {
+            .extension_input(ExtensionInput {
                 extension_type: ExtensionType::Grouping,
                 length: data.len() as u32,
                 data: Some(data),
@@ -241,7 +241,7 @@ pub fn process_create(
                 .asset(ctx.accounts.asset)
                 .payer(Some(ctx.accounts.payer))
                 .system_program(Some(ctx.accounts.system_program))
-                .extension(Extension {
+                .extension_input(ExtensionInput {
                     extension_type: ExtensionType::Royalties,
                     length: royalties_data.len() as u32,
                     data: Some(royalties_data),

@@ -5,7 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::Extension;
+use crate::generated::types::ExtensionInput;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -82,7 +82,7 @@ impl AllocateInstructionData {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AllocateInstructionArgs {
-    pub extension: Extension,
+    pub extension_input: ExtensionInput,
 }
 
 /// Instruction builder for `Allocate`.
@@ -97,7 +97,7 @@ pub struct AllocateBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
-    extension: Option<Extension>,
+    extension_input: Option<ExtensionInput>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -129,8 +129,8 @@ impl AllocateBuilder {
         self
     }
     #[inline(always)]
-    pub fn extension(&mut self, extension: Extension) -> &mut Self {
-        self.extension = Some(extension);
+    pub fn extension_input(&mut self, extension_input: ExtensionInput) -> &mut Self {
+        self.extension_input = Some(extension_input);
         self
     }
     /// Add an aditional account to the instruction.
@@ -159,7 +159,10 @@ impl AllocateBuilder {
             system_program: self.system_program,
         };
         let args = AllocateInstructionArgs {
-            extension: self.extension.clone().expect("extension is not set"),
+            extension_input: self
+                .extension_input
+                .clone()
+                .expect("extension_input is not set"),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -318,7 +321,7 @@ impl<'a, 'b> AllocateCpiBuilder<'a, 'b> {
             asset: None,
             payer: None,
             system_program: None,
-            extension: None,
+            extension_input: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -350,8 +353,8 @@ impl<'a, 'b> AllocateCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn extension(&mut self, extension: Extension) -> &mut Self {
-        self.instruction.extension = Some(extension);
+    pub fn extension_input(&mut self, extension_input: ExtensionInput) -> &mut Self {
+        self.instruction.extension_input = Some(extension_input);
         self
     }
     /// Add an additional account to the instruction.
@@ -396,11 +399,11 @@ impl<'a, 'b> AllocateCpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = AllocateInstructionArgs {
-            extension: self
+            extension_input: self
                 .instruction
-                .extension
+                .extension_input
                 .clone()
-                .expect("extension is not set"),
+                .expect("extension_input is not set"),
         };
         let instruction = AllocateCpi {
             __program: self.instruction.__program,
@@ -424,7 +427,7 @@ struct AllocateCpiBuilderInstruction<'a, 'b> {
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    extension: Option<Extension>,
+    extension_input: Option<ExtensionInput>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

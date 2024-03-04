@@ -11,7 +11,7 @@ use crate::{
     error::AssetError,
     instruction::{
         accounts::{Context, CreateAccounts, GroupAccounts},
-        Metadata,
+        MetadataInput,
     },
     require,
 };
@@ -19,7 +19,7 @@ use crate::{
 pub fn process_create(
     program_id: &Pubkey,
     ctx: Context<CreateAccounts>,
-    args: Metadata,
+    args: MetadataInput,
 ) -> ProgramResult {
     // account validation
 

@@ -4,7 +4,7 @@ use nifty_asset::{
     extensions::{Attributes, AttributesBuilder, ExtensionBuilder},
     instructions::{AllocateBuilder, CreateBuilder},
     state::{Asset, Discriminator, Standard, State},
-    types::{Extension, ExtensionType},
+    types::{ExtensionInput, ExtensionType},
     ZeroCopy,
 };
 use solana_program::system_program;
@@ -89,7 +89,7 @@ mod create {
             .asset(asset.pubkey())
             .payer(Some(context.payer.pubkey()))
             .system_program(Some(system_program::id()))
-            .extension(Extension {
+            .extension_input(ExtensionInput {
                 extension_type: ExtensionType::Attributes,
                 length: data.len() as u32,
                 data: Some(data),

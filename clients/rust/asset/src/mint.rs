@@ -17,7 +17,7 @@ use crate::{
         Allocate, AllocateInstructionArgs, Create, CreateInstructionArgs, Write,
         WriteInstructionArgs,
     },
-    types::{Extension, ExtensionType, Standard},
+    types::{ExtensionInput, ExtensionType, Standard},
 };
 
 /// Mint instruction args.
@@ -311,7 +311,7 @@ pub fn mint(args: MintIxArgs) -> Result<Vec<Instruction>, MintError> {
     // Extension allocation instructions.
     for extension in args.extension_args.iter() {
         let ix_args = AllocateInstructionArgs {
-            extension: Extension {
+            extension_input: ExtensionInput {
                 extension_type: extension.extension_type.clone(),
                 length: extension.data.len() as u32,
                 data: if extension.chunked {

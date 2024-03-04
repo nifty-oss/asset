@@ -1,9 +1,0 @@
-{
-    "rust-analyzer.linkedProjects": [
-        "./clients/rust/asset/Cargo.toml",
-        "./clients/rust/bridge/Cargo.toml",
-        "./clients/cli/Cargo.toml",
-        "./programs/asset/Cargo.toml",
-        "./programs/bridge/Cargo.toml",
-    ]
-}
