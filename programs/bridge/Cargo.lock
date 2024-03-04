@@ -401,7 +401,7 @@ dependencies = [
 
 [[package]]
 name = "bridge-program"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "borsh 0.10.3",
  "bytemuck",
@@ -1076,7 +1076,7 @@ dependencies = [
 
 [[package]]
 name = "nifty-asset"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "borsh 0.10.3",
  "kaigan",
@@ -1089,7 +1089,7 @@ dependencies = [
 
 [[package]]
 name = "nifty-asset-types"
-version = "0.0.1"
+version = "0.0.0"
 dependencies = [
  "borsh 0.10.3",
  "bytemuck",
