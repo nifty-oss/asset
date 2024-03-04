@@ -8,7 +8,6 @@ import {
   blob,
   create,
   fetchAsset,
-  getExtensionSerializerFromType,
   initialize,
   links,
   update,
@@ -145,17 +144,10 @@ test('it can update the extension of an asset', async (t) => {
   });
 
   // When we update the extension of the asset.
-  const data = getExtensionSerializerFromType(
-    ExtensionType.Attributes
-  ).serialize(attributes([{ traitType: 'Clothes', value: 'Purple Shirt' }]));
   await update(umi, {
     asset: asset.publicKey,
     payer: umi.identity,
-    extension: {
-      extensionType: ExtensionType.Attributes,
-      length: data.length,
-      data,
-    },
+    extension: attributes([{ traitType: 'Clothes', value: 'Purple Shirt' }]),
   }).sendAndConfirm(umi);
 
   // Then the extension is updated.
@@ -228,17 +220,10 @@ test('it can update the extension of an asset with multiple extensions', async (
   });
 
   // When we update the extension of the asset.
-  const data = getExtensionSerializerFromType(
-    ExtensionType.Attributes
-  ).serialize(attributes([{ traitType: 'Clothes', value: 'Purple Shirt' }]));
   await update(umi, {
     asset: asset.publicKey,
     payer: umi.identity,
-    extension: {
-      extensionType: ExtensionType.Attributes,
-      length: data.length,
-      data,
-    },
+    extension: attributes([{ traitType: 'Clothes', value: 'Purple Shirt' }]),
   }).sendAndConfirm(umi);
 
   // Then the extension is updated.
@@ -291,24 +276,15 @@ test('it can extend the length of an extension', async (t) => {
   });
 
   // When we update the extension of the asset.
-  const data = getExtensionSerializerFromType(
-    ExtensionType.Attributes
-  ).serialize(
-    attributes([
-      { traitType: 'Type', value: 'Dark' },
-      { traitType: 'Clothes', value: 'Purple Shirt' },
-      { traitType: 'Ears', value: 'None' },
-    ])
-  );
   await update(umi, {
     asset: asset.publicKey,
     payer: umi.identity,
     systemProgram: getSplSystemProgramId(umi),
-    extension: {
-      extensionType: ExtensionType.Attributes,
-      length: data.length,
-      data,
-    },
+    extension: attributes([
+      { traitType: 'Type', value: 'Dark' },
+      { traitType: 'Clothes', value: 'Purple Shirt' },
+      { traitType: 'Ears', value: 'None' },
+    ]),
   }).sendAndConfirm(umi);
 
   // Then the extension is updated.

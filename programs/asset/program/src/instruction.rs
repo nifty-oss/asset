@@ -41,7 +41,7 @@ pub enum Instruction {
     #[account(0, signer, writable, name="asset", desc = "Asset account")]
     #[account(1, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
     #[account(2, optional, name="system_program", desc = "The system program")]
-    Allocate(ExtensionInput),
+    Allocate(AllocateInput),
 
     /// Locks an asset.
     #[account(0, writable, name="asset", desc = "Asset account")]
@@ -100,6 +100,13 @@ pub enum Instruction {
     #[account(1, writable, name="group", desc = "Asset account of the group")]
     #[account(2, signer, name="authority", desc = "The authority of the assets")]
     Ungroup,
+}
+
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
+pub struct AllocateInput {
+    /// Extension to initialize.
+    pub extension: ExtensionInput,
 }
 
 #[repr(C)]

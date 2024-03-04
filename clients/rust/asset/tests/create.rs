@@ -89,7 +89,7 @@ mod create {
             .asset(asset.pubkey())
             .payer(Some(context.payer.pubkey()))
             .system_program(Some(system_program::id()))
-            .extension_input(ExtensionInput {
+            .extension(ExtensionInput {
                 extension_type: ExtensionType::Attributes,
                 length: data.len() as u32,
                 data: Some(data),

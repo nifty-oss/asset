@@ -213,9 +213,9 @@
       ],
       "args": [
         {
-          "name": "extensionInput",
+          "name": "allocateInput",
           "type": {
-            "defined": "ExtensionInput"
+            "defined": "AllocateInput"
           }
         }
       ],
@@ -575,6 +575,20 @@
     }
   ],
   "types": [
+    {
+      "name": "AllocateInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "extension",
+            "type": {
+              "defined": "ExtensionInput"
+            }
+          }
+        ]
+      }
+    },
     {
       "name": "DataInput",
       "type": {

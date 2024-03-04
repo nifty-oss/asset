@@ -311,7 +311,7 @@ pub fn mint(args: MintIxArgs) -> Result<Vec<Instruction>, MintError> {
     // Extension allocation instructions.
     for extension in args.extension_args.iter() {
         let ix_args = AllocateInstructionArgs {
-            extension_input: ExtensionInput {
+            extension: ExtensionInput {
                 extension_type: extension.extension_type.clone(),
                 length: extension.data.len() as u32,
                 data: if extension.chunked {

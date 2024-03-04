@@ -416,6 +416,7 @@ kinobi.accept(
         "asset",
         ".prettierrc.json"
       )),
+      internalNodes: ["update", "write"],
       customAccountData: [
         {
           name: "asset",

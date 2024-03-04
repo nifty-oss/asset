@@ -9,10 +9,9 @@ import {
   create,
   creators,
   fetchAsset,
-  getExtensionSerializerFromType,
   initialize,
   update,
-  verify,
+  verify
 } from '../../src';
 import { createUmi } from '../_setup';
 
@@ -207,20 +206,13 @@ test('it maintain a creator verified status on update', async (t) => {
 
   // When we update the extension of the asset removing/adding a new creator.
   const creator3 = generateSigner(umi);
-  const data = getExtensionSerializerFromType(ExtensionType.Creators).serialize(
-    creators([
-      { address: creator1.publicKey, share: 50 },
-      { address: creator3.publicKey, share: 50 },
-    ])
-  );
   await update(umi, {
     asset: asset.publicKey,
     payer: umi.identity,
-    extension: {
-      extensionType: ExtensionType.Creators,
-      length: data.length,
-      data,
-    },
+    extension: creators([
+      { address: creator1.publicKey, share: 50 },
+      { address: creator3.publicKey, share: 50 },
+    ]),
   }).sendAndConfirm(umi);
 
   // Then the creator 1 should remain verified.
@@ -299,17 +291,10 @@ test('it cannot remove a verified creator on update', async (t) => {
   });
 
   // When we try to update the extension removing a verified creator.
-  const data = getExtensionSerializerFromType(ExtensionType.Creators).serialize(
-    creators([{ address: creator2.publicKey, share: 100 }])
-  );
   const promise = update(umi, {
     asset: asset.publicKey,
     payer: umi.identity,
-    extension: {
-      extensionType: ExtensionType.Creators,
-      length: data.length,
-      data,
-    },
+    extension: creators([{ address: creator2.publicKey, share: 100 }]),
   }).sendAndConfirm(umi);
 
   // Then we expect an error.
@@ -364,17 +349,10 @@ test('it can remove an unverified creator on update', async (t) => {
   });
 
   // When we update the extension removing an unverified creator.
-  const data = getExtensionSerializerFromType(ExtensionType.Creators).serialize(
-    creators([{ address: creator2.publicKey, share: 100 }])
-  );
   await update(umi, {
     asset: asset.publicKey,
     payer: umi.identity,
-    extension: {
-      extensionType: ExtensionType.Creators,
-      length: data.length,
-      data,
-    },
+    extension: creators([{ address: creator2.publicKey, share: 100 }]),
   }).sendAndConfirm(umi);
 
   // Then the unverified creator is removed
@@ -442,17 +420,10 @@ test('it cannot update creators with invalid total share', async (t) => {
   });
 
   // When we trye tp update the extension with an invalid total share.
-  const data = getExtensionSerializerFromType(ExtensionType.Creators).serialize(
-    creators([{ address: creator2.publicKey, share: 90 }])
-  );
   const promise = update(umi, {
     asset: asset.publicKey,
     payer: umi.identity,
-    extension: {
-      extensionType: ExtensionType.Creators,
-      length: data.length,
-      data,
-    },
+    extension: creators([{ address: creator2.publicKey, share: 90 }]),
   }).sendAndConfirm(umi);
 
   // Then we expect an error.

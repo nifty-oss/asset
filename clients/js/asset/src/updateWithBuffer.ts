@@ -6,13 +6,13 @@ import {
 } from '@metaplex-foundation/umi';
 import { getSplSystemProgramId } from '@metaplex-foundation/mpl-toolbox';
 import { TypedExtension, getExtensionSerializerFromType } from './extensions';
+import { allocate } from './generated';
+import { DEFAULT_CHUNK_SIZE, write } from './write';
 import {
   UpdateInstructionAccounts,
   UpdateInstructionArgs,
-  allocate,
   update,
-} from './generated';
-import { DEFAULT_CHUNK_SIZE, write } from './write';
+} from './generated/instructions/update';
 
 export function updateWithBuffer(
   context: Pick<
@@ -20,12 +20,15 @@ export function updateWithBuffer(
     'eddsa' | 'identity' | 'payer' | 'programs' | 'transactions'
   >,
   input: UpdateInstructionAccounts &
-    Omit<UpdateInstructionArgs, 'extension'> & { extension: TypedExtension }
+    Omit<UpdateInstructionArgs, 'extension'> & {
+      extension: TypedExtension;
+      chunkSize?: number;
+    }
 ): TransactionBuilderGroup {
   const data = getExtensionSerializerFromType(input.extension.type).serialize(
     input.extension
   );
-  const chunked = data.length > DEFAULT_CHUNK_SIZE;
+  const chunked = data.length > (input.chunkSize ?? DEFAULT_CHUNK_SIZE);
 
   if (chunked) {
     const buffer = generateSigner(context);
@@ -39,7 +42,7 @@ export function updateWithBuffer(
         allocate(context, {
           ...input,
           asset: buffer,
-          extensionInput: {
+          extension: {
             extensionType: input.extension.type,
             length: data.length,
             data: null,

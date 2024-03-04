@@ -23,7 +23,7 @@ export function initialize(
 
   const builder = allocate(context, {
     ...input,
-    extensionInput: {
+    extension: {
       extensionType: input.extension.type,
       length: data.length,
       data: chunked ? null : some(data),

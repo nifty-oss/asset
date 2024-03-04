@@ -7,6 +7,7 @@
  */
 
 import {
+  TokenStandard,
   TokenStandardArgs,
   findMasterEditionPda,
   findMetadataPda,
@@ -37,7 +38,6 @@ import {
   expectPublicKey,
   getAccountMetasAndSigners,
 } from '../shared';
-import { TokenStandard } from '../types';
 
 // Accounts.
 export type BridgeInstructionAccounts = {

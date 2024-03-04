@@ -153,7 +153,10 @@ kinobi.update(
         tokenRecord: {
           defaultValue: k.conditionalValueNode({
             condition: k.argumentValueNode("tokenStandard"),
-            value: k.enumValueNode("TokenStandard", "ProgrammableNonFungible"),
+            value: k.enumValueNode(
+              k.definedTypeLinkNode("TokenStandard", "mplTokenMetadata"),
+              "ProgrammableNonFungible"
+            ),
             ifTrue: k.pdaValueNode(
               k.pdaLinkNode("tokenRecord", "mplTokenMetadata"),
               [
@@ -175,7 +178,10 @@ kinobi.update(
         vaultTokenRecord: {
           defaultValue: k.conditionalValueNode({
             condition: k.argumentValueNode("tokenStandard"),
-            value: k.enumValueNode("TokenStandard", "ProgrammableNonFungible"),
+            value: k.enumValueNode(
+              k.definedTypeLinkNode("TokenStandard", "mplTokenMetadata"),
+              "ProgrammableNonFungible"
+            ),
             ifTrue: k.pdaValueNode(
               k.pdaLinkNode("tokenRecord", "mplTokenMetadata"),
               [
@@ -188,7 +194,10 @@ kinobi.update(
         authorizationRulesProgram: {
           defaultValue: k.conditionalValueNode({
             condition: k.argumentValueNode("tokenStandard"),
-            value: k.enumValueNode("TokenStandard", "ProgrammableNonFungible"),
+            value: k.enumValueNode(
+              k.definedTypeLinkNode("TokenStandard", "mplTokenMetadata"),
+              "ProgrammableNonFungible"
+            ),
             ifTrue: k.publicKeyValueNode(
               "auth9SigNpDKz4sJJ1DfCTuZrZNSAgh9sFD3rboVmgg",
               "mplTokenAuthRules"
@@ -199,7 +208,10 @@ kinobi.update(
       arguments: {
         tokenStandard: {
           type: k.definedTypeLinkNode("TokenStandard", "mplTokenMetadata"),
-          defaultValue: k.enumValueNode("TokenStandard", "NonFungible"),
+          defaultValue: k.enumValueNode(
+            k.definedTypeLinkNode("TokenStandard", "mplTokenMetadata"),
+            "NonFungible"
+          ),
         },
       },
     },

@@ -200,7 +200,7 @@ pub fn process_create(
         .asset(ctx.accounts.asset)
         .payer(Some(ctx.accounts.payer))
         .system_program(Some(ctx.accounts.system_program))
-        .extension_input(ExtensionInput {
+        .extension(ExtensionInput {
             extension_type: ExtensionType::Metadata,
             length: data.len() as u32,
             data: Some(data),
@@ -216,7 +216,7 @@ pub fn process_create(
             .asset(ctx.accounts.asset)
             .payer(Some(ctx.accounts.payer))
             .system_program(Some(ctx.accounts.system_program))
-            .extension_input(ExtensionInput {
+            .extension(ExtensionInput {
                 extension_type: ExtensionType::Grouping,
                 length: data.len() as u32,
                 data: Some(data),
@@ -241,7 +241,7 @@ pub fn process_create(
                 .asset(ctx.accounts.asset)
                 .payer(Some(ctx.accounts.payer))
                 .system_program(Some(ctx.accounts.system_program))
-                .extension_input(ExtensionInput {
+                .extension(ExtensionInput {
                     extension_type: ExtensionType::Royalties,
                     length: royalties_data.len() as u32,
                     data: Some(royalties_data),
