@@ -59,17 +59,51 @@ jobs:
           changes: ${{ steps.changes.outputs.changes }}
           suffix: _rust_client
 
+  lint:
+    name: Lint
+    if: ${{ needs.changes.outputs.any == 'true' }}
+    needs: changes
+    runs-on: buildjet-8vcpu-ubuntu-2204
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+
+      - name: Load environment variables
+        run: cat .github/.env >> $GITHUB_ENV
+
+      - name: Install Rust
+        uses: nifty-oss/actions/install-rust@v1
+
+      - name: Cache program dependencies
+        if: env.CACHE == 'true'
+        uses: nifty-oss/actions/buildjet-cache-crate@v1
+        with:
+          folder: '.'
+          key: programs
+
+      - name: Run cargo fmt
+        uses: nifty-oss/actions/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+      - name: Run cargo clippy
+        uses: nifty-oss/actions/cargo@v1
+        with:
+          command: clippy
+          args: --all-targets --all-features --no-deps
+
   build_programs:
     name: Programs
     if: ${{ needs.changes.outputs.any == 'true' }}
-    needs: changes
+    needs: [changes, lint]
     uses: ./.github/workflows/build-programs.yml
     secrets: inherit
 
   test_programs:
     name: Programs
     if: ${{ needs.changes.outputs.programs == 'true' }}
-    needs: changes
+    needs: [changes, lint]
     uses: ./.github/workflows/test-programs.yml
     secrets: inherit
     with:
