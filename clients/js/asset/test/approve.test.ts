@@ -14,12 +14,12 @@ test('it can set a delegate with a single role', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
@@ -28,7 +28,7 @@ test('it can set a delegate with a single role', async (t) => {
   const authority = generateSigner(umi).publicKey;
   await approve(umi, {
     asset: asset.publicKey,
-    holder,
+    owner,
     delegate: authority,
     delegateInput: delegateInput('Some', { roles: [DelegateRole.Transfer] }),
   }).sendAndConfirm(umi);
@@ -47,12 +47,12 @@ test('it can set a delegate with multiple role', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
@@ -63,7 +63,7 @@ test('it can set a delegate with multiple role', async (t) => {
   const authority = generateSigner(umi).publicKey;
   await approve(umi, {
     asset: asset.publicKey,
-    holder,
+    owner,
     delegate: authority,
     delegateInput: delegateInput('Some', { roles }),
   }).sendAndConfirm(umi);
@@ -83,12 +83,12 @@ test('it can set a new role to an existing delegate', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
@@ -97,7 +97,7 @@ test('it can set a new role to an existing delegate', async (t) => {
   const authority = generateSigner(umi).publicKey;
   await approve(umi, {
     asset: asset.publicKey,
-    holder,
+    owner,
     delegate: authority,
     delegateInput: delegateInput('Some', { roles: [DelegateRole.Transfer] }),
   }).sendAndConfirm(umi);
@@ -113,7 +113,7 @@ test('it can set a new role to an existing delegate', async (t) => {
   // When we set a new role to an existing delegate.
   await approve(umi, {
     asset: asset.publicKey,
-    holder,
+    owner,
     delegate: authority,
     delegateInput: delegateInput('Some', { roles: [DelegateRole.Burn] }),
   }).sendAndConfirm(umi);
@@ -132,12 +132,12 @@ test('it sets all roles when passing in the All variant', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
@@ -146,7 +146,7 @@ test('it sets all roles when passing in the All variant', async (t) => {
   const authority = generateSigner(umi).publicKey;
   await approve(umi, {
     asset: asset.publicKey,
-    holder,
+    owner,
     delegate: authority,
     delegateInput: delegateInput('All'),
   }).sendAndConfirm(umi);

@@ -38,12 +38,12 @@ pub fn process_burn(program_id: &Pubkey, ctx: Context<BurnAccounts>) -> ProgramR
 
     let asset = Asset::load(&data);
 
-    // Validate the signer is the holder or the burn delegate.
-    let is_holder = asset.holder == *ctx.accounts.signer.key;
+    // Validate the signer is the owner or the burn delegate.
+    let is_owner = asset.owner == *ctx.accounts.signer.key;
     let is_delegate = assert_delegate(asset, ctx.accounts.signer.key, DelegateRole::Burn).is_ok();
 
     require!(
-        is_holder || is_delegate,
+        is_owner || is_delegate,
         AssetError::InvalidBurnAuthority,
         "not an owner or burn delegate"
     );

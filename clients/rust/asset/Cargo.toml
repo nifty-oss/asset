@@ -1,12 +1,11 @@
 [package]
 name = "nifty-asset"
-version = "0.1.0"
+description = "Nifty Asset SDK"
+authors = ["nifty-oss maintainers <maintainers@nifty-oss.org>"]
+version = "0.0.0"
 edition = "2021"
 readme = "README.md"
 license-file = "../../../LICENSE"
-
-[lib]
-crate-type = ["cdylib", "lib"]
 
 [features]
 test-sbf = []

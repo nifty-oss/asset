@@ -13,8 +13,8 @@ use borsh::BorshSerialize;
 pub struct Approve {
     /// Asset account
     pub asset: solana_program::pubkey::Pubkey,
-    /// The holder of the asset
-    pub holder: solana_program::pubkey::Pubkey,
+    /// The owner of the asset
+    pub owner: solana_program::pubkey::Pubkey,
     /// The delegate account
     pub delegate: solana_program::pubkey::Pubkey,
 }
@@ -37,8 +37,7 @@ impl Approve {
             self.asset, false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.holder,
-            true,
+            self.owner, true,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.delegate,
@@ -79,12 +78,12 @@ pub struct ApproveInstructionArgs {
 /// ### Accounts:
 ///
 ///   0. `[writable]` asset
-///   1. `[signer]` holder
+///   1. `[signer]` owner
 ///   2. `[]` delegate
 #[derive(Default)]
 pub struct ApproveBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
-    holder: Option<solana_program::pubkey::Pubkey>,
+    owner: Option<solana_program::pubkey::Pubkey>,
     delegate: Option<solana_program::pubkey::Pubkey>,
     delegate_input: Option<DelegateInput>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
@@ -100,10 +99,10 @@ impl ApproveBuilder {
         self.asset = Some(asset);
         self
     }
-    /// The holder of the asset
+    /// The owner of the asset
     #[inline(always)]
-    pub fn holder(&mut self, holder: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.holder = Some(holder);
+    pub fn owner(&mut self, owner: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.owner = Some(owner);
         self
     }
     /// The delegate account
@@ -139,7 +138,7 @@ impl ApproveBuilder {
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
         let accounts = Approve {
             asset: self.asset.expect("asset is not set"),
-            holder: self.holder.expect("holder is not set"),
+            owner: self.owner.expect("owner is not set"),
             delegate: self.delegate.expect("delegate is not set"),
         };
         let args = ApproveInstructionArgs {
@@ -157,8 +156,8 @@ impl ApproveBuilder {
 pub struct ApproveCpiAccounts<'a, 'b> {
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The holder of the asset
-    pub holder: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The owner of the asset
+    pub owner: &'b solana_program::account_info::AccountInfo<'a>,
     /// The delegate account
     pub delegate: &'b solana_program::account_info::AccountInfo<'a>,
 }
@@ -169,8 +168,8 @@ pub struct ApproveCpi<'a, 'b> {
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The holder of the asset
-    pub holder: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The owner of the asset
+    pub owner: &'b solana_program::account_info::AccountInfo<'a>,
     /// The delegate account
     pub delegate: &'b solana_program::account_info::AccountInfo<'a>,
     /// The arguments for the instruction.
@@ -186,7 +185,7 @@ impl<'a, 'b> ApproveCpi<'a, 'b> {
         Self {
             __program: program,
             asset: accounts.asset,
-            holder: accounts.holder,
+            owner: accounts.owner,
             delegate: accounts.delegate,
             __args: args,
         }
@@ -230,7 +229,7 @@ impl<'a, 'b> ApproveCpi<'a, 'b> {
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.holder.key,
+            *self.owner.key,
             true,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -256,7 +255,7 @@ impl<'a, 'b> ApproveCpi<'a, 'b> {
         let mut account_infos = Vec::with_capacity(3 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset.clone());
-        account_infos.push(self.holder.clone());
+        account_infos.push(self.owner.clone());
         account_infos.push(self.delegate.clone());
         remaining_accounts
             .iter()
@@ -275,7 +274,7 @@ impl<'a, 'b> ApproveCpi<'a, 'b> {
 /// ### Accounts:
 ///
 ///   0. `[writable]` asset
-///   1. `[signer]` holder
+///   1. `[signer]` owner
 ///   2. `[]` delegate
 pub struct ApproveCpiBuilder<'a, 'b> {
     instruction: Box<ApproveCpiBuilderInstruction<'a, 'b>>,
@@ -286,7 +285,7 @@ impl<'a, 'b> ApproveCpiBuilder<'a, 'b> {
         let instruction = Box::new(ApproveCpiBuilderInstruction {
             __program: program,
             asset: None,
-            holder: None,
+            owner: None,
             delegate: None,
             delegate_input: None,
             __remaining_accounts: Vec::new(),
@@ -299,13 +298,10 @@ impl<'a, 'b> ApproveCpiBuilder<'a, 'b> {
         self.instruction.asset = Some(asset);
         self
     }
-    /// The holder of the asset
+    /// The owner of the asset
     #[inline(always)]
-    pub fn holder(
-        &mut self,
-        holder: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
-        self.instruction.holder = Some(holder);
+    pub fn owner(&mut self, owner: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+        self.instruction.owner = Some(owner);
         self
     }
     /// The delegate account
@@ -375,7 +371,7 @@ impl<'a, 'b> ApproveCpiBuilder<'a, 'b> {
 
             asset: self.instruction.asset.expect("asset is not set"),
 
-            holder: self.instruction.holder.expect("holder is not set"),
+            owner: self.instruction.owner.expect("owner is not set"),
 
             delegate: self.instruction.delegate.expect("delegate is not set"),
             __args: args,
@@ -390,7 +386,7 @@ impl<'a, 'b> ApproveCpiBuilder<'a, 'b> {
 struct ApproveCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    holder: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     delegate: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     delegate_input: Option<DelegateInput>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.

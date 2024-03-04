@@ -30,7 +30,7 @@ import {
 export type UnlockInstructionAccounts = {
   /** Asset account */
   asset: PublicKey | Pda;
-  /** Delegate ot holder account */
+  /** Delegate or owner account */
   authority?: Signer;
 };
 

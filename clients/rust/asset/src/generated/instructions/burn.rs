@@ -12,7 +12,7 @@ use borsh::BorshSerialize;
 pub struct Burn {
     /// Asset account
     pub asset: solana_program::pubkey::Pubkey,
-    /// The holder or burn delegate of the asset
+    /// The owner or burn delegate of the asset
     pub signer: solana_program::pubkey::Pubkey,
     /// The account receiving refunded rent
     pub recipient: Option<solana_program::pubkey::Pubkey>,
@@ -104,7 +104,7 @@ impl BurnBuilder {
         self.asset = Some(asset);
         self
     }
-    /// The holder or burn delegate of the asset
+    /// The owner or burn delegate of the asset
     #[inline(always)]
     pub fn signer(&mut self, signer: solana_program::pubkey::Pubkey) -> &mut Self {
         self.signer = Some(signer);
@@ -159,7 +159,7 @@ impl BurnBuilder {
 pub struct BurnCpiAccounts<'a, 'b> {
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The holder or burn delegate of the asset
+    /// The owner or burn delegate of the asset
     pub signer: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account receiving refunded rent
     pub recipient: Option<&'b solana_program::account_info::AccountInfo<'a>>,
@@ -173,7 +173,7 @@ pub struct BurnCpi<'a, 'b> {
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The holder or burn delegate of the asset
+    /// The owner or burn delegate of the asset
     pub signer: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account receiving refunded rent
     pub recipient: Option<&'b solana_program::account_info::AccountInfo<'a>>,
@@ -323,7 +323,7 @@ impl<'a, 'b> BurnCpiBuilder<'a, 'b> {
         self.instruction.asset = Some(asset);
         self
     }
-    /// The holder or burn delegate of the asset
+    /// The owner or burn delegate of the asset
     #[inline(always)]
     pub fn signer(
         &mut self,

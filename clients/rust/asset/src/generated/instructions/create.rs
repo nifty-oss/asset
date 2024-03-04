@@ -15,8 +15,8 @@ pub struct Create {
     pub asset: solana_program::pubkey::Pubkey,
     /// The authority of the asset
     pub authority: solana_program::pubkey::Pubkey,
-    /// The holder of the asset
-    pub holder: solana_program::pubkey::Pubkey,
+    /// The owner of the asset
+    pub owner: solana_program::pubkey::Pubkey,
     /// Asset account of the group
     pub group: Option<solana_program::pubkey::Pubkey>,
     /// The account paying for the storage fees
@@ -47,8 +47,7 @@ impl Create {
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.holder,
-            false,
+            self.owner, false,
         ));
         if let Some(group) = self.group {
             accounts.push(solana_program::instruction::AccountMeta::new(group, false));
@@ -115,7 +114,7 @@ pub struct CreateInstructionArgs {
 ///
 ///   0. `[writable, signer]` asset
 ///   1. `[]` authority
-///   2. `[]` holder
+///   2. `[]` owner
 ///   3. `[writable, optional]` group
 ///   4. `[writable, signer, optional]` payer
 ///   5. `[optional]` system_program
@@ -123,7 +122,7 @@ pub struct CreateInstructionArgs {
 pub struct CreateBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
     authority: Option<solana_program::pubkey::Pubkey>,
-    holder: Option<solana_program::pubkey::Pubkey>,
+    owner: Option<solana_program::pubkey::Pubkey>,
     group: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
@@ -149,10 +148,10 @@ impl CreateBuilder {
         self.authority = Some(authority);
         self
     }
-    /// The holder of the asset
+    /// The owner of the asset
     #[inline(always)]
-    pub fn holder(&mut self, holder: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.holder = Some(holder);
+    pub fn owner(&mut self, owner: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.owner = Some(owner);
         self
     }
     /// `[optional account]`
@@ -219,7 +218,7 @@ impl CreateBuilder {
         let accounts = Create {
             asset: self.asset.expect("asset is not set"),
             authority: self.authority.expect("authority is not set"),
-            holder: self.holder.expect("holder is not set"),
+            owner: self.owner.expect("owner is not set"),
             group: self.group,
             payer: self.payer,
             system_program: self.system_program,
@@ -240,8 +239,8 @@ pub struct CreateCpiAccounts<'a, 'b> {
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// The authority of the asset
     pub authority: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The holder of the asset
-    pub holder: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The owner of the asset
+    pub owner: &'b solana_program::account_info::AccountInfo<'a>,
     /// Asset account of the group
     pub group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
@@ -258,8 +257,8 @@ pub struct CreateCpi<'a, 'b> {
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// The authority of the asset
     pub authority: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The holder of the asset
-    pub holder: &'b solana_program::account_info::AccountInfo<'a>,
+    /// The owner of the asset
+    pub owner: &'b solana_program::account_info::AccountInfo<'a>,
     /// Asset account of the group
     pub group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
@@ -280,7 +279,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
             __program: program,
             asset: accounts.asset,
             authority: accounts.authority,
-            holder: accounts.holder,
+            owner: accounts.owner,
             group: accounts.group,
             payer: accounts.payer,
             system_program: accounts.system_program,
@@ -330,7 +329,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.holder.key,
+            *self.owner.key,
             false,
         ));
         if let Some(group) = self.group {
@@ -384,7 +383,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset.clone());
         account_infos.push(self.authority.clone());
-        account_infos.push(self.holder.clone());
+        account_infos.push(self.owner.clone());
         if let Some(group) = self.group {
             account_infos.push(group.clone());
         }
@@ -412,7 +411,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
 ///
 ///   0. `[writable, signer]` asset
 ///   1. `[]` authority
-///   2. `[]` holder
+///   2. `[]` owner
 ///   3. `[writable, optional]` group
 ///   4. `[writable, signer, optional]` payer
 ///   5. `[optional]` system_program
@@ -426,7 +425,7 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
             __program: program,
             asset: None,
             authority: None,
-            holder: None,
+            owner: None,
             group: None,
             payer: None,
             system_program: None,
@@ -452,13 +451,10 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
         self.instruction.authority = Some(authority);
         self
     }
-    /// The holder of the asset
+    /// The owner of the asset
     #[inline(always)]
-    pub fn holder(
-        &mut self,
-        holder: &'b solana_program::account_info::AccountInfo<'a>,
-    ) -> &mut Self {
-        self.instruction.holder = Some(holder);
+    pub fn owner(&mut self, owner: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+        self.instruction.owner = Some(owner);
         self
     }
     /// `[optional account]`
@@ -565,7 +561,7 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
 
             authority: self.instruction.authority.expect("authority is not set"),
 
-            holder: self.instruction.holder.expect("holder is not set"),
+            owner: self.instruction.owner.expect("owner is not set"),
 
             group: self.instruction.group,
 
@@ -585,7 +581,7 @@ struct CreateCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    holder: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,

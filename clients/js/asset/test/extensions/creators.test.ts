@@ -20,7 +20,7 @@ test('it can create a new asset with a creator', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we initialize an asset with a creators extension.
   await initialize(umi, {
@@ -34,7 +34,7 @@ test('it can create a new asset with a creator', async (t) => {
   // When we create the asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Asset with creators',
   }).sendAndConfirm(umi);
 
@@ -44,7 +44,7 @@ test('it can create a new asset with a creator', async (t) => {
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.NonFungible,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     authority: umi.identity.publicKey,
     extensions: [
       {
@@ -65,7 +65,7 @@ test('it can create a new asset with multiple creators', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   const addresses = new Array(10)
     .fill(0)
@@ -83,7 +83,7 @@ test('it can create a new asset with multiple creators', async (t) => {
   // When we create the asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Asset with creators',
   }).sendAndConfirm(umi);
 
@@ -99,7 +99,7 @@ test('it can create a new asset with multiple creators', async (t) => {
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.NonFungible,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     authority: umi.identity.publicKey,
     extensions: [
       {
@@ -135,7 +135,7 @@ test('it maintain a creator verified status on update', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And two creators.
   const creator1 = generateSigner(umi);
@@ -154,7 +154,7 @@ test('it maintain a creator verified status on update', async (t) => {
   // And we create the asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Asset with creators',
   }).sendAndConfirm(umi);
 
@@ -249,7 +249,7 @@ test('it cannot remove a verified creator on update', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And two creators.
   const creator1 = generateSigner(umi);
@@ -268,7 +268,7 @@ test('it cannot remove a verified creator on update', async (t) => {
   // And we create the asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Asset with creators',
   }).sendAndConfirm(umi);
 
@@ -320,7 +320,7 @@ test('it can remove an unverified creator on update', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And two creators.
   const creator1 = generateSigner(umi);
@@ -339,7 +339,7 @@ test('it can remove an unverified creator on update', async (t) => {
   // And we create the asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Asset with creators',
   }).sendAndConfirm(umi);
 
@@ -398,7 +398,7 @@ test('it cannot update creators with invalid total share', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And two creators.
   const creator1 = generateSigner(umi);
@@ -417,7 +417,7 @@ test('it cannot update creators with invalid total share', async (t) => {
   // And we create the asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Asset with creators',
   }).sendAndConfirm(umi);
 

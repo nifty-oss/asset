@@ -2082,7 +2082,7 @@ dependencies = [
 
 [[package]]
 name = "nifty-bridge"
-version = "0.0.1"
+version = "0.0.0"
 dependencies = [
  "assert_matches",
  "borsh 0.10.3",

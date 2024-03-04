@@ -49,7 +49,7 @@ kinobi.update(
                     child: k.boolTypeNode()
                   }),
                   k.structFieldTypeNode({
-                    name: "holder",
+                    name: "owner",
                     child: k.publicKeyTypeNode()
                   }),
                   k.structFieldTypeNode({
@@ -321,7 +321,7 @@ kinobi.update(
   new k.UpdateInstructionsVisitor({
     create: {
       accounts: {
-        holder: { defaultsTo: k.identityDefault() },
+        owner: { defaultsTo: k.identityDefault() },
         systemProgram: {
           defaultsTo: k.conditionalDefault("account", "payer", {
             ifTrue: k.programDefault(
@@ -354,7 +354,7 @@ kinobi.update(
       data: k.vNone()
     },
     create: {
-      holder: k.identityDefault()
+      owner: k.identityDefault()
     },
     CreateInstructionData: {
       standard: k.vEnum("Standard", "NonFungible"),
