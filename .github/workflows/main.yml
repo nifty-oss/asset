@@ -60,7 +60,7 @@ jobs:
           suffix: _rust_client
 
   lint_rust:
-    name: Lint / Rust
+    name: Lint Rust
     if: ${{ needs.changes.outputs.any == 'true' }}
     needs: changes
     runs-on: buildjet-8vcpu-ubuntu-2204
@@ -96,7 +96,7 @@ jobs:
           args: --all-targets --all-features --no-deps
 
   lint_js:
-    name: Lint / JS
+    name: Lint JS
     if: ${{ needs.changes.outputs.any == 'true' }}
     needs: changes
     runs-on: buildjet-8vcpu-ubuntu-2204
