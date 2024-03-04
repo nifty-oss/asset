@@ -1,6 +1,6 @@
 [package]
 name = "nifty-asset"
-description = "Nifty Asset SDK"
+description = "A client SDK for Nifty Asset program"
 authors = ["nifty-oss maintainers <maintainers@nifty-oss.org>"]
 version = "0.0.0"
 edition = "2021"
