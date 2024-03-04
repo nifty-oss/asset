@@ -34,7 +34,7 @@ export type AssetAccountData = {
   state: State;
   standard: Standard;
   mutable: boolean;
-  holder: PublicKey;
+  owner: PublicKey;
   group: PublicKey;
   authority: PublicKey;
   delegate: Delegate;
@@ -45,7 +45,7 @@ export type AssetAccountDataArgs = {
   state: StateArgs;
   standard: StandardArgs;
   mutable: boolean;
-  holder: PublicKey;
+  owner: PublicKey;
   group: PublicKey;
   authority: PublicKey;
   delegate: DelegateArgs;
@@ -63,7 +63,7 @@ export function getAssetAccountDataSerializer(): Serializer<
         ['state', getStateSerializer()],
         ['standard', getStandardSerializer()],
         ['mutable', bool()],
-        ['holder', publicKeySerializer()],
+        ['owner', publicKeySerializer()],
         ['group', publicKeySerializer()],
         ['authority', publicKeySerializer()],
         ['delegate', getDelegateSerializer()],

@@ -41,7 +41,7 @@ pub fn process_unlock(program_id: &Pubkey, ctx: Context<UnlockAccounts>) -> Prog
 
     if asset.delegate.value().is_some() {
         assert_delegate(asset, ctx.accounts.authority.key, DelegateRole::Lock)?;
-    } else if asset.holder != *ctx.accounts.authority.key {
+    } else if asset.owner != *ctx.accounts.authority.key {
         return err!(AssetError::InvalidAuthority);
     }
 

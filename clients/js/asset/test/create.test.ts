@@ -19,12 +19,12 @@ test('it can create an asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // When we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
@@ -34,7 +34,7 @@ test('it can create an asset', async (t) => {
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.NonFungible,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     authority: umi.identity.publicKey,
   });
 });
@@ -43,7 +43,7 @@ test('it can create a new asset with an extension', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we initialize an extension.
   await initialize(umi, {
@@ -55,7 +55,7 @@ test('it can create a new asset with an extension', async (t) => {
   // When we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
@@ -64,7 +64,7 @@ test('it can create a new asset with an extension', async (t) => {
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.NonFungible,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     authority: umi.identity.publicKey,
     extensions: [
       {
@@ -84,7 +84,7 @@ test('it can create a new asset with multiple extensions', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we initialize an attributes extension.
   await initialize(umi, {
@@ -116,7 +116,7 @@ test('it can create a new asset with multiple extensions', async (t) => {
   // When we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
@@ -125,7 +125,7 @@ test('it can create a new asset with multiple extensions', async (t) => {
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.NonFungible,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     authority: umi.identity.publicKey,
     extensions: [
       {
@@ -157,12 +157,12 @@ test('it can create a soulbound asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // When we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Soulbound Asset',
     standard: Standard.Soulbound,
@@ -173,7 +173,7 @@ test('it can create a soulbound asset', async (t) => {
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.Soulbound,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     authority: umi.identity.publicKey,
     name: 'Soulbound Asset',
   });

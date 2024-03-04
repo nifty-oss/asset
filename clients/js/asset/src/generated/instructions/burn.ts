@@ -30,7 +30,7 @@ import {
 export type BurnInstructionAccounts = {
   /** Asset account */
   asset: PublicKey | Pda;
-  /** The holder or burn delegate of the asset */
+  /** The owner or burn delegate of the asset */
   signer: Signer;
   /** The account receiving refunded rent */
   recipient?: PublicKey | Pda;

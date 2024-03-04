@@ -100,7 +100,7 @@ pub fn process_create(
     asset.discriminator = Discriminator::Asset;
     asset.standard = args.standard;
     asset.mutable = args.mutable.into();
-    asset.holder = *ctx.accounts.holder.key;
+    asset.owner = *ctx.accounts.owner.key;
     asset.authority = *ctx.accounts.authority.key;
     asset.name = args.name.into();
 

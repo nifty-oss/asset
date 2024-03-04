@@ -43,15 +43,15 @@ pub fn process_revoke(
 
     let asset = Asset::load_mut(&mut data);
 
-    let is_holder = asset.holder == *ctx.accounts.signer.key;
+    let is_owner = asset.owner == *ctx.accounts.signer.key;
 
     let is_delegate = asset
         .delegate
         .value()
         .map(|delegate| *delegate.address == *ctx.accounts.signer.key);
 
-    // we only revoke a delegate if the signer is the holder or the current delegate
-    if !(is_holder || is_delegate == Some(true)) {
+    // we only revoke a delegate if the signer is the owner or the current delegate
+    if !(is_owner || is_delegate == Some(true)) {
         return err!(AssetError::InvalidAuthority, "not a holder or delegate");
     }
 

@@ -17,12 +17,12 @@ test('it can lock an asset as a holder', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
@@ -30,7 +30,7 @@ test('it can lock an asset as a holder', async (t) => {
   // When we lock the asset as a holder.
   await lock(umi, {
     asset: asset.publicKey,
-    authority: holder,
+    authority: owner,
   }).sendAndConfirm(umi);
 
   // Then the asset is locked.
@@ -44,12 +44,12 @@ test('it can lock an asset with a delegate', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
@@ -58,7 +58,7 @@ test('it can lock an asset with a delegate', async (t) => {
   const authority = generateSigner(umi);
   await approve(umi, {
     asset: asset.publicKey,
-    holder,
+    owner,
     delegate: authority.publicKey,
     delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Lock],
@@ -82,12 +82,12 @@ test('it cannot transfer a locked asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
@@ -96,7 +96,7 @@ test('it cannot transfer a locked asset', async (t) => {
   const authority = generateSigner(umi);
   await approve(umi, {
     asset: asset.publicKey,
-    holder,
+    owner,
     delegate: authority.publicKey,
     delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Lock],
@@ -113,7 +113,7 @@ test('it cannot transfer a locked asset', async (t) => {
   const recipient = generateSigner(umi).publicKey;
   const promise = transfer(umi, {
     asset: asset.publicKey,
-    signer: holder,
+    signer: owner,
     recipient,
   }).sendAndConfirm(umi);
 
@@ -125,12 +125,12 @@ test('it cannot lock an asset without "Lock" role', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
@@ -139,7 +139,7 @@ test('it cannot lock an asset without "Lock" role', async (t) => {
   const authority = generateSigner(umi);
   await approve(umi, {
     asset: asset.publicKey,
-    holder,
+    owner,
     delegate: authority.publicKey,
     delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Transfer],
@@ -160,12 +160,12 @@ test('it cannot lock as a holder if delegate set', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
@@ -174,7 +174,7 @@ test('it cannot lock as a holder if delegate set', async (t) => {
   const authority = generateSigner(umi);
   await approve(umi, {
     asset: asset.publicKey,
-    holder,
+    owner,
     delegate: authority.publicKey,
     delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Lock, DelegateRole.Transfer],
@@ -184,7 +184,7 @@ test('it cannot lock as a holder if delegate set', async (t) => {
   // When we try to lock the asset as a holder.
   const promise = lock(umi, {
     asset: asset.publicKey,
-    authority: holder,
+    authority: owner,
   }).sendAndConfirm(umi);
 
   // Then we get an error.

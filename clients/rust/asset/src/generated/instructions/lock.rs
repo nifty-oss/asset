@@ -12,7 +12,7 @@ use borsh::BorshSerialize;
 pub struct Lock {
     /// Asset account
     pub asset: solana_program::pubkey::Pubkey,
-    /// Delegate or holder account
+    /// Delegate or owner account
     pub authority: solana_program::pubkey::Pubkey,
 }
 
@@ -78,7 +78,7 @@ impl LockBuilder {
         self.asset = Some(asset);
         self
     }
-    /// Delegate or holder account
+    /// Delegate or owner account
     #[inline(always)]
     pub fn authority(&mut self, authority: solana_program::pubkey::Pubkey) -> &mut Self {
         self.authority = Some(authority);
@@ -117,7 +117,7 @@ impl LockBuilder {
 pub struct LockCpiAccounts<'a, 'b> {
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
-    /// Delegate or holder account
+    /// Delegate or owner account
     pub authority: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
@@ -127,7 +127,7 @@ pub struct LockCpi<'a, 'b> {
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
-    /// Delegate or holder account
+    /// Delegate or owner account
     pub authority: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
@@ -240,7 +240,7 @@ impl<'a, 'b> LockCpiBuilder<'a, 'b> {
         self.instruction.asset = Some(asset);
         self
     }
-    /// Delegate or holder account
+    /// Delegate or owner account
     #[inline(always)]
     pub fn authority(
         &mut self,

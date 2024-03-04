@@ -147,7 +147,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
     discriminator: AssetDiscriminator.Asset,
     state: AssetState.Unlocked,
     standard: AssetStandard.NonFungible,
-    holder: assetVaultPda[0],
+    owner: assetVaultPda[0],
     authority: umi.identity.publicKey,
     extensions: [
       {
@@ -175,7 +175,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
     discriminator: AssetDiscriminator.Asset,
     state: AssetState.Unlocked,
     standard: AssetStandard.NonFungible,
-    holder: collectionVaultPda[0],
+    owner: collectionVaultPda[0],
     authority: umi.identity.publicKey,
     extensions: [
       {
@@ -209,7 +209,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
   );
 
   t.like(untransferredAsset, <Asset>{
-    holder: assetVaultPda[0],
+    owner: assetVaultPda[0],
   });
 
   // Now update the royalty extension on the group asset to have the recipient be the pubkey match
@@ -231,7 +231,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
     discriminator: AssetDiscriminator.Asset,
     state: AssetState.Unlocked,
     standard: AssetStandard.NonFungible,
-    holder: collectionVaultPda[0],
+    owner: collectionVaultPda[0],
     authority: umi.identity.publicKey,
     extensions: [
       {
@@ -261,6 +261,6 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
   );
 
   t.like(transferredAsset, <Asset>{
-    holder: owner.publicKey,
+    owner: owner.publicKey,
   });
 });

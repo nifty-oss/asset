@@ -19,12 +19,12 @@ test('it can update the name of an asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset v1',
   }).sendAndConfirm(umi);
@@ -48,13 +48,13 @@ test('it can update the name of an asset', async (t) => {
 test('it can update an asset to be immutable', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And a new asset.
   const asset = generateSigner(umi);
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset v1',
   }).sendAndConfirm(umi);
@@ -78,13 +78,13 @@ test('it can update an asset to be immutable', async (t) => {
 test('it cannot update an immutable asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And a new asset.
   const asset = generateSigner(umi);
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset v1',
     mutable: false,
@@ -110,7 +110,7 @@ test('it can update the extension of an asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we initialize an extension.
   await initialize(umi, {
@@ -126,7 +126,7 @@ test('it can update the extension of an asset', async (t) => {
   // And we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
@@ -165,7 +165,7 @@ test('it can update the extension of an asset with multiple extensions', async (
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we initialize an attributes extension.
   await initialize(umi, {
@@ -193,7 +193,7 @@ test('it can update the extension of an asset with multiple extensions', async (
   // And we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
@@ -250,7 +250,7 @@ test('it can extend the length of an extension', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we initialize an extension.
   await initialize(umi, {
@@ -262,7 +262,7 @@ test('it can extend the length of an extension', async (t) => {
   // And we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
@@ -306,7 +306,7 @@ test('it can update an asset with a buffer', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we initialize an asset with a blob (image) extension.
   let response = await fetch(
@@ -327,7 +327,7 @@ test('it can update an asset with a buffer', async (t) => {
   // And we create the asset with a blob (image) extension.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Blob Asset',
   }).sendAndConfirm(umi);
 

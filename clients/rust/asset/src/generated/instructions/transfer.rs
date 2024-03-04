@@ -12,7 +12,7 @@ use borsh::BorshSerialize;
 pub struct Transfer {
     /// Asset account
     pub asset: solana_program::pubkey::Pubkey,
-    /// Current holder of the asset or transfer delegate
+    /// Current owner of the asset or transfer delegate
     pub signer: solana_program::pubkey::Pubkey,
     /// The recipient of the asset
     pub recipient: solana_program::pubkey::Pubkey,
@@ -101,7 +101,7 @@ impl TransferBuilder {
         self.asset = Some(asset);
         self
     }
-    /// Current holder of the asset or transfer delegate
+    /// Current owner of the asset or transfer delegate
     #[inline(always)]
     pub fn signer(&mut self, signer: solana_program::pubkey::Pubkey) -> &mut Self {
         self.signer = Some(signer);
@@ -158,7 +158,7 @@ impl TransferBuilder {
 pub struct TransferCpiAccounts<'a, 'b> {
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
-    /// Current holder of the asset or transfer delegate
+    /// Current owner of the asset or transfer delegate
     pub signer: &'b solana_program::account_info::AccountInfo<'a>,
     /// The recipient of the asset
     pub recipient: &'b solana_program::account_info::AccountInfo<'a>,
@@ -172,7 +172,7 @@ pub struct TransferCpi<'a, 'b> {
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
-    /// Current holder of the asset or transfer delegate
+    /// Current owner of the asset or transfer delegate
     pub signer: &'b solana_program::account_info::AccountInfo<'a>,
     /// The recipient of the asset
     pub recipient: &'b solana_program::account_info::AccountInfo<'a>,
@@ -314,7 +314,7 @@ impl<'a, 'b> TransferCpiBuilder<'a, 'b> {
         self.instruction.asset = Some(asset);
         self
     }
-    /// Current holder of the asset or transfer delegate
+    /// Current owner of the asset or transfer delegate
     #[inline(always)]
     pub fn signer(
         &mut self,

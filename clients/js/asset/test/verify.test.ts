@@ -16,7 +16,7 @@ test('it can verify a creator', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we initialize an asset with a creators extension.
   await initialize(umi, {
@@ -28,7 +28,7 @@ test('it can verify a creator', async (t) => {
   // And we create the asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Asset with creators',
   }).sendAndConfirm(umi);
 
@@ -75,7 +75,7 @@ test('it can verify multiple creators', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And two creators.
   const creator1 = generateSigner(umi);
@@ -94,7 +94,7 @@ test('it can verify multiple creators', async (t) => {
   // And we create the asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Asset with creators',
   }).sendAndConfirm(umi);
 
@@ -178,7 +178,7 @@ test('it cannot verify a wrong creator', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we initialize an asset with a creators extension.
   await initialize(umi, {
@@ -190,7 +190,7 @@ test('it cannot verify a wrong creator', async (t) => {
   // And we create the asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Asset with creators',
   }).sendAndConfirm(umi);
 
@@ -242,12 +242,12 @@ test('it cannot verify a creator without creators extension', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we create the asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Asset with creators',
     payer: umi.identity,
   }).sendAndConfirm(umi);

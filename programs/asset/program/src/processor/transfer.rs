@@ -59,20 +59,20 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
         "soulbound asset"
     );
 
-    let is_holder = asset.holder == *ctx.accounts.signer.key;
+    let is_owner = asset.owner == *ctx.accounts.signer.key;
 
     let is_delegate =
         assert_delegate(asset, ctx.accounts.signer.key, DelegateRole::Transfer).is_ok();
 
-    // Signing account must be holder or a transfer delegate.
+    // Signing account must be owner or a transfer delegate.
     require!(
-        is_holder || is_delegate,
+        is_owner || is_delegate,
         AssetError::InvalidTransferAuthority,
         "not a holder or transfer delegate"
     );
 
     // Self transfer short-circuits so as not to clear the delegate.
-    if asset.holder == *ctx.accounts.recipient.key {
+    if asset.owner == *ctx.accounts.recipient.key {
         return Ok(());
     }
 
@@ -117,7 +117,7 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
     }
 
     // Transfer the asset.
-    asset.holder = *ctx.accounts.recipient.key;
+    asset.owner = *ctx.accounts.recipient.key;
 
     // Clear the delegate.
     asset.delegate = PodOption::new(Delegate::default());

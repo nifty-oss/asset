@@ -3,8 +3,8 @@
 //! of an asset, such as the state, standard, name, and holder. The extensions section
 //! contains additional data that can be attached to the asset.
 //!
-//! Extensions can either represent additional on-chain data or used to include pointer to
-//! external data. For example, an asset can include its image as an extension on-chain or
+//! Extensions can either represent additional on-chain data or used to include pointers to
+//! external data. For example, an asset can include its image on-chain as an extension or
 //! a pointer to an external image.
 //!
 //! # Account layout
@@ -44,8 +44,8 @@ pub struct Asset {
     /// Indicates whether the asset is mutable.
     pub mutable: PodBool,
 
-    /// Current holder of the asset.
-    pub holder: Pubkey,
+    /// Current owner (holder) of the asset.
+    pub owner: Pubkey,
 
     /// Group of the asset.
     ///

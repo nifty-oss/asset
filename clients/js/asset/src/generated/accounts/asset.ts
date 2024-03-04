@@ -108,7 +108,7 @@ export function getAssetGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
       state: StateArgs;
       standard: StandardArgs;
       mutable: boolean;
-      holder: PublicKey;
+      owner: PublicKey;
       group: PublicKey;
       authority: PublicKey;
       delegate: DelegateArgs;
@@ -118,7 +118,7 @@ export function getAssetGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
       state: [1, getStateSerializer()],
       standard: [2, getStandardSerializer()],
       mutable: [3, bool()],
-      holder: [4, publicKeySerializer()],
+      owner: [4, publicKeySerializer()],
       group: [36, publicKeySerializer()],
       authority: [68, publicKeySerializer()],
       delegate: [100, getDelegateSerializer()],

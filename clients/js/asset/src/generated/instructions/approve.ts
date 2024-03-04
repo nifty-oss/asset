@@ -35,8 +35,8 @@ import {
 export type ApproveInstructionAccounts = {
   /** Asset account */
   asset: PublicKey | Pda;
-  /** The holder of the asset */
-  holder: Signer;
+  /** The owner of the asset */
+  owner: Signer;
   /** The delegate account */
   delegate: PublicKey | Pda;
 };
@@ -86,10 +86,10 @@ export function approve(
       isWritable: true as boolean,
       value: input.asset ?? null,
     },
-    holder: {
+    owner: {
       index: 1,
       isWritable: false as boolean,
-      value: input.holder ?? null,
+      value: input.owner ?? null,
     },
     delegate: {
       index: 2,

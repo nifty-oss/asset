@@ -80,7 +80,7 @@ mod mint {
         assert_eq!(asset.state, State::Unlocked);
         assert_eq!(asset.standard, NiftyStandard::NonFungible);
         assert_eq!(asset.authority, context.payer.pubkey());
-        assert_eq!(asset.holder, context.payer.pubkey());
+        assert_eq!(asset.owner, context.payer.pubkey());
         assert!(Asset::get_extensions(account_data).is_empty());
     }
 
@@ -151,7 +151,7 @@ mod mint {
         assert_eq!(asset.state, State::Unlocked);
         assert_eq!(asset.standard, NiftyStandard::NonFungible);
         assert_eq!(asset.authority, context.payer.pubkey());
-        assert_eq!(asset.holder, context.payer.pubkey());
+        assert_eq!(asset.owner, context.payer.pubkey());
 
         // And we are expecting one extension on the account.
         let extensions = Asset::get_extensions(account_data);
@@ -243,7 +243,7 @@ mod mint {
         assert_eq!(asset.state, State::Unlocked);
         assert_eq!(asset.standard, NiftyStandard::NonFungible);
         assert_eq!(asset.authority, context.payer.pubkey());
-        assert_eq!(asset.holder, context.payer.pubkey());
+        assert_eq!(asset.owner, context.payer.pubkey());
 
         // And we are expecting one extension on the account.
         let extensions = Asset::get_extensions(account_data);
@@ -323,7 +323,7 @@ mod mint {
         assert_eq!(asset.state, State::Unlocked);
         assert_eq!(asset.standard, NiftyStandard::NonFungible);
         assert_eq!(asset.authority, context.payer.pubkey());
-        assert_eq!(asset.holder, context.payer.pubkey());
+        assert_eq!(asset.owner, context.payer.pubkey());
 
         // And we are expecting one extension on the account.
         let extensions = Asset::get_extensions(account_data);

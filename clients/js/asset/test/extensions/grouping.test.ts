@@ -21,7 +21,7 @@ test('it can create a new group asset with a maximum size', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we initialize a metadata extension.
   await initialize(umi, {
@@ -35,7 +35,7 @@ test('it can create a new group asset with a maximum size', async (t) => {
   // When we create the asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Group Asset',
   }).sendAndConfirm(umi);
 
@@ -45,7 +45,7 @@ test('it can create a new group asset with a maximum size', async (t) => {
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.NonFungible,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     authority: umi.identity.publicKey,
     extensions: [
       {
@@ -61,7 +61,7 @@ test('it can create a new group asset of unlimited size', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we initialize a metadata extension.
   await initialize(umi, {
@@ -75,7 +75,7 @@ test('it can create a new group asset of unlimited size', async (t) => {
   // When we create the asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Group Asset',
   }).sendAndConfirm(umi);
 
@@ -85,7 +85,7 @@ test('it can create a new group asset of unlimited size', async (t) => {
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.NonFungible,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     authority: umi.identity.publicKey,
     extensions: [
       {

@@ -15,12 +15,12 @@ test('a holder can revoke a delegate', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
@@ -30,7 +30,7 @@ test('a holder can revoke a delegate', async (t) => {
 
   await approve(umi, {
     asset: asset.publicKey,
-    holder,
+    owner,
     delegate: authority,
     delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Transfer],
@@ -46,7 +46,7 @@ test('a holder can revoke a delegate', async (t) => {
   // When the holder revokes the delegate.
   await revoke(umi, {
     asset: asset.publicKey,
-    signer: holder,
+    signer: owner,
     delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Transfer],
     }),
@@ -62,12 +62,12 @@ test('a delegate can revoke itself', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
@@ -77,7 +77,7 @@ test('a delegate can revoke itself', async (t) => {
 
   await approve(umi, {
     asset: asset.publicKey,
-    holder,
+    owner,
     delegate: authority.publicKey,
     delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Transfer],
@@ -109,12 +109,12 @@ test('a random signer cannot revoke the delegate', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
@@ -124,7 +124,7 @@ test('a random signer cannot revoke the delegate', async (t) => {
 
   await approve(umi, {
     asset: asset.publicKey,
-    holder,
+    owner,
     delegate: authority.publicKey,
     delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Transfer],
@@ -163,12 +163,12 @@ test('revoking with the "All" variant revokes all active roles', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we create a new asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
@@ -178,7 +178,7 @@ test('revoking with the "All" variant revokes all active roles', async (t) => {
 
   await approve(umi, {
     asset: asset.publicKey,
-    holder,
+    owner,
     delegate: authority.publicKey,
     delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Transfer, DelegateRole.Burn, DelegateRole.Lock],

@@ -21,7 +21,7 @@ pub fn handle_create(args: CreateArgs) -> Result<()> {
 
     let asset = asset_sk.pubkey();
     let authority = authority_sk.pubkey();
-    let holder = args.owner.unwrap_or(authority);
+    let owner = args.owner.unwrap_or(authority);
 
     let ix_args = CreateInstructionArgs {
         name: args.name,
@@ -32,7 +32,7 @@ pub fn handle_create(args: CreateArgs) -> Result<()> {
     let ix = Create {
         asset,
         authority,
-        holder,
+        owner,
         payer: Some(authority),
         group: None,
         system_program: Some(system_program::id()),

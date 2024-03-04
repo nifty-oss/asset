@@ -1,7 +1,7 @@
 {
   "name": "@nifty-oss/bridge",
-  "version": "0.0.1",
-  "description": "A bridge to a slimmer life.",
+  "version": "0.0.0",
+  "description": "A bridge to a slimmer life",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "scripts": {
@@ -22,6 +22,7 @@
   },
   "homepage": "https://nifty-oss.github.io/asset/",
   "repository": "https://github.com/nifty-oss/asset.git",
+  "author": "nifty-oss maintainers <maintainers@nifty-oss.org>",
   "license": "Apache-2.0",
   "dependencies": {
     "@metaplex-foundation/mpl-token-metadata": "^3.1.2",
