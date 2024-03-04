@@ -11,7 +11,7 @@ import {
   fetchAsset,
   initialize,
   update,
-  verify
+  verify,
 } from '../../src';
 import { createUmi } from '../_setup';
 
