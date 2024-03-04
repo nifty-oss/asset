@@ -66,5 +66,5 @@ jobs:
         with:
           name: ${{ matrix.client }}-rust-client-build
           # First wildcard ensures exported paths are consistently under the clients folder.
-          path: ./client*/rust/${{ matrix.client }}/target/release/*${{ matrix.client }}*
+          path: ./targe*/release/*${{ matrix.client }}*
           if-no-files-found: error

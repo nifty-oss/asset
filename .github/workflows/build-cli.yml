@@ -61,5 +61,5 @@ jobs:
         with:
           name: rust-cli-builds
           # First wildcard ensures exported paths are consistently under the clients folder.
-          path: ./client*/cli/target/release/*nifty*
+          path: ./targe*/release/*nifty*
           if-no-files-found: error
