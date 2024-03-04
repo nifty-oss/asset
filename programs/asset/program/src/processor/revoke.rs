@@ -52,7 +52,7 @@ pub fn process_revoke(
 
     // we only revoke a delegate if the signer is the owner or the current delegate
     if !(is_owner || is_delegate == Some(true)) {
-        return err!(AssetError::InvalidAuthority, "not a holder or delegate");
+        return err!(AssetError::InvalidAuthority, "not an owner or delegate");
     }
 
     // If the All role is passed in we completely revoke the delegate

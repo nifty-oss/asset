@@ -68,7 +68,7 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
     require!(
         is_owner || is_delegate,
         AssetError::InvalidTransferAuthority,
-        "not a holder or transfer delegate"
+        "not an owner or transfer delegate"
     );
 
     // Self transfer short-circuits so as not to clear the delegate.

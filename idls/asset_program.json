@@ -738,12 +738,12 @@
     {
       "code": 6,
       "name": "InvalidBurnAuthority",
-      "msg": "Invalid holder or burn delegate"
+      "msg": "Invalid owner or burn delegate"
     },
     {
       "code": 7,
       "name": "InvalidTransferAuthority",
-      "msg": "Invalid holder or transfer delegate"
+      "msg": "Invalid owner or transfer delegate"
     },
     {
       "code": 8,
@@ -762,8 +762,8 @@
     },
     {
       "code": 11,
-      "name": "InvalidHolder",
-      "msg": "Invalid holder"
+      "name": "InvalidAssetOwner",
+      "msg": "Invalid asset owner"
     },
     {
       "code": 12,

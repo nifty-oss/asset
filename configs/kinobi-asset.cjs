@@ -47,7 +47,7 @@ kinobi.update(
                   type: k.booleanTypeNode(),
                 }),
                 k.structFieldTypeNode({
-                  name: "holder",
+                  name: "owner",
                   type: k.publicKeyTypeNode(),
                 }),
                 k.structFieldTypeNode({
@@ -322,7 +322,7 @@ kinobi.update(
   k.updateInstructionsVisitor({
     create: {
       accounts: {
-        holder: { defaultValue: k.identityValueNode() },
+        owner: { defaultValue: k.identityValueNode() },
         systemProgram: {
           defaultValue: k.conditionalValueNode({
             condition: k.accountValueNode("payer"),

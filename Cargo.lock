@@ -658,7 +658,7 @@ dependencies = [
 
 [[package]]
 name = "bridge-program"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "borsh 0.10.3",
  "bytemuck",
@@ -2256,7 +2256,7 @@ dependencies = [
 
 [[package]]
 name = "nifty-asset"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "assert_matches",
  "borsh 0.10.3",
@@ -2286,7 +2286,7 @@ dependencies = [
 
 [[package]]
 name = "nifty-bridge"
-version = "0.0.1"
+version = "0.0.0"
 dependencies = [
  "assert_matches",
  "borsh 0.10.3",
@@ -2302,7 +2302,7 @@ dependencies = [
 
 [[package]]
 name = "nifty-cli"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "anyhow",
  "borsh 0.9.3",
