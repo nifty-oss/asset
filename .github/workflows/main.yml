@@ -97,6 +97,8 @@ jobs:
 
   lint_js:
     name: Lint / JS
+    if: ${{ needs.changes.outputs.any == 'true' }}
+    needs: changes
     runs-on: buildjet-8vcpu-ubuntu-2204
     steps:
       - name: Git checkout
