@@ -3,6 +3,7 @@ name = "nifty-bridge"
 version = "0.0.0"
 description = "A client SDK for Nifty Bridge program"
 authors = ["nifty-oss maintainers <maintainers@nifty-oss.org>"]
+repository = "https://github.com/nifty-oss/asset"
 edition = "2021"
 readme = "README.md"
 license-file = "../../../LICENSE"
