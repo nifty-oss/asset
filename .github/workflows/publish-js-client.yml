@@ -114,28 +114,28 @@ jobs:
         with:
           tag: js@v${{ steps.bump.outputs.new_version }}
 
-  deploy_js_docs:
-    name: JS client / Deploy docs
-    runs-on: buildjet-8vcpu-ubuntu-2204
-    needs: publish_js
-    environment:
-      name: js-client-documentation
-      url: ${{ steps.deploy.outputs.url }}
-    steps:
-      - name: Git checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
-
-      - name: Load environment variables
-        run: cat .github/.env >> $GITHUB_ENV
-
-      - name: Deploy to Vercel
-        id: deploy
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        working-directory: ./clients/js/${{ inputs.client }}
-        run:
-          echo "url=$(vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }})" | tee
-          $GITHUB_OUTPUT
+  #deploy_js_docs:
+  #  name: JS client / Deploy docs
+  #  runs-on: buildjet-8vcpu-ubuntu-2204
+  #  needs: publish_js
+  #  environment:
+  #    name: js-client-documentation
+  #    url: ${{ steps.deploy.outputs.url }}
+  #  steps:
+  #    - name: Git checkout
+  #      uses: actions/checkout@v4
+  #      with:
+  #        ref: ${{ github.ref }}
+  #
+  #    - name: Load environment variables
+  #      run: cat .github/.env >> $GITHUB_ENV
+  #
+  #    - name: Deploy to Vercel
+  #      id: deploy
+  #      env:
+  #        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  #        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  #      working-directory: ./clients/js/${{ inputs.client }}
+  #      run:
+  #        echo "url=$(vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }})" | tee
+  #        $GITHUB_OUTPUT
