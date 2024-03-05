@@ -65,6 +65,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.client }}-rust-client-build
-          # First wildcard ensures exported paths are consistently under the clients folder.
+          # First wildcard ensures exported paths are consistently under the target folder.
           path: ./targe*/release/*${{ matrix.client }}*
           if-no-files-found: error
