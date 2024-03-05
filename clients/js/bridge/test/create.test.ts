@@ -7,12 +7,7 @@ import {
   publicKey as publicKeySerializer,
   string,
 } from '@metaplex-foundation/umi/serializers';
-import {
-  Asset,
-  ExtensionType,
-  empty,
-  fetchAsset
-} from '@nifty-oss/asset';
+import { Asset, ExtensionType, empty, fetchAsset } from '@nifty-oss/asset';
 import test from 'ava';
 import {
   BRIDGE_PROGRAM_ID,
