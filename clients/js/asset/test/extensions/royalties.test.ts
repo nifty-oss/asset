@@ -1,7 +1,6 @@
 import { generateSigner, publicKey } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
-  Account,
   Asset,
   Constraint,
   Discriminator,
@@ -38,7 +37,7 @@ test('it can mint a new asset a royalties extension with a PubkeyMatch constrain
     extensions: [
       royalties(
         basisPoints,
-        pubkeyMatch(Account.Asset, [
+        pubkeyMatch('Asset', [
           publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
         ])
       ),
@@ -58,7 +57,7 @@ test('it can mint a new asset a royalties extension with a PubkeyMatch constrain
         basisPoints,
         constraint: {
           type: 'PubkeyMatch',
-          account: Account.Asset,
+          account: 'Asset',
           pubkeys: [publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8')],
         },
       },
@@ -85,7 +84,7 @@ test('it can mint a new asset with royalties extension with a OwnedBy constraint
     extensions: [
       royalties(
         basisPoints,
-        ownedBy(Account.Asset, [
+        ownedBy('Asset', [
           publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
         ])
       ),
@@ -105,7 +104,7 @@ test('it can mint a new asset with royalties extension with a OwnedBy constraint
         basisPoints,
         constraint: {
           type: 'OwnedBy',
-          account: Account.Asset,
+          account: 'Asset',
           owners: [publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8')],
         },
       },
@@ -121,7 +120,7 @@ test('it can mint a new asset with a royalties extension with NOT constraint', a
 
   const basisPoints = BigInt(500);
 
-  const ownedByConstraint = ownedBy(Account.Asset, [
+  const ownedByConstraint = ownedBy('Asset', [
     publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
   ]);
   const notConstraint = not(ownedByConstraint);
@@ -162,10 +161,10 @@ test('it can mint a new asset with a royalties extension with an AND constraint'
 
   const basisPoints = BigInt(500);
 
-  const ownedByConstraint = ownedBy(Account.Asset, [
+  const ownedByConstraint = ownedBy('Asset', [
     publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
   ]);
-  const pubkeyMatchConstraint = pubkeyMatch(Account.Asset, [
+  const pubkeyMatchConstraint = pubkeyMatch('Asset', [
     '8UWRNwLHxD5DmEJ2cjVFdVpCNhfxL7bLkYpXG1o9srEN',
   ]);
   const andConstraint = and([ownedByConstraint, pubkeyMatchConstraint]);
@@ -206,10 +205,10 @@ test('it can mint a new asset with a royalties extension with an OR constraint',
 
   const basisPoints = BigInt(500);
 
-  const ownedByConstraint = ownedBy(Account.Asset, [
+  const ownedByConstraint = ownedBy('Asset', [
     publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
   ]);
-  const pubkeyMatchConstraint = pubkeyMatch(Account.Asset, [
+  const pubkeyMatchConstraint = pubkeyMatch('Asset', [
     '8UWRNwLHxD5DmEJ2cjVFdVpCNhfxL7bLkYpXG1o9srEN',
   ]);
   const orConstraint = or([ownedByConstraint, pubkeyMatchConstraint]);
@@ -255,7 +254,7 @@ test('it can mint a new asset with a nested royalties extension', async (t) => {
     constraints: [
       {
         type: 'OwnedBy',
-        account: Account.Asset,
+        account: 'Asset',
         owners: [
           publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
           publicKey('BbSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
@@ -267,7 +266,7 @@ test('it can mint a new asset with a nested royalties extension', async (t) => {
         constraints: [
           {
             type: 'PubkeyMatch',
-            account: Account.Asset,
+            account: 'Asset',
             pubkeys: [
               publicKey('CcSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
             ],
@@ -280,7 +279,7 @@ test('it can mint a new asset with a nested royalties extension', async (t) => {
                 type: 'Not',
                 constraint: {
                   type: 'PubkeyMatch',
-                  account: Account.Asset,
+                  account: 'Asset',
                   pubkeys: [
                     publicKey('8UWRNwLHxD5DmEJ2cjVFdVpCNhfxL7bLkYpXG1o9srEN'),
                   ],

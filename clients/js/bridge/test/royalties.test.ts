@@ -10,7 +10,6 @@ import {
   string,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  Account,
   Asset,
   Discriminator as AssetDiscriminator,
   Standard as AssetStandard,
@@ -136,7 +135,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
   }).sendAndConfirm(umi);
 
   // create a PubkeyMatch constraint that will block the transfer to the owner.
-  const constraint = pubkeyMatch(Account.Recipient, [publicKey(notOwner)]);
+  const constraint = pubkeyMatch('Recipient', [publicKey(notOwner)]);
 
   const asset = await fetchAsset(
     umi,
@@ -210,7 +209,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
   });
 
   // Now update the royalty extension on the group asset to have the recipient be the pubkey match
-  const newConstraint = pubkeyMatch(Account.Recipient, [publicKey(owner)]);
+  const newConstraint = pubkeyMatch('Recipient', [publicKey(owner)]);
 
   await update(umi, {
     asset: collectionAsset,

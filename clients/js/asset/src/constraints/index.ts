@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 import {
   Serializer,
+  mapSerializer,
   mergeBytes,
   scalarEnum,
   struct,
@@ -158,16 +159,20 @@ export const getOperatorTypeAsString = (
 // Account            //
 // -------------------//
 
-export enum Account {
+enum AccountType {
   Asset,
   Authority,
   Recipient,
 }
 
-export type AccountArgs = Account;
+export type Account = 'Asset' | 'Authority' | 'Recipient';
 
-export function getAccountSerializer(): Serializer<AccountArgs, Account> {
-  return scalarEnum<Account>(Account, {
-    size: u64(),
-  }) as Serializer<AccountArgs, Account>;
+export function getAccountSerializer(): Serializer<Account> {
+  return mapSerializer(
+    scalarEnum<AccountType>(AccountType, {
+      size: u64(),
+    }),
+    (account) => AccountType[account],
+    (accountType) => AccountType[accountType] as Account
+  ) as Serializer<Account>;
 }
