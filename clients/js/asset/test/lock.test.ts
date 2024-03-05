@@ -13,7 +13,7 @@ import {
 } from '../src';
 import { createUmi } from './_setup';
 
-test('it can lock an asset as a holder', async (t) => {
+test('it can lock an asset as an owner', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
@@ -27,7 +27,7 @@ test('it can lock an asset as a holder', async (t) => {
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
-  // When we lock the asset as a holder.
+  // When we lock the asset as an owner.
   await lock(umi, {
     asset: asset.publicKey,
     authority: owner,
@@ -156,7 +156,7 @@ test('it cannot lock an asset without "Lock" role', async (t) => {
   await t.throwsAsync(promise, { message: /Delegate role not active/ });
 });
 
-test('it cannot lock as a holder if delegate set', async (t) => {
+test('it cannot lock as an owner if delegate set', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
@@ -181,7 +181,7 @@ test('it cannot lock as a holder if delegate set', async (t) => {
     }),
   }).sendAndConfirm(umi);
 
-  // When we try to lock the asset as a holder.
+  // When we try to lock the asset as an owner.
   const promise = lock(umi, {
     asset: asset.publicKey,
     authority: owner,

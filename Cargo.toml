@@ -1,0 +1,10 @@
+[workspace]
+resolver = "2"
+members = [
+  "clients/cli",
+  "clients/rust/asset",
+  "clients/rust/bridge",
+  "programs/asset/program",
+  "programs/asset/types",
+  "programs/bridge",
+]

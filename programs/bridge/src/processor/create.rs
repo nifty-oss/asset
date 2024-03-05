@@ -5,9 +5,9 @@ use mpl_token_metadata::{
 use nifty_asset::{
     extensions::{ExtensionBuilder, GroupBuilder, MetadataBuilder, RoyaltiesBuilder},
     instructions::{AllocateCpiBuilder, CreateCpiBuilder},
-    types::{Extension, ExtensionType},
+    types::{ExtensionInput, ExtensionType},
 };
-use nifty_asset_types::constraints::{Account, NotBuilder, PubkeyMatchBuilder};
+use nifty_asset_types::constraints::EmptyBuilder;
 use podded::ZeroCopy;
 use solana_program::{
     entrypoint::ProgramResult, msg, program::invoke_signed, program_error::ProgramError,
@@ -193,21 +193,21 @@ pub fn process_create(
     ];
 
     let mut extension = MetadataBuilder::default();
-    extension.set(&metadata.symbol, &metadata.uri);
+    extension.set(Some(&metadata.symbol), None, Some(&metadata.uri));
     let data = extension.build();
 
     AllocateCpiBuilder::new(ctx.accounts.nifty_asset_program)
         .asset(ctx.accounts.asset)
         .payer(Some(ctx.accounts.payer))
         .system_program(Some(ctx.accounts.system_program))
-        .extension(Extension {
+        .extension(ExtensionInput {
             extension_type: ExtensionType::Metadata,
             length: data.len() as u32,
             data: Some(data),
         })
         .invoke_signed(&[&signer_seeds])?;
 
-    // If this is a collection NFT, we add the group extension
+    // if this is a collection NFT, we add the group extension
     if args.is_collection || metadata.collection_details.is_some() {
         let mut extension = GroupBuilder::default();
         let data = extension.build();
@@ -216,32 +216,28 @@ pub fn process_create(
             .asset(ctx.accounts.asset)
             .payer(Some(ctx.accounts.payer))
             .system_program(Some(ctx.accounts.system_program))
-            .extension(Extension {
+            .extension(ExtensionInput {
                 extension_type: ExtensionType::Grouping,
                 length: data.len() as u32,
                 data: Some(data),
             })
             .invoke_signed(&[&signer_seeds])?;
 
-        // For pNFTs we also add a default Royalties extension
+        // for pNFTs we also add a default Royalties extension
         if metadata.token_standard == Some(TokenStandard::ProgrammableNonFungible) {
-            // We set a not pubkey match with the system pubkey as the default, as this should be a
-            // pass-all rule.
-            let mut pubkey_match_builder = PubkeyMatchBuilder::default();
-            pubkey_match_builder.set(Account::Asset, &[Pubkey::default()]);
-
-            let mut not_builder = NotBuilder::default();
-            not_builder.set(&mut pubkey_match_builder);
-
+            // we set an empty constraint as this should be a pass-all rule
             let mut extension = RoyaltiesBuilder::default();
-            extension.set(metadata.seller_fee_basis_points as u64, &mut not_builder);
+            extension.set(
+                metadata.seller_fee_basis_points as u64,
+                &mut EmptyBuilder::default(),
+            );
             let royalties_data = extension.data();
 
             AllocateCpiBuilder::new(ctx.accounts.nifty_asset_program)
                 .asset(ctx.accounts.asset)
                 .payer(Some(ctx.accounts.payer))
                 .system_program(Some(ctx.accounts.system_program))
-                .extension(Extension {
+                .extension(ExtensionInput {
                     extension_type: ExtensionType::Royalties,
                     length: royalties_data.len() as u32,
                     data: Some(royalties_data),

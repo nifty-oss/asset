@@ -23,7 +23,6 @@ export * from './creators';
 export * from './grouping';
 export * from './links';
 export * from './metadata';
-export * from './operatorType';
 export * from './royalties';
 
 export type TypedExtension =

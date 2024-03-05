@@ -156,7 +156,7 @@ export function getVaultGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
 export function findVaultPda(
   context: Pick<Context, 'eddsa' | 'programs'>,
   seeds: {
-    /** The address of the mint */
+    /** The address of the mint account */
     mint: PublicKey;
   }
 ): Pda {

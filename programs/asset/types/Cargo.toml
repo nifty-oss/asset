@@ -1,7 +1,7 @@
 [package]
 name = "nifty-asset-types"
-version = "0.0.0"
-description = "Types for the Nifty Asset program"
+version = "0.0.1-alpha.1"
+description = "Types for Nifty Asset program"
 authors = ["nifty-oss maintainers <maintainers@nifty-oss.org>"]
 repository = "https://github.com/nifty-oss/asset"
 edition = "2021"
@@ -12,5 +12,5 @@ license-file = "../../../LICENSE"
 borsh = "0.10.3"
 bytemuck = "1.14"
 podded = "0.5.1"
-solana-program = "~1.16"
+solana-program = "^1.16"
 thiserror = "^1.0"

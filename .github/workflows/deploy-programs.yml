@@ -55,12 +55,16 @@ jobs:
     needs: build_programs
     uses: ./.github/workflows/test-js-client.yml
     secrets: inherit
+    with:
+      client_matrix: '["${{ inputs.program }}"]'
 
   test_rust:
     name: Rust client
     needs: build_programs
     uses: ./.github/workflows/test-rust-client.yml
     secrets: inherit
+    with:
+      client_matrix: '["${{ inputs.program }}"]'
 
   deploy_program:
     name: Program / Deploy

@@ -17,7 +17,7 @@ import {
 } from '../src';
 import { createUmi } from './_setup';
 
-test('it can burn an asset as a holder', async (t) => {
+test('it can burn an asset as an owner', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetSigner = generateSigner(umi);
@@ -65,7 +65,7 @@ test('it can burn an asset as a delegate', async (t) => {
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
-  // the holder is correct.
+  // the owner is correct.
   const asset = await fetchAsset(umi, assetSigner.publicKey);
   t.true(asset.owner === ownerSigner.publicKey);
 
@@ -120,7 +120,7 @@ test('invalid signer cannot burn', async (t) => {
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(promise, {
-    message: /Invalid holder or burn delegate/,
+    message: /Invalid owner or burn delegate/,
   });
 
   // Then the asset still exists.

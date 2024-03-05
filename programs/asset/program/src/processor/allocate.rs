@@ -20,7 +20,7 @@ use crate::{
 pub fn process_allocate(
     program_id: &Pubkey,
     ctx: Context<AllocateAccounts>,
-    args: crate::instruction::Extension,
+    args: crate::instruction::AllocateInput,
 ) -> ProgramResult {
     // account validation
 
@@ -116,7 +116,7 @@ pub fn process_allocate(
     );
     // and the account does not have the extension
     require!(
-        !Asset::contains(args.extension_type, &data),
+        !Asset::contains(args.extension.extension_type, &data),
         AssetError::AlreadyInitialized,
         "asset"
     );
@@ -126,24 +126,24 @@ pub fn process_allocate(
 
     // initialize the extension
 
-    let (length, data): (u32, &[u8]) = if let Some(data) = &args.data {
-        if args.length as usize == data.len() {
+    let (length, data): (u32, &[u8]) = if let Some(data) = &args.extension.data {
+        if args.extension.length as usize == data.len() {
             msg!(
                 "Initializing extension [{:?}] with instruction data",
-                args.extension_type
+                args.extension.extension_type
             );
         }
-        (args.length - data.len() as u32, data)
+        (args.extension.length - data.len() as u32, data)
     } else {
-        (args.length, &[])
+        (args.extension.length, &[])
     };
 
-    save_extension_data(&ctx, &args, offset, data)?;
+    save_extension_data(&ctx, &args.extension, offset, data)?;
 
     if length > 0 {
         msg!(
             "Initializing extension [{:?}] (waiting for {} bytes)",
-            args.extension_type,
+            args.extension.extension_type,
             length
         );
     } else {
@@ -163,7 +163,10 @@ pub fn process_allocate(
             AssetError::ExtensionDataInvalid
         })?;
 
-        msg!("Extension [{:?}] initialized", args.extension_type);
+        msg!(
+            "Extension [{:?}] initialized",
+            args.extension.extension_type
+        );
     }
 
     Ok(())
@@ -171,7 +174,7 @@ pub fn process_allocate(
 
 fn save_extension_data(
     ctx: &Context<AllocateAccounts>,
-    args: &crate::instruction::Extension,
+    args: &crate::instruction::ExtensionInput,
     offset: usize,
     data: &[u8],
 ) -> ProgramResult {

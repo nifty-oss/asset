@@ -25,7 +25,11 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
-import { Extension, ExtensionArgs, getExtensionSerializer } from '../types';
+import {
+  ExtensionInput,
+  ExtensionInputArgs,
+  getExtensionInputSerializer,
+} from '../types';
 
 // Accounts.
 export type AllocateInstructionAccounts = {
@@ -40,10 +44,10 @@ export type AllocateInstructionAccounts = {
 // Data.
 export type AllocateInstructionData = {
   discriminator: number;
-  extension: Extension;
+  extension: ExtensionInput;
 };
 
-export type AllocateInstructionDataArgs = { extension: ExtensionArgs };
+export type AllocateInstructionDataArgs = { extension: ExtensionInputArgs };
 
 export function getAllocateInstructionDataSerializer(): Serializer<
   AllocateInstructionDataArgs,
@@ -57,7 +61,7 @@ export function getAllocateInstructionDataSerializer(): Serializer<
     struct<AllocateInstructionData>(
       [
         ['discriminator', u8()],
-        ['extension', getExtensionSerializer()],
+        ['extension', getExtensionInputSerializer()],
       ],
       { description: 'AllocateInstructionData' }
     ),

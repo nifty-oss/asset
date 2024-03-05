@@ -38,7 +38,7 @@ pub fn process_approve(
 
     require!(
         asset.owner == *ctx.accounts.owner.key,
-        AssetError::InvalidHolder,
+        AssetError::InvalidAssetOwner,
         "owner"
     );
 

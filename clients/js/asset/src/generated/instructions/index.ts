@@ -18,6 +18,4 @@ export * from './transfer';
 export * from './ungroup';
 export * from './unlock';
 export * from './unverify';
-export * from './update';
 export * from './verify';
-export * from './write';

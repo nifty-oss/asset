@@ -49,8 +49,8 @@ pub fn handle_decode(args: DecodeArgs) -> Result<()> {
             "mutable" => {
                 println!("mutable: {:?}", asset.mutable);
             }
-            "holder" => {
-                println!("holder: {:?}", asset.owner);
+            "owner" => {
+                println!("owner: {:?}", asset.owner);
             }
             "group" => {
                 println!("group: {:?}", asset.group);
@@ -201,6 +201,9 @@ fn handle_constraints(constraint: &Constraint, mut index: usize, extension_data:
                     "pubkeys": pubkey_match.pubkeys.iter().map(|pubkey| pubkey.to_string()).collect::<Vec<String>>()
                 }
             })
+        }
+        OperatorType::Empty => {
+            json!({ "EMPTY": {} })
         }
     }
 }

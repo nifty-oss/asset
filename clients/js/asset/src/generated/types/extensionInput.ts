@@ -20,25 +20,28 @@ import {
   getExtensionTypeSerializer,
 } from '.';
 
-export type Extension = {
+export type ExtensionInput = {
   extensionType: ExtensionType;
   length: number;
   data: Option<Uint8Array>;
 };
 
-export type ExtensionArgs = {
+export type ExtensionInputArgs = {
   extensionType: ExtensionTypeArgs;
   length: number;
   data: OptionOrNullable<Uint8Array>;
 };
 
-export function getExtensionSerializer(): Serializer<ExtensionArgs, Extension> {
-  return struct<Extension>(
+export function getExtensionInputSerializer(): Serializer<
+  ExtensionInputArgs,
+  ExtensionInput
+> {
+  return struct<ExtensionInput>(
     [
       ['extensionType', getExtensionTypeSerializer()],
       ['length', u32()],
       ['data', option(bytes({ size: u32() }))],
     ],
-    { description: 'Extension' }
-  ) as Serializer<ExtensionArgs, Extension>;
+    { description: 'ExtensionInput' }
+  ) as Serializer<ExtensionInputArgs, ExtensionInput>;
 }
