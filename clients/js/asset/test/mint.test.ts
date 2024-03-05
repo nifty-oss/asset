@@ -13,6 +13,7 @@ import {
   links,
   metadata,
   mint,
+  royalties,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -133,6 +134,7 @@ test('it can mint a new asset with multiple extensions', async (t) => {
           'SMB is a collection of 5000 randomly generated 24x24 pixels NFTs on the Solana Blockchain.\
           Each SolanaMonkey is unique and comes with different type and attributes varying in rarity.',
       }),
+      royalties(500),
     ],
   }).sendAndConfirm(umi);
 

@@ -7,7 +7,7 @@ use nifty_asset::{
     instructions::{AllocateCpiBuilder, CreateCpiBuilder},
     types::{ExtensionInput, ExtensionType},
 };
-use nifty_asset_types::constraints::{Account, NotBuilder, PubkeyMatchBuilder};
+use nifty_asset_types::constraints::EmptyBuilder;
 use podded::ZeroCopy;
 use solana_program::{
     entrypoint::ProgramResult, msg, program::invoke_signed, program_error::ProgramError,
@@ -225,16 +225,12 @@ pub fn process_create(
 
         // for pNFTs we also add a default Royalties extension
         if metadata.token_standard == Some(TokenStandard::ProgrammableNonFungible) {
-            // we set a not pubkey match with the system pubkey as the default, as this should be a
-            // pass-all rule
-            let mut pubkey_match_builder = PubkeyMatchBuilder::default();
-            pubkey_match_builder.set(Account::Asset, &[Pubkey::default()]);
-
-            let mut not_builder = NotBuilder::default();
-            not_builder.set(&mut pubkey_match_builder);
-
+            // we set an empty constraint as this should be a pass-all rule
             let mut extension = RoyaltiesBuilder::default();
-            extension.set(metadata.seller_fee_basis_points as u64, &mut not_builder);
+            extension.set(
+                metadata.seller_fee_basis_points as u64,
+                &mut EmptyBuilder::default(),
+            );
             let royalties_data = extension.data();
 
             AllocateCpiBuilder::new(ctx.accounts.nifty_asset_program)

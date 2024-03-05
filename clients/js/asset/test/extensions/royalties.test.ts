@@ -36,12 +36,12 @@ test('it can mint a new asset a royalties extension with a PubkeyMatch constrain
     mutable: true,
     standard: Standard.NonFungible,
     extensions: [
-      royalties({
+      royalties(
         basisPoints,
-        constraint: pubkeyMatch(Account.Asset, [
+        pubkeyMatch(Account.Asset, [
           publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
-        ]),
-      }),
+        ])
+      ),
     ],
   }).sendAndConfirm(umi);
 
@@ -83,12 +83,12 @@ test('it can mint a new asset with royalties extension with a OwnedBy constraint
     mutable: true,
     standard: Standard.NonFungible,
     extensions: [
-      royalties({
+      royalties(
         basisPoints,
-        constraint: ownedBy(Account.Asset, [
+        ownedBy(Account.Asset, [
           publicKey('AaSZHtdnHTcW4En23vJfmXxhZceoAfZnAjc8kYvherJ8'),
-        ]),
-      }),
+        ])
+      ),
     ],
   }).sendAndConfirm(umi);
 
@@ -134,12 +134,7 @@ test('it can mint a new asset with a royalties extension with NOT constraint', a
     name: 'Digital Asset',
     mutable: true,
     standard: Standard.NonFungible,
-    extensions: [
-      royalties({
-        basisPoints,
-        constraint: notConstraint,
-      }),
-    ],
+    extensions: [royalties(basisPoints, notConstraint)],
   }).sendAndConfirm(umi);
 
   // Then an asset was created with the correct data.
@@ -183,12 +178,7 @@ test('it can mint a new asset with a royalties extension with an AND constraint'
     name: 'Digital Asset',
     mutable: true,
     standard: Standard.NonFungible,
-    extensions: [
-      royalties({
-        basisPoints,
-        constraint: andConstraint,
-      }),
-    ],
+    extensions: [royalties(basisPoints, andConstraint)],
   }).sendAndConfirm(umi);
 
   // Then an asset was created with the correct data.
@@ -232,12 +222,7 @@ test('it can mint a new asset with a royalties extension with an OR constraint',
     name: 'Digital Asset',
     mutable: true,
     standard: Standard.NonFungible,
-    extensions: [
-      royalties({
-        basisPoints,
-        constraint: orConstraint,
-      }),
-    ],
+    extensions: [royalties(basisPoints, orConstraint)],
   }).sendAndConfirm(umi);
 
   // Then an asset was created with the correct data.
@@ -316,12 +301,7 @@ test('it can mint a new asset with a nested royalties extension', async (t) => {
     name: 'Digital Asset',
     mutable: true,
     standard: Standard.NonFungible,
-    extensions: [
-      royalties({
-        basisPoints,
-        constraint,
-      }),
-    ],
+    extensions: [royalties(basisPoints, constraint)],
   }).sendAndConfirm(umi);
 
   // Then an asset was created with the correct data.

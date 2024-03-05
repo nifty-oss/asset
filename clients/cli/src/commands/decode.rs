@@ -202,5 +202,8 @@ fn handle_constraints(constraint: &Constraint, mut index: usize, extension_data:
                 }
             })
         }
+        OperatorType::Empty => {
+            json!({ "EMPTY": {} })
+        }
     }
 }

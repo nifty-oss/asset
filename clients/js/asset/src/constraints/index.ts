@@ -6,14 +6,15 @@ import {
   u32,
   u64,
 } from '@metaplex-foundation/umi/serializers';
-import { OperatorType } from '../extensions';
 import { And, getAndSerializer } from './and';
 import { Not, getNotSerializer } from './not';
 import { Or, getOrSerializer } from './or';
 import { OwnedBy, getOwnedBySerializer } from './ownedBy';
 import { PubkeyMatch, getPubkeyMatchSerializer } from './pubkeyMatch';
+import { Empty, getEmptySerializer } from './empty';
 
 export * from './and';
+export * from './empty';
 export * from './not';
 export * from './or';
 export * from './ownedBy';
@@ -23,7 +24,7 @@ export * from './pubkeyMatch';
 // Constraint         //
 // -------------------//
 
-export type Constraint = And | Not | Or | OwnedBy | PubkeyMatch;
+export type Constraint = And | Not | Or | OwnedBy | PubkeyMatch | Empty;
 
 export const getConstraintSerializer = (): Serializer<Constraint> => ({
   description: 'Constraint',
@@ -56,10 +57,37 @@ export const getConstraintSerializerFromType = <T extends Constraint>(
         return getOwnedBySerializer();
       case 'PubkeyMatch':
         return getPubkeyMatchSerializer();
+      case 'Empty':
+        return getEmptySerializer();
       default:
         throw new Error(`Unknown operator type: ${type}`);
     }
   })() as Serializer<T>;
+
+// -------------------//
+// OperatorType       //
+// -------------------//
+
+export enum OperatorType {
+  And,
+  Not,
+  Or,
+  OwnedBy,
+  PubkeyMatch,
+  Empty,
+}
+
+export type OperatorTypeArgs = OperatorType;
+
+export function getOperatorTypeSerializer(): Serializer<
+  OperatorTypeArgs,
+  OperatorType
+> {
+  return scalarEnum<OperatorType>(OperatorType, {
+    description: 'OperatorType',
+    size: u32(),
+  }) as Serializer<OperatorTypeArgs, OperatorType>;
+}
 
 // -------------------//
 // ConstraintHeader   //
@@ -118,6 +146,8 @@ export const getOperatorTypeAsString = (
       return 'OwnedBy';
     case OperatorType.PubkeyMatch:
       return 'PubkeyMatch';
+    case OperatorType.Empty:
+      return 'Empty';
     default:
       throw new Error(`Unknown operator type: ${type}`);
   }

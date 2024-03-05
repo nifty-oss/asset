@@ -11,10 +11,10 @@ import {
 } from '@metaplex-foundation/umi/serializers';
 import {
   Account,
+  OperatorType,
   getAccountSerializer,
   wrapSerializerInConstraintHeader,
 } from '.';
-import { OperatorType } from '../extensions';
 
 export type OwnedBy = {
   type: 'OwnedBy';

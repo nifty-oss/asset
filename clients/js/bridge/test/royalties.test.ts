@@ -163,7 +163,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
   await update(umi, {
     asset: collectionAsset,
     payer: umi.identity,
-    extension: royalties({ basisPoints, constraint }),
+    extension: royalties(basisPoints, constraint),
   }).sendAndConfirm(umi);
 
   const updatedCollectionAsset = await fetchAsset(
@@ -184,10 +184,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
         uri: 'https://collection.bridge',
       },
       grouping(0, 1), // 1 item in the group
-      royalties({
-        basisPoints,
-        constraint,
-      }),
+      royalties(basisPoints, constraint),
     ],
   });
 
@@ -218,7 +215,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
   await update(umi, {
     asset: collectionAsset,
     payer: umi.identity,
-    extension: royalties({ basisPoints, constraint: newConstraint }),
+    extension: royalties(basisPoints, newConstraint),
   }).sendAndConfirm(umi);
 
   const finalCollectionAsset = await fetchAsset(
@@ -240,10 +237,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
         uri: 'https://collection.bridge',
       },
       grouping(0, 1), // 1 item in the group
-      royalties({
-        basisPoints,
-        constraint: newConstraint,
-      }),
+      royalties(basisPoints, newConstraint),
     ],
   });
 

@@ -1,4 +1,3 @@
-import { PublicKey } from '@solana/web3.js';
 import {
   generateSigner,
   percentAmount,
@@ -9,12 +8,10 @@ import {
   string,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  Account,
   Asset,
   ExtensionType,
-  fetchAsset,
-  pubkeyMatch,
-  not,
+  empty,
+  fetchAsset
 } from '@nifty-oss/asset';
 import test from 'ava';
 import {
@@ -128,12 +125,8 @@ test('it can create a collection asset on the bridge for a pNFT', async (t) => {
     publicKeySerializer().serialize(mint.publicKey),
   ]);
 
-  // A Not(PubkeyMatch(Account::Asset, [Default PublicKey])) constraint is added to the asset,
-  // to represent a pass all constraint.
-  const pubkeyMatchConstraint = pubkeyMatch(Account.Asset, [
-    publicKey(PublicKey.default),
-  ]);
-  const constraint = not(pubkeyMatchConstraint);
+  // An empty constraint is added to the asset representing a 'pass-all' constraint.
+  const constraint = empty();
 
   t.like(await fetchAsset(umi, asset), <Asset>{
     extensions: [

@@ -1,20 +1,21 @@
 mod and;
+mod empty;
 mod not;
 mod or;
 mod owned_by;
 mod pubkey_match;
 
 pub use and::*;
+pub use empty::*;
 pub use not::*;
 pub use or::*;
 pub use owned_by::*;
 pub use pubkey_match::*;
 
-use std::fmt::{self, Debug};
-
 use bytemuck::{Pod, Zeroable};
 use podded::ZeroCopy;
 use solana_program::{account_info::AccountInfo, program_error::ProgramError};
+use std::fmt::{self, Debug};
 
 /// The result of a constraint evaluation.
 pub type AssertionResult = Result<Assertion, ProgramError>;
@@ -112,6 +113,7 @@ pub enum OperatorType {
     Or,
     OwnedBy,
     PubkeyMatch,
+    Empty,
 }
 
 impl From<u32> for OperatorType {
@@ -122,6 +124,7 @@ impl From<u32> for OperatorType {
             2 => OperatorType::Or,
             3 => OperatorType::OwnedBy,
             4 => OperatorType::PubkeyMatch,
+            5 => OperatorType::Empty,
             _ => panic!("invalid operator type: {value}"),
         }
     }
@@ -135,6 +138,7 @@ impl From<OperatorType> for u32 {
             OperatorType::Or => 2,
             OperatorType::OwnedBy => 3,
             OperatorType::PubkeyMatch => 4,
+            OperatorType::Empty => 5,
         }
     }
 }
@@ -221,7 +225,8 @@ impl<'a> FromBytes<'a> for Constraint<'a> {
             Not,
             Or,
             OwnedBy,
-            PubkeyMatch
+            PubkeyMatch,
+            Empty
         );
 
         Self {

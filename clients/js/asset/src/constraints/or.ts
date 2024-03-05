@@ -5,10 +5,10 @@ import {
 } from '@metaplex-foundation/umi/serializers';
 import {
   Constraint,
+  OperatorType,
   getConstraintSerializer,
   wrapSerializerInConstraintHeader,
 } from '.';
-import { OperatorType } from '../extensions';
 
 export type Or = {
   type: 'Or';

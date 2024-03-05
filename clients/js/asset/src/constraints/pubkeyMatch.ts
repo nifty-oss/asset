@@ -9,9 +9,9 @@ import {
   publicKey as publicKeySerializer,
   struct,
 } from '@metaplex-foundation/umi/serializers';
-import { OperatorType } from '../extensions';
 import {
   Account,
+  OperatorType,
   getAccountSerializer,
   wrapSerializerInConstraintHeader,
 } from '.';
