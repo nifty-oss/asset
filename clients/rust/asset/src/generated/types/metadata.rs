@@ -13,5 +13,6 @@ use kaigan::types::U8PrefixString;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Metadata {
     pub symbol: U8PrefixString,
+    pub description: U8PrefixString,
     pub uri: U8PrefixString,
 }

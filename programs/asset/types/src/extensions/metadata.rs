@@ -3,14 +3,16 @@ use std::{fmt::Debug, ops::Deref};
 
 use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle};
 
-/// Extension to add `symbol` and `uri` attributes to an asset.
+/// Extension to add `symbol`, `description` and `uri` values to an asset.
 ///
-/// This extension is used to add Token Metadata's commonly used `symbol` and `uri`
-/// attributes to an asset.
+/// This extension is used to add Token Metadata's commonly used `symbol`, `description` and `uri`
+/// values to an asset.
 pub struct Metadata<'a> {
-    /// Name of the trait.
+    /// Symbol for the asset.
     pub symbol: U8PrefixStr<'a>,
-    /// Value of the trait.
+    /// Description of the asset.
+    pub description: U8PrefixStr<'a>,
+    /// "Pointer" URI for external metadata.
     pub uri: U8PrefixStr<'a>,
 }
 
@@ -19,35 +21,41 @@ impl<'a> ExtensionData<'a> for Metadata<'a> {
 
     fn from_bytes(bytes: &'a [u8]) -> Self {
         let symbol = U8PrefixStr::from_bytes(bytes);
-        let uri = U8PrefixStr::from_bytes(&bytes[symbol.size()..]);
-        Self { symbol, uri }
+        let description = U8PrefixStr::from_bytes(&bytes[symbol.size()..]);
+        let uri = U8PrefixStr::from_bytes(&bytes[symbol.size() + description.size()..]);
+
+        Self {
+            symbol,
+            description,
+            uri,
+        }
     }
 
     fn length(&self) -> usize {
-        self.symbol.size() + self.uri.size()
+        self.symbol.size() + self.description.size() + self.uri.size()
     }
 }
 
 impl Debug for Metadata<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("TokenMetadata")
+        f.debug_struct("Metadata")
             .field("symbol", &self.symbol.as_str())
+            .field("description", &self.description.as_str())
             .field("uri", &self.uri.as_str())
             .finish()
     }
 }
 
-impl Lifecycle for Metadata<'_> {}
-
 /// Mutable reference to `Metadata` extension.
 ///
-/// This type is used to modify the `Metadata` extension. Note that the `symbol` and `uri` fields
-/// are mutable references to the original bytes, but cannot be increased in size.
+/// This type is used to modify the `Metadata` extension. Note that the `symbol`, `description` and `uri`
+/// fields are mutable references to the original bytes, but cannot increase in size.
 pub struct MetadataMut<'a> {
-    /// Name of the trait.
+    /// Symbol for the asset.
     pub symbol: U8PrefixStrMut<'a>,
-
-    /// Value of the trait.
+    /// Description of the asset.
+    pub description: U8PrefixStrMut<'a>,
+    /// "Pointer" URI for external metadata.
     pub uri: U8PrefixStrMut<'a>,
 }
 
@@ -55,15 +63,27 @@ impl<'a> ExtensionDataMut<'a> for MetadataMut<'a> {
     const TYPE: ExtensionType = ExtensionType::Metadata;
 
     fn from_bytes_mut(bytes: &'a mut [u8]) -> Self {
-        // we need to first determine the size of the symbol to be able to split the bytes
-        // into mutable symbol and uri refernces
-        let symbol = U8PrefixStr::from_bytes(bytes);
-        let size = symbol.size();
+        // we need to first determine the size of the prefix str to be able to split
+        // the bytes into mutable references
 
-        let (symbol, uri) = bytes.split_at_mut(size);
+        let symbol = U8PrefixStr::from_bytes(bytes);
+        let symbol_size = symbol.size();
+
+        let description = U8PrefixStr::from_bytes(&bytes[symbol_size..]);
+        let description_size = description.size();
+
+        let (symbol, remaining) = bytes.split_at_mut(symbol_size);
         let symbol = U8PrefixStrMut::from_bytes_mut(symbol);
+
+        let (description, uri) = remaining.split_at_mut(description_size);
+        let description = U8PrefixStrMut::from_bytes_mut(description);
         let uri = U8PrefixStrMut::from_bytes_mut(uri);
-        Self { symbol, uri }
+
+        Self {
+            symbol,
+            description,
+            uri,
+        }
     }
 }
 
@@ -75,21 +95,42 @@ pub struct MetadataBuilder(Vec<u8>);
 
 impl MetadataBuilder {
     /// Add a new attribute to the extension.
-    pub fn set(&mut self, symbol: &str, uri: &str) {
+    pub fn set(&mut self, symbol: Option<&str>, description: Option<&str>, uri: Option<&str>) {
         // setting the data replaces any existing data
         self.0.clear();
 
-        // add the length of the name + prefix to the data buffer.
+        // add the length of the symbol + prefix to the data buffer.
         let cursor = self.0.len();
-        self.0.append(&mut vec![0u8; symbol.len() + 1]);
-        let mut symbol_str = U8PrefixStrMut::new(&mut self.0[cursor..]);
-        symbol_str.copy_from_str(symbol);
 
-        // add the length of the value + prefix to the data buffer.
+        if let Some(symbol) = symbol {
+            self.0.append(&mut vec![0u8; symbol.len() + 1]);
+            let mut symbol_str = U8PrefixStrMut::new(&mut self.0[cursor..]);
+            symbol_str.copy_from_str(symbol);
+        } else {
+            self.0.append(&mut vec![0u8; 1]);
+        }
+
+        // add the length of the description + prefix to the data buffer.
         let cursor = self.0.len();
-        self.0.append(&mut vec![0u8; uri.len() + 1]);
-        let mut uri_str = U8PrefixStrMut::new(&mut self.0[cursor..]);
-        uri_str.copy_from_str(uri);
+
+        if let Some(description) = description {
+            self.0.append(&mut vec![0u8; description.len() + 1]);
+            let mut description_str = U8PrefixStrMut::new(&mut self.0[cursor..]);
+            description_str.copy_from_str(description);
+        } else {
+            self.0.append(&mut vec![0u8; 1]);
+        }
+
+        // add the length of the uri + prefix to the data buffer.
+        let cursor = self.0.len();
+
+        if let Some(uri) = uri {
+            self.0.append(&mut vec![0u8; uri.len() + 1]);
+            let mut uri_str = U8PrefixStrMut::new(&mut self.0[cursor..]);
+            uri_str.copy_from_str(uri);
+        } else {
+            self.0.append(&mut vec![0u8; 1]);
+        }
     }
 }
 
@@ -117,8 +158,9 @@ mod tests {
     fn test_add() {
         let mut builder = MetadataBuilder::default();
         builder.set(
-            "SMB",
-            "https://arweave.net/62Z5yOFbIeFqvoOl-aq75EAGSDzS-GxpIKC2ws5LVDc",
+            Some("SMB"),
+            None,
+            Some("https://arweave.net/62Z5yOFbIeFqvoOl-aq75EAGSDzS-GxpIKC2ws5LVDc"),
         );
         let metadata = Metadata::from_bytes(&builder);
 

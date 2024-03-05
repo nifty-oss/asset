@@ -23,10 +23,11 @@ test('it can create a new asset with a metadata', async (t) => {
   await initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: metadata(
-      'SMB',
-      'https://arweave.net/62Z5yOFbIeFqvoOl-aq75EAGSDzS-GxpIKC2ws5LVDc'
-    ),
+    extension: metadata({
+      symbol: 'SMB',
+      description: 'A metadata extension',
+      uri: 'https://arweave.net/62Z5yOFbIeFqvoOl-aq75EAGSDzS-GxpIKC2ws5LVDc',
+    }),
   }).sendAndConfirm(umi);
 
   t.true(await umi.rpc.accountExists(asset.publicKey), 'asset exists');
@@ -50,6 +51,7 @@ test('it can create a new asset with a metadata', async (t) => {
       {
         type: ExtensionType.Metadata,
         symbol: 'SMB',
+        description: 'A metadata extension',
         uri: 'https://arweave.net/62Z5yOFbIeFqvoOl-aq75EAGSDzS-GxpIKC2ws5LVDc',
       },
     ],
