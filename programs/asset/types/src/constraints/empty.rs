@@ -6,10 +6,9 @@ use crate::constraints::{
 
 use super::{Operator, OperatorType};
 
-/// A constrait that inverts the outcome of another constraint.
+/// An empty constrait.
 ///
-/// This is useful to define negation of existing constraints. For example, a constraint
-/// that succeeds when an account is not owned by a specific program.
+/// This is useful to specify a constraint that does not perform any checks.
 pub struct Empty {}
 
 impl FromBytes<'_> for Empty {
@@ -28,7 +27,7 @@ impl Assertable for Empty {
     }
 }
 
-/// Builder for an `OwnedBy` constraint.
+/// Builder for an `Empty` constraint.
 #[derive(Default)]
 pub struct EmptyBuilder(Vec<u8>);
 
