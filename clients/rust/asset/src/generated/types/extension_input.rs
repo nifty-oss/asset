@@ -11,7 +11,7 @@ use borsh::BorshSerialize;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Extension {
+pub struct ExtensionInput {
     pub extension_type: ExtensionType,
     pub length: u32,
     pub data: Option<Vec<u8>>,

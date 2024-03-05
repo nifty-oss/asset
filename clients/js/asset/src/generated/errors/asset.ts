@@ -93,27 +93,27 @@ export class InvalidAlignmentError extends ProgramError {
 codeToErrorMap.set(0x5, InvalidAlignmentError);
 nameToErrorMap.set('InvalidAlignment', InvalidAlignmentError);
 
-/** InvalidBurnAuthority: Invalid holder or burn delegate */
+/** InvalidBurnAuthority: Invalid owner or burn delegate */
 export class InvalidBurnAuthorityError extends ProgramError {
   override readonly name: string = 'InvalidBurnAuthority';
 
   readonly code: number = 0x6; // 6
 
   constructor(program: Program, cause?: Error) {
-    super('Invalid holder or burn delegate', program, cause);
+    super('Invalid owner or burn delegate', program, cause);
   }
 }
 codeToErrorMap.set(0x6, InvalidBurnAuthorityError);
 nameToErrorMap.set('InvalidBurnAuthority', InvalidBurnAuthorityError);
 
-/** InvalidTransferAuthority: Invalid holder or transfer delegate */
+/** InvalidTransferAuthority: Invalid owner or transfer delegate */
 export class InvalidTransferAuthorityError extends ProgramError {
   override readonly name: string = 'InvalidTransferAuthority';
 
   readonly code: number = 0x7; // 7
 
   constructor(program: Program, cause?: Error) {
-    super('Invalid holder or transfer delegate', program, cause);
+    super('Invalid owner or transfer delegate', program, cause);
   }
 }
 codeToErrorMap.set(0x7, InvalidTransferAuthorityError);
@@ -158,18 +158,18 @@ export class InvalidDelegateError extends ProgramError {
 codeToErrorMap.set(0xa, InvalidDelegateError);
 nameToErrorMap.set('InvalidDelegate', InvalidDelegateError);
 
-/** InvalidHolder: Invalid holder */
-export class InvalidHolderError extends ProgramError {
-  override readonly name: string = 'InvalidHolder';
+/** InvalidAssetOwner: Invalid asset owner */
+export class InvalidAssetOwnerError extends ProgramError {
+  override readonly name: string = 'InvalidAssetOwner';
 
   readonly code: number = 0xb; // 11
 
   constructor(program: Program, cause?: Error) {
-    super('Invalid holder', program, cause);
+    super('Invalid asset owner', program, cause);
   }
 }
-codeToErrorMap.set(0xb, InvalidHolderError);
-nameToErrorMap.set('InvalidHolder', InvalidHolderError);
+codeToErrorMap.set(0xb, InvalidAssetOwnerError);
+nameToErrorMap.set('InvalidAssetOwner', InvalidAssetOwnerError);
 
 /** LockedAsset: Asset is locked */
 export class LockedAssetError extends ProgramError {

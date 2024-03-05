@@ -1,3 +1,4 @@
+import { mplToolbox } from '@metaplex-foundation/mpl-toolbox';
 import {
   generateSigner,
   percentAmount,
@@ -5,26 +6,24 @@ import {
 } from '@metaplex-foundation/umi';
 import { createUmi as basecreateUmi } from '@metaplex-foundation/umi-bundle-tests';
 import {
-  string,
   publicKey as publicKeySerializer,
+  string,
 } from '@metaplex-foundation/umi/serializers';
 import {
   Account,
   Asset,
-  State as AssetState,
   Discriminator as AssetDiscriminator,
+  Standard as AssetStandard,
+  State as AssetState,
   ExtensionType,
   fetchAsset,
-  getExtensionSerializerFromType,
+  group,
+  grouping,
   niftyAsset,
   pubkeyMatch,
   royalties,
-  Standard as AssetStandard,
   update,
-  group,
-  grouping,
 } from '@nifty-oss/asset';
-import { mplToolbox } from '@metaplex-foundation/mpl-toolbox';
 import test from 'ava';
 import {
   BRIDGE_PROGRAM_ID,
@@ -161,18 +160,10 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
   });
 
   // Update the collectionAsset to have the new constraint
-  const data = getExtensionSerializerFromType(
-    ExtensionType.Royalties
-  ).serialize(royalties({ basisPoints, constraint }));
-
   await update(umi, {
     asset: collectionAsset,
     payer: umi.identity,
-    extension: {
-      extensionType: ExtensionType.Royalties,
-      length: data.length,
-      data,
-    },
+    extension: royalties({ basisPoints, constraint }),
   }).sendAndConfirm(umi);
 
   const updatedCollectionAsset = await fetchAsset(
@@ -224,18 +215,10 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
   // Now update the royalty extension on the group asset to have the recipient be the pubkey match
   const newConstraint = pubkeyMatch(Account.Recipient, [publicKey(owner)]);
 
-  const newData = getExtensionSerializerFromType(
-    ExtensionType.Royalties
-  ).serialize(royalties({ basisPoints, constraint: newConstraint }));
-
   await update(umi, {
     asset: collectionAsset,
     payer: umi.identity,
-    extension: {
-      extensionType: ExtensionType.Royalties,
-      length: newData.length,
-      data: newData,
-    },
+    extension: royalties({ basisPoints, constraint: newConstraint }),
   }).sendAndConfirm(umi);
 
   const finalCollectionAsset = await fetchAsset(

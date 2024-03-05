@@ -5,7 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::Extension;
+use crate::generated::types::ExtensionInput;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -100,7 +100,7 @@ impl UpdateInstructionData {
 pub struct UpdateInstructionArgs {
     pub name: Option<String>,
     pub mutable: Option<bool>,
-    pub extension: Option<Extension>,
+    pub extension: Option<ExtensionInput>,
 }
 
 /// Instruction builder for `Update`.
@@ -121,7 +121,7 @@ pub struct UpdateBuilder {
     system_program: Option<solana_program::pubkey::Pubkey>,
     name: Option<String>,
     mutable: Option<bool>,
-    extension: Option<Extension>,
+    extension: Option<ExtensionInput>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -179,7 +179,7 @@ impl UpdateBuilder {
     }
     /// `[optional argument]`
     #[inline(always)]
-    pub fn extension(&mut self, extension: Extension) -> &mut Self {
+    pub fn extension(&mut self, extension: ExtensionInput) -> &mut Self {
         self.extension = Some(extension);
         self
     }
@@ -471,7 +471,7 @@ impl<'a, 'b> UpdateCpiBuilder<'a, 'b> {
     }
     /// `[optional argument]`
     #[inline(always)]
-    pub fn extension(&mut self, extension: Extension) -> &mut Self {
+    pub fn extension(&mut self, extension: ExtensionInput) -> &mut Self {
         self.instruction.extension = Some(extension);
         self
     }
@@ -551,7 +551,7 @@ struct UpdateCpiBuilderInstruction<'a, 'b> {
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     name: Option<String>,
     mutable: Option<bool>,
-    extension: Option<Extension>,
+    extension: Option<ExtensionInput>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

@@ -81,10 +81,10 @@ Create an immutable asset:
 nifty create --name "My Immutable Asset" --immutable
 ```
 
-Create an asset with a specific holder:
+Create an asset with a specific owner:
 
 ```bash
-nifty create --name "My Asset" --holder 9Z3tDoqtREj3Exkr5ws9UPawG3yhaEwjSP4J5GumuRP
+nifty create --name "My Asset" --owner 9Z3tDoqtREj3Exkr5ws9UPawG3yhaEwjSP4J5GumuRP
 ```
 
 Create an asset from an existing keypair file:

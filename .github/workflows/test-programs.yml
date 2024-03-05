@@ -38,22 +38,8 @@ jobs:
         if: env.CACHE == 'true'
         uses: nifty-oss/actions/buildjet-cache-crate@v1
         with:
-          folder: ./programs/${{ matrix.program }}
+          folder: '.'
           key: program-${{ matrix.program }}
-
-      - name: Run cargo fmt
-        uses: nifty-oss/actions/cargo@v1
-        with:
-          command: fmt
-          args: --all --manifest-path ./programs/${{ matrix.program }}/Cargo.toml -- --check
-
-      - name: Run cargo clippy
-        uses: nifty-oss/actions/cargo@v1
-        with:
-          command: clippy
-          args:
-            --all-targets --all-features --no-deps --manifest-path ./programs/${{
-            matrix.program}}/Cargo.toml
 
       - name: Run tests
         shell: bash

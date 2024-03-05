@@ -49,8 +49,8 @@ pub fn handle_decode(args: DecodeArgs) -> Result<()> {
             "mutable" => {
                 println!("mutable: {:?}", asset.mutable);
             }
-            "holder" => {
-                println!("holder: {:?}", asset.owner);
+            "owner" => {
+                println!("owner: {:?}", asset.owner);
             }
             "group" => {
                 println!("group: {:?}", asset.group);

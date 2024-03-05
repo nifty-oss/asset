@@ -5,57 +5,55 @@ const k = require("@metaplex-foundation/kinobi");
 const clientDir = path.join(__dirname, "..", "clients");
 const idlDir = path.join(__dirname, "..", "idls");
 
+// Instanciate Kinobi.
 const kinobi = k.createFromIdls([path.join(idlDir, "bridge_program.json")]);
 
 // Update programs.
 kinobi.update(
-  new k.UpdateProgramsVisitor({
+  k.updateProgramsVisitor({
     bridgeProgram: { name: "bridge" },
   })
 );
 
 // Add missing types from the IDL.
 kinobi.update(
-  new k.TransformNodesVisitor([
+  k.bottomUpTransformerVisitor([
     {
-      selector: { kind: "programNode", name: "bridge" },
-      transformer: (node) => {
-        k.assertProgramNode(node);
-        return k.programNode({
+      select: "[programNode]bridge",
+      transform: (node) => {
+        k.assertIsNode(node, "programNode");
+        return {
           ...node,
           accounts: [
             ...node.accounts,
-            // metadata account
+            // vault account
             k.accountNode({
               name: "vault",
-              data: k.accountDataNode({
-                name: "vaultAccountData",
-                struct: k.structTypeNode([
-                  k.structFieldTypeNode({
-                    name: "discriminator",
-                    child: k.linkTypeNode("Discriminator"),
-                  }),
-                  k.structFieldTypeNode({
-                    name: "state",
-                    child: k.linkTypeNode("State"),
-                  }),
-                  k.structFieldTypeNode({
-                    name: "bump",
-                    child: k.numberTypeNode("u8"),
-                  }),
-                  k.structFieldTypeNode({
-                    name: "mint",
-                    child: k.publicKeyTypeNode(),
-                  }),
-                  k.structFieldTypeNode({
-                    name: "assetBump",
-                    child: k.numberTypeNode("u8"),
-                  }),
-                ]),
-              }),
+              data: k.structTypeNode([
+                k.structFieldTypeNode({
+                  name: "discriminator",
+                  type: k.definedTypeLinkNode("Discriminator"),
+                }),
+                k.structFieldTypeNode({
+                  name: "state",
+                  type: k.definedTypeLinkNode("State"),
+                }),
+                k.structFieldTypeNode({
+                  name: "bump",
+                  type: k.numberTypeNode("u8"),
+                }),
+                k.structFieldTypeNode({
+                  name: "mint",
+                  type: k.publicKeyTypeNode(),
+                }),
+                k.structFieldTypeNode({
+                  name: "assetBump",
+                  type: k.numberTypeNode("u8"),
+                }),
+              ]),
             }),
           ],
-        });
+        };
       },
     },
   ])
@@ -63,11 +61,15 @@ kinobi.update(
 
 // Update accounts.
 kinobi.update(
-  new k.UpdateAccountsVisitor({
+  k.updateAccountsVisitor({
     vault: {
       seeds: [
-        k.stringConstantSeed("nifty::bridge::vault"),
-        k.publicKeySeed("mint", "The address of the mint"),
+        k.constantPdaSeedNodeFromString("nifty::bridge::vault"),
+        k.variablePdaSeedNode(
+          "mint",
+          k.publicKeyTypeNode(),
+          "The address of the mint account"
+        ),
       ],
     },
   })
@@ -75,30 +77,32 @@ kinobi.update(
 
 // Set default account values accross multiple instructions.
 kinobi.update(
-  new k.SetInstructionAccountDefaultValuesVisitor([
+  k.setInstructionAccountDefaultValuesVisitor([
     // default accounts
     {
       account: "vault",
-      ...k.pdaDefault("vault"),
+      ignoreIfOptional: true,
+      defaultValue: k.pdaValueNode("vault"),
     },
     {
       account: "updateAuthority",
       ignoreIfOptional: true,
-      ...k.identityDefault(),
+      defaultValue: k.identityValueNode(),
     },
     {
       account: "metadata",
-      ...k.pdaDefault("metadata", {
-        importFrom: "mplTokenMetadata",
-        seeds: { mint: k.accountDefault("mint") },
-      }),
+      ignoreIfOptional: true,
+      defaultValue: k.pdaValueNode(
+        k.pdaLinkNode("metadata", "mplTokenMetadata"),
+        [k.pdaSeedValueNode("mint", k.accountValueNode("mint"))]
+      ),
     },
     {
       account: "niftyAssetProgram",
       ignoreIfOptional: true,
-      ...k.programDefault(
-        "niftyAsset",
-        "AssetGtQBTSgm5s91d1RAQod5JmaZiJDxqsgtqrZud73"
+      defaultValue: k.publicKeyValueNode(
+        "AssetGtQBTSgm5s91d1RAQod5JmaZiJDxqsgtqrZud73",
+        "niftyAsset"
       ),
     },
   ])
@@ -106,122 +110,107 @@ kinobi.update(
 
 // Update instructions.
 kinobi.update(
-  new k.UpdateInstructionsVisitor({
+  k.updateInstructionsVisitor({
     create: {
       accounts: {
         asset: {
-          defaultsTo: k.resolverDefault("resolveBridgeAsset", [
-            k.dependsOnAccount("mint"),
-          ]),
-        },
-      },
-      args: {
-        version: {
-          type: k.numberTypeNode("u8"),
-          defaultsTo: k.valueDefault(k.vScalar(1)),
+          defaultValue: k.resolverValueNode("resolveBridgeAsset", {
+            dependsOn: [k.accountValueNode("mint")],
+          }),
         },
       },
     },
     bridge: {
       accounts: {
         asset: {
-          defaultsTo: k.resolverDefault("resolveBridgeAsset", [
-            k.dependsOnAccount("mint"),
-          ]),
-        },
-        vault: { defaultsTo: k.pdaDefault("vault") },
-        tokenOwner: { defaultsTo: k.identityDefault() },
-        token: {
-          defaultsTo: k.pdaDefault("associatedToken", {
-            importFrom: "mplToolbox",
-            seeds: {
-              mint: k.accountDefault("mint"),
-              owner: k.accountDefault("owner"),
-            },
+          defaultValue: k.resolverValueNode("resolveBridgeAsset", {
+            dependsOn: [k.accountValueNode("mint")],
           }),
+        },
+        vault: { defaultValue: k.pdaValueNode("vault") },
+        tokenOwner: { defaultValue: k.identityValueNode() },
+        token: {
+          defaultValue: k.pdaValueNode(
+            k.pdaLinkNode("associatedToken", "mplToolbox"),
+            [
+              k.pdaSeedValueNode("mint", k.accountValueNode("mint")),
+              k.pdaSeedValueNode("owner", k.accountValueNode("owner")),
+            ]
+          ),
         },
         metadata: {
-          defaultsTo: k.pdaDefault("metadata", {
-            importFrom: "mplTokenMetadata",
-            seeds: { mint: k.accountDefault("mint") },
-          }),
+          defaultValue: k.pdaValueNode(
+            k.pdaLinkNode("metadata", "mplTokenMetadata"),
+            [k.pdaSeedValueNode("mint", k.accountValueNode("mint"))]
+          ),
         },
         masterEdition: {
-          defaultsTo: k.pdaDefault("masterEdition", {
-            importFrom: "mplTokenMetadata",
-            seeds: { mint: k.accountDefault("mint") },
-          }),
+          defaultValue: k.pdaValueNode(
+            k.pdaLinkNode("masterEdition", "mplTokenMetadata"),
+            [k.pdaSeedValueNode("mint", k.accountValueNode("mint"))]
+          ),
         },
         tokenRecord: {
-          defaultsTo: k.conditionalDefault("arg", "tokenStandard", {
-            value: k.vEnum(
-              "TokenStandard",
-              "ProgrammableNonFungible",
-              undefined,
-              "mplTokenMetadata"
+          defaultValue: k.conditionalValueNode({
+            condition: k.argumentValueNode("tokenStandard"),
+            value: k.enumValueNode(
+              k.definedTypeLinkNode("TokenStandard", "mplTokenMetadata"),
+              "ProgrammableNonFungible"
             ),
-            ifTrue: k.pdaDefault("tokenRecord", {
-              importFrom: "mplTokenMetadata",
-              seeds: {
-                mint: k.accountDefault("mint"),
-                token: k.accountDefault("token"),
-              },
-            }),
+            ifTrue: k.pdaValueNode(
+              k.pdaLinkNode("tokenRecord", "mplTokenMetadata"),
+              [
+                k.pdaSeedValueNode("mint", k.accountValueNode("mint")),
+                k.pdaSeedValueNode("token", k.accountValueNode("token")),
+              ]
+            ),
           }),
         },
         vaultToken: {
-          defaultsTo: k.pdaDefault("associatedToken", {
-            importFrom: "mplToolbox",
-            seeds: {
-              mint: k.accountDefault("mint"),
-              owner: k.accountDefault("vault"),
-            },
-          }),
+          defaultValue: k.pdaValueNode(
+            k.pdaLinkNode("associatedToken", "mplToolbox"),
+            [
+              k.pdaSeedValueNode("mint", k.accountValueNode("mint")),
+              k.pdaSeedValueNode("owner", k.accountValueNode("vault")),
+            ]
+          ),
         },
         vaultTokenRecord: {
-          defaultsTo: k.conditionalDefault("arg", "tokenStandard", {
-            value: k.vEnum(
-              "TokenStandard",
-              "ProgrammableNonFungible",
-              undefined,
-              "mplTokenMetadata"
+          defaultValue: k.conditionalValueNode({
+            condition: k.argumentValueNode("tokenStandard"),
+            value: k.enumValueNode(
+              k.definedTypeLinkNode("TokenStandard", "mplTokenMetadata"),
+              "ProgrammableNonFungible"
             ),
-            ifTrue: k.pdaDefault("tokenRecord", {
-              importFrom: "mplTokenMetadata",
-              seeds: {
-                mint: k.accountDefault("mint"),
-                token: k.accountDefault("vaultToken"),
-              },
-            }),
+            ifTrue: k.pdaValueNode(
+              k.pdaLinkNode("tokenRecord", "mplTokenMetadata"),
+              [
+                k.pdaSeedValueNode("mint", k.accountValueNode("mint")),
+                k.pdaSeedValueNode("token", k.accountValueNode("vaultToken")),
+              ]
+            ),
           }),
         },
         authorizationRulesProgram: {
-          defaultsTo: k.conditionalDefault("arg", "tokenStandard", {
-            value: k.vEnum(
-              "TokenStandard",
-              "ProgrammableNonFungible",
-              undefined,
-              "mplTokenMetadata"
+          defaultValue: k.conditionalValueNode({
+            condition: k.argumentValueNode("tokenStandard"),
+            value: k.enumValueNode(
+              k.definedTypeLinkNode("TokenStandard", "mplTokenMetadata"),
+              "ProgrammableNonFungible"
             ),
-            ifTrue: k.programDefault(
-              "mplTokenAuthRules",
-              "auth9SigNpDKz4sJJ1DfCTuZrZNSAgh9sFD3rboVmgg"
+            ifTrue: k.publicKeyValueNode(
+              "auth9SigNpDKz4sJJ1DfCTuZrZNSAgh9sFD3rboVmgg",
+              "mplTokenAuthRules"
             ),
           }),
         },
       },
-      args: {
+      arguments: {
         tokenStandard: {
-          type: k.linkTypeNode("TokenStandard", {
-            importFrom: "mplTokenMetadata",
-          }),
-          defaultsTo: k.valueDefault(
-            k.vEnum(
-              "TokenStandard",
-              "NonFungible",
-              undefined,
-              "mplTokenMetadata"
-            )
+          type: k.definedTypeLinkNode("TokenStandard", "mplTokenMetadata"),
+          defaultValue: k.enumValueNode(
+            k.definedTypeLinkNode("TokenStandard", "mplTokenMetadata"),
+            "NonFungible"
           ),
         },
       },
@@ -230,19 +219,19 @@ kinobi.update(
 );
 
 // Set ShankAccount discriminator.
-const bridgeKey = (name) => ({
+const key = (name) => ({
   field: "discriminator",
-  value: k.vEnum("Discriminator", name),
+  value: k.enumValueNode("Discriminator", name),
 });
 kinobi.update(
-  new k.SetAccountDiscriminatorFromFieldVisitor({
-    vault: bridgeKey("Vault"),
+  new k.setAccountDiscriminatorFromFieldVisitor({
+    Vault: key("Vault"),
   })
 );
 
 // Render JavaScript.
 kinobi.accept(
-  new k.RenderJavaScriptVisitor(
+  k.renderJavaScriptVisitor(
     path.join(clientDir, "js", "bridge", "src", "generated"),
     {
       prettier: require(path.join(
@@ -253,6 +242,7 @@ kinobi.accept(
       )),
       dependencyMap: {
         mplTokenMetadata: "@metaplex-foundation/mpl-token-metadata",
+        mplToolbox: "@metaplex-foundation/mpl-toolbox",
       },
     }
   )
@@ -260,7 +250,7 @@ kinobi.accept(
 
 // Render Rust.
 kinobi.accept(
-  new k.RenderRustVisitor(
+  k.renderRustVisitor(
     path.join(clientDir, "rust", "bridge", "src", "generated"),
     {
       formatCode: true,

@@ -52,7 +52,7 @@ pub enum Standard {
 
     /// A unique asset representing a subscription.
     ///
-    /// Holding this asset grants the holder access to a service, but does not
+    /// Holding this asset grants the owner access to a service, but does not
     /// grant permanent ownership rights.
     Subscription,
 

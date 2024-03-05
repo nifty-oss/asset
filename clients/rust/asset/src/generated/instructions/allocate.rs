@@ -5,7 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::Extension;
+use crate::generated::types::ExtensionInput;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -82,7 +82,7 @@ impl AllocateInstructionData {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct AllocateInstructionArgs {
-    pub extension: Extension,
+    pub extension: ExtensionInput,
 }
 
 /// Instruction builder for `Allocate`.
@@ -97,7 +97,7 @@ pub struct AllocateBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
-    extension: Option<Extension>,
+    extension: Option<ExtensionInput>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -129,7 +129,7 @@ impl AllocateBuilder {
         self
     }
     #[inline(always)]
-    pub fn extension(&mut self, extension: Extension) -> &mut Self {
+    pub fn extension(&mut self, extension: ExtensionInput) -> &mut Self {
         self.extension = Some(extension);
         self
     }
@@ -350,7 +350,7 @@ impl<'a, 'b> AllocateCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn extension(&mut self, extension: Extension) -> &mut Self {
+    pub fn extension(&mut self, extension: ExtensionInput) -> &mut Self {
         self.instruction.extension = Some(extension);
         self
     }
@@ -424,7 +424,7 @@ struct AllocateCpiBuilderInstruction<'a, 'b> {
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    extension: Option<Extension>,
+    extension: Option<ExtensionInput>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

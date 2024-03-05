@@ -12,7 +12,7 @@ import {
 } from '../src';
 import { createUmi } from './_setup';
 
-test('it can transfer an asset as a holder', async (t) => {
+test('it can transfer an asset as an owner', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetSigner = generateSigner(umi);
@@ -27,7 +27,7 @@ test('it can transfer an asset as a holder', async (t) => {
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
-  // Holder is correct.
+  // Owner is correct.
   let asset = await fetchAsset(umi, assetSigner.publicKey);
   t.true(asset.owner === ownerSigner.publicKey);
 
@@ -59,7 +59,7 @@ test('it can transfer an asset as a delegate', async (t) => {
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
-  // the holder is correct.
+  // the owner is correct.
   let asset = await fetchAsset(umi, assetSigner.publicKey);
   t.true(asset.owner === ownerSigner.publicKey);
 
@@ -101,7 +101,7 @@ test('invalid signer cannot transfer', async (t) => {
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
-  // the holder is correct.
+  // the owner is correct.
   const asset = await fetchAsset(umi, assetSigner.publicKey);
   t.true(asset.owner === ownerSigner.publicKey);
 
@@ -114,11 +114,11 @@ test('invalid signer cannot transfer', async (t) => {
 
   // and it fails.
   await t.throwsAsync(result, {
-    message: /Invalid holder or transfer delegate/,
+    message: /Invalid owner or transfer delegate/,
   });
 });
 
-test('holder transfer clears delegate', async (t) => {
+test('owner transfer clears delegate', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetSigner = generateSigner(umi);
@@ -134,7 +134,7 @@ test('holder transfer clears delegate', async (t) => {
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
-  // the holder is correct.
+  // the owner is correct.
   let asset = await fetchAsset(umi, assetSigner.publicKey);
   t.true(asset.owner === ownerSigner.publicKey);
 
@@ -148,7 +148,7 @@ test('holder transfer clears delegate', async (t) => {
     }),
   }).sendAndConfirm(umi);
 
-  // and transfer the asset as holder.
+  // and transfer the asset as owner.
   await transfer(umi, {
     asset: assetSigner.publicKey,
     signer: ownerSigner,
@@ -179,7 +179,7 @@ test('delegate transfer clears delegate', async (t) => {
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
-  // the holder is correct.
+  // the owner is correct.
   let asset = await fetchAsset(umi, assetSigner.publicKey);
   t.true(asset.owner === ownerSigner.publicKey);
 
@@ -223,7 +223,7 @@ test('self-transfer does not clear delegate', async (t) => {
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
-  // the holder is correct.
+  // the owner is correct.
   const asset = await fetchAsset(umi, assetSigner.publicKey);
   t.true(asset.owner === ownerSigner.publicKey);
 
@@ -237,7 +237,7 @@ test('self-transfer does not clear delegate', async (t) => {
     }),
   }).sendAndConfirm(umi);
 
-  // and transfer the asset as holder to itself.
+  // and transfer the asset as owner to itself.
   await transfer(umi, {
     asset: assetSigner.publicKey,
     signer: ownerSigner,
@@ -268,7 +268,7 @@ test('it cannot transfer a soulbound asset', async (t) => {
     standard: Standard.Soulbound,
   }).sendAndConfirm(umi);
 
-  // Holder is correct.
+  // Owner is correct.
   const asset = await fetchAsset(umi, assetSigner.publicKey);
   t.true(asset.owner === ownerSigner.publicKey);
 

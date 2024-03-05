@@ -25,7 +25,6 @@ import {
 import { resolveBridgeAsset } from '../../hooked';
 import { findVaultPda } from '../accounts';
 import {
-  PickPartial,
   ResolvedAccount,
   ResolvedAccountsWithIndices,
   expectPublicKey,
@@ -78,14 +77,8 @@ export function getCreateInstructionDataSerializer(): Serializer<
   ) as Serializer<CreateInstructionDataArgs, CreateInstructionData>;
 }
 
-// Extra Args.
-export type CreateInstructionExtraArgs = { version: number };
-
 // Args.
-export type CreateInstructionArgs = PickPartial<
-  CreateInstructionDataArgs & CreateInstructionExtraArgs,
-  'version'
->;
+export type CreateInstructionArgs = CreateInstructionDataArgs;
 
 // Instruction.
 export function create(
@@ -188,9 +181,6 @@ export function create(
       'AssetGtQBTSgm5s91d1RAQod5JmaZiJDxqsgtqrZud73'
     );
     resolvedAccounts.niftyAssetProgram.isWritable = false;
-  }
-  if (!resolvedArgs.version) {
-    resolvedArgs.version = 1;
   }
 
   // Accounts in order.

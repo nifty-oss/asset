@@ -11,7 +11,7 @@ import {
 } from '../src';
 import { createUmi } from './_setup';
 
-test('a holder can revoke a delegate', async (t) => {
+test('an owner can revoke a delegate', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
@@ -43,7 +43,7 @@ test('a holder can revoke a delegate', async (t) => {
     },
   });
 
-  // When the holder revokes the delegate.
+  // When the owner revokes the delegate.
   await revoke(umi, {
     asset: asset.publicKey,
     signer: owner,

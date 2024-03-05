@@ -53,16 +53,8 @@ jobs:
       - name: Cache Rust client test dependencies
         uses: nifty-oss/actions/buildjet-cache-crate@v1
         with:
-          folder: ./clients/rust/${{ matrix.client }}
+          folder: '.'
           key: ${{ matrix.client }}-rust-client-test
-
-      - name: Run cargo clippy
-        uses: nifty-oss/actions/cargo@v1
-        with:
-          command: clippy
-          args:
-            --all-targets --all-features --no-deps --manifest-path ./clients/rust/${{
-              matrix.client}}/Cargo.toml
 
       - name: Build Rust client
         shell: bash
@@ -73,6 +65,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.client }}-rust-client-build
-          # First wildcard ensures exported paths are consistently under the clients folder.
-          path: ./client*/rust/${{ matrix.client }}/target/release/*${{ matrix.client }}*
+          # First wildcard ensures exported paths are consistently under the target folder.
+          path: ./targe*/release/*${{ matrix.client }}*
           if-no-files-found: error

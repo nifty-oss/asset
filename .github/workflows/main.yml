@@ -59,17 +59,86 @@ jobs:
           changes: ${{ steps.changes.outputs.changes }}
           suffix: _rust_client
 
+  lint_rust:
+    name: Lint Rust
+    if: ${{ needs.changes.outputs.any == 'true' }}
+    needs: changes
+    runs-on: buildjet-8vcpu-ubuntu-2204
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+
+      - name: Load environment variables
+        run: cat .github/.env >> $GITHUB_ENV
+
+      - name: Install Rust
+        uses: nifty-oss/actions/install-rust@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+
+      - name: Cache program dependencies
+        if: env.CACHE == 'true'
+        uses: nifty-oss/actions/buildjet-cache-crate@v1
+        with:
+          folder: "."
+          key: programs
+
+      - name: Run cargo fmt
+        uses: nifty-oss/actions/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+      - name: Run cargo clippy
+        uses: nifty-oss/actions/cargo@v1
+        with:
+          command: clippy
+          args: --all-targets --all-features --no-deps
+
+  lint_js:
+    name: Lint JS
+    if: ${{ needs.changes.outputs.any == 'true' }}
+    needs: changes
+    runs-on: buildjet-8vcpu-ubuntu-2204
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+
+      - name: Load environment variables
+        run: cat .github/.env >> $GITHUB_ENV
+
+      - name: Install Node.js
+        uses: nifty-oss/actions/install-node-with-pnpm@v1
+        with:
+          version: ${{ env.NODE_VERSION }}
+          cache: ${{ env.CACHE }}
+
+      - name: Install dependencies
+        uses: nifty-oss/actions/install-node-dependencies@v1
+        with:
+          folder: ./clients/js
+          cache: ${{ env.CACHE }}
+          key: client-js
+
+      - name: Format
+        working-directory: ./clients/js
+        run: pnpm format
+
+      - name: Lint
+        working-directory: ./clients/js
+        run: pnpm lint
+
   build_programs:
     name: Programs
     if: ${{ needs.changes.outputs.any == 'true' }}
-    needs: changes
+    needs: [changes, lint_rust, lint_js]
     uses: ./.github/workflows/build-programs.yml
     secrets: inherit
 
   test_programs:
     name: Programs
     if: ${{ needs.changes.outputs.programs == 'true' }}
-    needs: changes
+    needs: [changes, lint_rust, lint_js]
     uses: ./.github/workflows/test-programs.yml
     secrets: inherit
     with:
@@ -105,7 +174,7 @@ jobs:
         if: env.CACHE == 'true'
         uses: nifty-oss/actions/buildjet-cache-crate@v1
         with:
-          folder: ./programs
+          folder: "."
           key: programs
 
       - name: Install Node.js

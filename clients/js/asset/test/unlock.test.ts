@@ -115,7 +115,7 @@ test('it cannot unlock an asset with an invalid delegate', async (t) => {
   });
 });
 
-test('it cannot unlock an asset locked with a delegate as a holder', async (t) => {
+test('it cannot unlock an asset locked with a delegate as an owner', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
@@ -151,7 +151,7 @@ test('it cannot unlock an asset locked with a delegate as a holder', async (t) =
     state: State.Locked,
   });
 
-  // When we try unlock the asset as a holder.
+  // When we try unlock the asset as an owner.
   const promise = unlock(umi, {
     asset: asset.publicKey,
     authority: owner,
@@ -167,7 +167,7 @@ test('it cannot unlock an asset locked with a delegate as a holder', async (t) =
   });
 });
 
-test('it can unlock an asset as a holder', async (t) => {
+test('it can unlock an asset as an owner', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
@@ -181,7 +181,7 @@ test('it can unlock an asset as a holder', async (t) => {
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
-  // And we lock the asset as a holder.
+  // And we lock the asset as an owner.
   await lock(umi, {
     asset: asset.publicKey,
     authority: owner,
@@ -192,7 +192,7 @@ test('it can unlock an asset as a holder', async (t) => {
     state: State.Locked,
   });
 
-  // When we unlock the asset as a holder.
+  // When we unlock the asset as an owner.
   await unlock(umi, {
     asset: asset.publicKey,
     authority: owner,

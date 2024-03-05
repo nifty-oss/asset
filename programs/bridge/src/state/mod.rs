@@ -40,8 +40,8 @@ unsafe impl Zeroable for Discriminator {}
 /// Represent a vault state.
 ///
 /// A vault on an "Active" state is holding a token in its token account and the corresponding asset
-/// has been transferred to the original token holder. A bridge on an "Idle" state represents the case
-/// where the Asset` for the token has been created, but the asset is held in the vault account.
+/// has been transferred to the original token owner. A bridge on an "Idle" state represents the case
+/// where the asset for the token has been created, but the asset is held in the vault account.
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, ShankType)]
 pub enum State {
