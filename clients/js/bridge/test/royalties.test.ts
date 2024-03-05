@@ -10,7 +10,6 @@ import {
   string,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  Account,
   Asset,
   Discriminator as AssetDiscriminator,
   Standard as AssetStandard,
@@ -136,7 +135,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
   }).sendAndConfirm(umi);
 
   // create a PubkeyMatch constraint that will block the transfer to the owner.
-  const constraint = pubkeyMatch(Account.Recipient, [publicKey(notOwner)]);
+  const constraint = pubkeyMatch('Recipient', [publicKey(notOwner)]);
 
   const asset = await fetchAsset(
     umi,
@@ -163,7 +162,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
   await update(umi, {
     asset: collectionAsset,
     payer: umi.identity,
-    extension: royalties({ basisPoints, constraint }),
+    extension: royalties(basisPoints, constraint),
   }).sendAndConfirm(umi);
 
   const updatedCollectionAsset = await fetchAsset(
@@ -184,10 +183,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
         uri: 'https://collection.bridge',
       },
       grouping(0, 1), // 1 item in the group
-      royalties({
-        basisPoints,
-        constraint,
-      }),
+      royalties(basisPoints, constraint),
     ],
   });
 
@@ -213,12 +209,12 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
   });
 
   // Now update the royalty extension on the group asset to have the recipient be the pubkey match
-  const newConstraint = pubkeyMatch(Account.Recipient, [publicKey(owner)]);
+  const newConstraint = pubkeyMatch('Recipient', [publicKey(owner)]);
 
   await update(umi, {
     asset: collectionAsset,
     payer: umi.identity,
-    extension: royalties({ basisPoints, constraint: newConstraint }),
+    extension: royalties(basisPoints, newConstraint),
   }).sendAndConfirm(umi);
 
   const finalCollectionAsset = await fetchAsset(
@@ -240,10 +236,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
         uri: 'https://collection.bridge',
       },
       grouping(0, 1), // 1 item in the group
-      royalties({
-        basisPoints,
-        constraint: newConstraint,
-      }),
+      royalties(basisPoints, newConstraint),
     ],
   });
 

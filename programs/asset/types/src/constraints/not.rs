@@ -36,7 +36,7 @@ impl Assertable for Not<'_> {
     }
 }
 
-/// Builder for an `OwnedBy` constraint.
+/// Builder for an `Not` constraint.
 #[derive(Default)]
 pub struct NotBuilder(Vec<u8>);
 
