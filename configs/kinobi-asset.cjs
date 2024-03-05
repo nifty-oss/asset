@@ -289,6 +289,12 @@ kinobi.update(
                   }),
                 }),
                 k.structFieldTypeNode({
+                  name: "description",
+                  type: k.stringTypeNode({
+                    size: k.prefixedSizeNode(k.numberTypeNode("u8")),
+                  }),
+                }),
+                k.structFieldTypeNode({
                   name: "uri",
                   type: k.stringTypeNode({
                     size: k.prefixedSizeNode(k.numberTypeNode("u8")),
