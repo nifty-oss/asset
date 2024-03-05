@@ -1,4 +1,4 @@
-use std::{marker::PhantomData, ops::Deref, vec};
+use std::{ops::Deref, vec};
 
 use crate::constraints::{
     Assertable, Assertion, AssertionResult, ConstraintBuilder, Context, FromBytes,
@@ -10,19 +10,15 @@ use super::{Operator, OperatorType};
 ///
 /// This is useful to define negation of existing constraints. For example, a constraint
 /// that succeeds when an account is not owned by a specific program.
-pub struct Empty<'a> {
-    phantom: PhantomData<&'a Self>,
-}
+pub struct Empty {}
 
-impl<'a> FromBytes<'a> for Empty<'a> {
-    fn from_bytes(_bytes: &'a [u8]) -> Self {
-        Self {
-            phantom: PhantomData,
-        }
+impl FromBytes<'_> for Empty {
+    fn from_bytes(_bytes: &'_ [u8]) -> Self {
+        Self {}
     }
 }
 
-impl Assertable for Empty<'_> {
+impl Assertable for Empty {
     fn assert(&self, _context: &Context) -> AssertionResult {
         Ok(Assertion::Pass)
     }
