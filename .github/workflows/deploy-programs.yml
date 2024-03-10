@@ -1,0 +1,180 @@
+name: Deploy Program
+
+on:
+  workflow_dispatch:
+    inputs:
+      program:
+        description: Program
+        required: true
+        default: asset
+        type: choice
+        options:
+          - asset
+          - bridge
+      cluster:
+        description: Cluster environment
+        required: true
+        default: devnet
+        type: choice
+        options:
+          - devnet
+          - mainnet-beta
+      version_program:
+        description: Version program
+        required: true
+        default: false
+        type: boolean
+      level:
+        description: Level
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+env:
+  CACHE: true
+
+jobs:
+  build_programs:
+    name: Programs
+    uses: ./.github/workflows/build-programs.yml
+    secrets: inherit
+
+  test_programs:
+    name: Programs
+    uses: ./.github/workflows/test-programs.yml
+    secrets: inherit
+    with:
+      program_matrix: '["${{ inputs.program }}"]'
+
+  test_js:
+    name: JS client
+    needs: build_programs
+    uses: ./.github/workflows/test-js-client.yml
+    secrets: inherit
+    with:
+      client_matrix: '["${{ inputs.program }}"]'
+
+  test_rust:
+    name: Rust client
+    needs: build_programs
+    uses: ./.github/workflows/test-rust-client.yml
+    secrets: inherit
+    with:
+      client_matrix: '["${{ inputs.program }}"]'
+
+  deploy_program:
+    name: Program / Deploy
+    runs-on: buildjet-8vcpu-ubuntu-2204
+    needs: [test_programs, test_js, test_rust]
+    permissions:
+      contents: write
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+
+      - name: Load environment variables
+        run: cat .github/.env >> $GITHUB_ENV
+
+      - name: Install Rust
+        uses: nifty-oss/actions/install-rust@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+
+      - name: Install Solana
+        uses: nifty-oss/actions/install-solana@v1
+        with:
+          version: ${{ env.SOLANA_VERSION }}
+          cache: ${{ env.CACHE }}
+
+      - name: Install cargo-release
+        uses: nifty-oss/actions/install-cargo-release@v1
+        with:
+          cache: ${{ env.CACHE }}
+
+      - name: Set RPC
+        run: |
+          if [ "${{ inputs.cluster }}" == "devnet" ]; then
+            echo RPC=${{ secrets.DEVNET_RPC }} >> $GITHUB_ENV
+          else
+            echo RPC=${{ secrets.MAINNET_RPC }} >> $GITHUB_ENV
+          fi
+
+      - name: Determine program version
+        run: |
+          IDL_NAME="${{ inputs.program }}_program"
+          VERSION=`jq '.version' ./idls/${IDL_NAME}.json | sed 's/"//g'`
+          MAJOR=`echo ${VERSION} | cut -d. -f1`
+          MINOR=`echo ${VERSION} | cut -d. -f2`
+          PATCH=`echo ${VERSION} | cut -d. -f3`
+
+          if [ "${{ inputs.level }}" == "major" ]; then
+             MAJOR=$((MAJOR + 1))
+             MINOR=0
+             PATCH=0
+          elif [ "${{ inputs.level }}" == "minor" ]; then
+             MINOR=$((MINOR + 1))
+             PATCH=0
+          else
+             PATCH=$((PATCH + 1))
+          fi
+
+          PROGRAM_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+
+          cp ./idls/${IDL_NAME}.json ./idls/${IDL_NAME}-previous.json
+          jq ".version = \"${PROGRAM_VERSION}\"" ./idls/${IDL_NAME}-previous.json > ./idls/${IDL_NAME}.json
+          echo "" >> ./idls/${IDL_NAME}.json
+          rm ./idls/${IDL_NAME}-previous.json
+
+          echo PROGRAM_VERSION="${PROGRAM_VERSION}" >> $GITHUB_ENV
+
+      - name: Download program builds
+        uses: actions/download-artifact@v4
+        with:
+          name: program-builds
+
+      - name: Deploy Program
+        run: |
+          echo "Deploying ${{ inputs.program }} to ${{ inputs.cluster }}"
+
+          echo ${{ secrets.NIFTY_DEPLOYER_KEY }} > ./deployer-key.json 
+
+          if [ "${{ inputs.program }}" == "asset" ]; then
+            echo ${{ secrets.ASSET_KEY }} > ./program-id.json
+            echo WORKING_DIR="./programs/${{ inputs.program }}/program" >> $GITHUB_ENV
+          else
+            echo ${{ secrets.BRIDGE_KEY }} > ./program-id.json
+            echo WORKING_DIR="./programs/${{ inputs.program }}" >> $GITHUB_ENV
+          fi
+
+          solana -v program deploy ./programs/.bin/${{ inputs.program }}_program.so \
+            -u ${{ env.RPC }} \
+            --program-id ./program-id.json \
+            -k ./deployer-key.json
+            
+          rm ./deployer-key.json
+          rm ./program-id.json
+
+      - name: Version program
+        working-directory: ${{ env.WORKING_DIR }}
+        if: github.event.inputs.version_program == 'true'
+        run: |
+          git stash
+          git config user.name "${{ env.COMMIT_USER_NAME }}"
+          git config user.email "${{ env.COMMIT_USER_EMAIL }}"
+
+          cargo login ${{ secrets.CRATES_TOKEN }}
+          cargo release ${{ env.PROGRAM_VERSION }} --no-confirm --no-push --no-tag --no-publish --execute
+
+          git reset --soft HEAD~1
+          git stash pop
+
+      - name: Commit and tag new version
+        uses: stefanzweifel/git-auto-commit-action@v4
+        if: github.event.inputs.version_program == 'true' && github.event.inputs.cluster == 'mainnet-beta'
+        with:
+          commit_message: Deploy nifty-${{ inputs.program }} program v${{ env.PROGRAM_VERSION }}
+          tagging_message: nifty-${{ inputs.program }}@v${{ env.PROGRAM_VERSION }}

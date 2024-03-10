@@ -101,7 +101,7 @@ export function getBridgeInstructionDataSerializer(): Serializer<
 }
 
 // Extra Args.
-export type BridgeInstructionExtraArgs = { tokenStandard: TokenStandardArgs };
+export type BridgeInstructionExtraArgs = { tokenStandard?: TokenStandardArgs };
 
 // Args.
 export type BridgeInstructionArgs = PickPartial<
@@ -257,9 +257,6 @@ export function bridge(
       mint: expectPublicKey(resolvedAccounts.mint.value),
     });
   }
-  if (!resolvedArgs.tokenStandard) {
-    resolvedArgs.tokenStandard = TokenStandard.NonFungible;
-  }
   if (!resolvedAccounts.tokenRecord.value) {
     if (resolvedArgs.tokenStandard === TokenStandard.ProgrammableNonFungible) {
       resolvedAccounts.tokenRecord.value = findTokenRecordPda(context, {
@@ -334,6 +331,9 @@ export function bridge(
         );
       resolvedAccounts.authorizationRulesProgram.isWritable = false;
     }
+  }
+  if (!resolvedArgs.tokenStandard) {
+    resolvedArgs.tokenStandard = TokenStandard.NonFungible;
   }
 
   // Accounts in order.

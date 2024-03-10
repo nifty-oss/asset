@@ -1,7 +1,10 @@
 [package]
 name = "nifty-cli"
-version = "0.1.0"
+version = "0.0.0"
+authors = ["nifty-oss maintainers <maintainers@nifty-oss.org>"]
 edition = "2021"
+readme = "README.md"
+license-file = "../../LICENSE"
 
 [[bin]]
 name = "nifty"

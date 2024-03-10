@@ -35,8 +35,8 @@ export type CreateInstructionAccounts = {
   asset: Signer;
   /** The authority of the asset */
   authority?: PublicKey | Pda;
-  /** The holder of the asset */
-  holder?: PublicKey | Pda;
+  /** The owner of the asset */
+  owner?: PublicKey | Pda;
   /** Asset account of the group */
   group?: PublicKey | Pda;
   /** The account paying for the storage fees */
@@ -108,10 +108,10 @@ export function create(
       isWritable: false as boolean,
       value: input.authority ?? null,
     },
-    holder: {
+    owner: {
       index: 2,
       isWritable: false as boolean,
-      value: input.holder ?? null,
+      value: input.owner ?? null,
     },
     group: {
       index: 3,
@@ -137,8 +137,8 @@ export function create(
   if (!resolvedAccounts.authority.value) {
     resolvedAccounts.authority.value = context.identity.publicKey;
   }
-  if (!resolvedAccounts.holder.value) {
-    resolvedAccounts.holder.value = context.identity.publicKey;
+  if (!resolvedAccounts.owner.value) {
+    resolvedAccounts.owner.value = context.identity.publicKey;
   }
   if (!resolvedAccounts.systemProgram.value) {
     if (resolvedAccounts.payer.value) {

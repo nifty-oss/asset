@@ -38,13 +38,13 @@ pub fn process_lock(program_id: &Pubkey, ctx: Context<LockAccounts>) -> ProgramR
     // locks the asset
     //
     // if the asset has a delegate, the authority must be the delegate;
-    // otherwise, the authority must be the holder
+    // otherwise, the authority must be the owner
 
     let asset = Asset::load_mut(&mut data);
 
     if asset.delegate.value().is_some() {
         assert_delegate(asset, ctx.accounts.authority.key, DelegateRole::Lock)?;
-    } else if asset.holder != *ctx.accounts.authority.key {
+    } else if asset.owner != *ctx.accounts.authority.key {
         return err!(AssetError::InvalidAuthority);
     }
 

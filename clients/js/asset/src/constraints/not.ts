@@ -1,7 +1,7 @@
 import { Serializer, struct } from '@metaplex-foundation/umi/serializers';
-import { OperatorType } from '../extensions';
 import {
   Constraint,
+  OperatorType,
   getConstraintSerializer,
   wrapSerializerInConstraintHeader,
 } from '.';

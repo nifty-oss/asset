@@ -12,61 +12,61 @@ import {
 } from '../src';
 import { createUmi } from './_setup';
 
-test('it can transfer an asset as a holder', async (t) => {
+test('it can transfer an asset as an owner', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetSigner = generateSigner(umi);
-  const holderSigner = generateSigner(umi);
+  const ownerSigner = generateSigner(umi);
   const recipient = generateSigner(umi).publicKey;
 
   // When we create a new asset.
   await create(umi, {
     asset: assetSigner,
-    holder: holderSigner.publicKey,
+    owner: ownerSigner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
-  // Holder is correct.
+  // Owner is correct.
   let asset = await fetchAsset(umi, assetSigner.publicKey);
-  t.true(asset.holder === holderSigner.publicKey);
+  t.true(asset.owner === ownerSigner.publicKey);
 
   // And we transfer the asset.
   await transfer(umi, {
     asset: assetSigner.publicKey,
-    signer: holderSigner,
+    signer: ownerSigner,
     recipient,
   }).sendAndConfirm(umi);
 
   // It was transferred.
   asset = await fetchAsset(umi, assetSigner.publicKey);
-  t.true(asset.holder === recipient);
+  t.true(asset.owner === recipient);
 });
 
 test('it can transfer an asset as a delegate', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetSigner = generateSigner(umi);
-  const holderSigner = generateSigner(umi);
+  const ownerSigner = generateSigner(umi);
   const delegateSigner = generateSigner(umi);
   const recipient = generateSigner(umi).publicKey;
 
   // When we create a new asset.
   await create(umi, {
     asset: assetSigner,
-    holder: holderSigner.publicKey,
+    owner: ownerSigner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
-  // the holder is correct.
+  // the owner is correct.
   let asset = await fetchAsset(umi, assetSigner.publicKey);
-  t.true(asset.holder === holderSigner.publicKey);
+  t.true(asset.owner === ownerSigner.publicKey);
 
   // Now we delegate transfer authority of the asset
   await approve(umi, {
     asset: assetSigner.publicKey,
-    holder: holderSigner,
+    owner: ownerSigner,
     delegate: delegateSigner.publicKey,
     delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Transfer],
@@ -82,28 +82,28 @@ test('it can transfer an asset as a delegate', async (t) => {
 
   // It was transferred.
   asset = await fetchAsset(umi, assetSigner.publicKey);
-  t.true(asset.holder === recipient);
+  t.true(asset.owner === recipient);
 });
 
 test('invalid signer cannot transfer', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetSigner = generateSigner(umi);
-  const holderSigner = generateSigner(umi);
+  const ownerSigner = generateSigner(umi);
   const invalidSigner = generateSigner(umi);
   const recipient = generateSigner(umi).publicKey;
 
   // When we create a new asset
   await create(umi, {
     asset: assetSigner,
-    holder: holderSigner.publicKey,
+    owner: ownerSigner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
-  // the holder is correct.
+  // the owner is correct.
   const asset = await fetchAsset(umi, assetSigner.publicKey);
-  t.true(asset.holder === holderSigner.publicKey);
+  t.true(asset.owner === ownerSigner.publicKey);
 
   // We transfer the asset with an invalid signer
   const result = transfer(umi, {
@@ -114,50 +114,50 @@ test('invalid signer cannot transfer', async (t) => {
 
   // and it fails.
   await t.throwsAsync(result, {
-    message: /Invalid holder or transfer delegate/,
+    message: /Invalid owner or transfer delegate/,
   });
 });
 
-test('holder transfer clears delegate', async (t) => {
+test('owner transfer clears delegate', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetSigner = generateSigner(umi);
-  const holderSigner = generateSigner(umi);
+  const ownerSigner = generateSigner(umi);
   const delegateSigner = generateSigner(umi);
   const recipient = generateSigner(umi).publicKey;
 
   // When we create a new asset.
   await create(umi, {
     asset: assetSigner,
-    holder: holderSigner.publicKey,
+    owner: ownerSigner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
-  // the holder is correct.
+  // the owner is correct.
   let asset = await fetchAsset(umi, assetSigner.publicKey);
-  t.true(asset.holder === holderSigner.publicKey);
+  t.true(asset.owner === ownerSigner.publicKey);
 
   // Now we set a delegate on the asset
   await approve(umi, {
     asset: assetSigner.publicKey,
-    holder: holderSigner,
+    owner: ownerSigner,
     delegate: delegateSigner.publicKey,
     delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Burn, DelegateRole.Transfer],
     }),
   }).sendAndConfirm(umi);
 
-  // and transfer the asset as holder.
+  // and transfer the asset as owner.
   await transfer(umi, {
     asset: assetSigner.publicKey,
-    signer: holderSigner,
+    signer: ownerSigner,
     recipient,
   }).sendAndConfirm(umi);
 
   // It was transferred
   asset = await fetchAsset(umi, assetSigner.publicKey);
-  t.true(asset.holder === recipient);
+  t.true(asset.owner === recipient);
 
   // and the delegate is cleared.
   t.true(asset.delegate === null);
@@ -167,26 +167,26 @@ test('delegate transfer clears delegate', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetSigner = generateSigner(umi);
-  const holderSigner = generateSigner(umi);
+  const ownerSigner = generateSigner(umi);
   const delegateSigner = generateSigner(umi);
   const recipient = generateSigner(umi).publicKey;
 
   // When we create a new asset.
   await create(umi, {
     asset: assetSigner,
-    holder: holderSigner.publicKey,
+    owner: ownerSigner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
-  // the holder is correct.
+  // the owner is correct.
   let asset = await fetchAsset(umi, assetSigner.publicKey);
-  t.true(asset.holder === holderSigner.publicKey);
+  t.true(asset.owner === ownerSigner.publicKey);
 
   // Now we set a delegate on the asset
   await approve(umi, {
     asset: assetSigner.publicKey,
-    holder: holderSigner,
+    owner: ownerSigner,
     delegate: delegateSigner.publicKey,
     delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Lock, DelegateRole.Transfer],
@@ -202,7 +202,7 @@ test('delegate transfer clears delegate', async (t) => {
 
   // It was transferred
   asset = await fetchAsset(umi, assetSigner.publicKey);
-  t.true(asset.holder === recipient);
+  t.true(asset.owner === recipient);
 
   // and the delegate is cleared.
   t.true(asset.delegate === null);
@@ -212,41 +212,41 @@ test('self-transfer does not clear delegate', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetSigner = generateSigner(umi);
-  const holderSigner = generateSigner(umi);
+  const ownerSigner = generateSigner(umi);
   const delegateSigner = generateSigner(umi);
 
   // When we create a new asset.
   await create(umi, {
     asset: assetSigner,
-    holder: holderSigner.publicKey,
+    owner: ownerSigner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
 
-  // the holder is correct.
+  // the owner is correct.
   const asset = await fetchAsset(umi, assetSigner.publicKey);
-  t.true(asset.holder === holderSigner.publicKey);
+  t.true(asset.owner === ownerSigner.publicKey);
 
   // Now we set a delegate on the asset
   await approve(umi, {
     asset: assetSigner.publicKey,
-    holder: holderSigner,
+    owner: ownerSigner,
     delegate: delegateSigner.publicKey,
     delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Burn],
     }),
   }).sendAndConfirm(umi);
 
-  // and transfer the asset as holder to itself.
+  // and transfer the asset as owner to itself.
   await transfer(umi, {
     asset: assetSigner.publicKey,
-    signer: holderSigner,
-    recipient: holderSigner.publicKey,
+    signer: ownerSigner,
+    recipient: ownerSigner.publicKey,
   }).sendAndConfirm(umi);
 
   // It was transferred and the delegate is still set.
   t.like(await fetchAsset(umi, assetSigner.publicKey), <Asset>{
-    holder: holderSigner.publicKey,
+    owner: ownerSigner.publicKey,
     delegate: {
       address: delegateSigner.publicKey,
     },
@@ -257,26 +257,26 @@ test('it cannot transfer a soulbound asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetSigner = generateSigner(umi);
-  const holderSigner = generateSigner(umi);
+  const ownerSigner = generateSigner(umi);
 
   // When we create a new asset.
   await create(umi, {
     asset: assetSigner,
-    holder: holderSigner.publicKey,
+    owner: ownerSigner.publicKey,
     payer: umi.identity,
     name: 'Soulbound Asset',
     standard: Standard.Soulbound,
   }).sendAndConfirm(umi);
 
-  // Holder is correct.
+  // Owner is correct.
   const asset = await fetchAsset(umi, assetSigner.publicKey);
-  t.true(asset.holder === holderSigner.publicKey);
+  t.true(asset.owner === ownerSigner.publicKey);
 
   // When we try to transfer the asset.
   const recipient = generateSigner(umi).publicKey;
   const promise = transfer(umi, {
     asset: assetSigner.publicKey,
-    signer: holderSigner,
+    signer: ownerSigner,
     recipient,
   }).sendAndConfirm(umi);
 

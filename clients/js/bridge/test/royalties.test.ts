@@ -1,3 +1,4 @@
+import { mplToolbox } from '@metaplex-foundation/mpl-toolbox';
 import {
   generateSigner,
   percentAmount,
@@ -5,26 +6,23 @@ import {
 } from '@metaplex-foundation/umi';
 import { createUmi as basecreateUmi } from '@metaplex-foundation/umi-bundle-tests';
 import {
-  string,
   publicKey as publicKeySerializer,
+  string,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  Account,
   Asset,
-  State as AssetState,
   Discriminator as AssetDiscriminator,
+  Standard as AssetStandard,
+  State as AssetState,
   ExtensionType,
   fetchAsset,
-  getExtensionSerializerFromType,
+  group,
+  grouping,
   niftyAsset,
   pubkeyMatch,
   royalties,
-  Standard as AssetStandard,
   update,
-  group,
-  grouping,
 } from '@nifty-oss/asset';
-import { mplToolbox } from '@metaplex-foundation/mpl-toolbox';
 import test from 'ava';
 import {
   BRIDGE_PROGRAM_ID,
@@ -137,7 +135,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
   }).sendAndConfirm(umi);
 
   // create a PubkeyMatch constraint that will block the transfer to the owner.
-  const constraint = pubkeyMatch(Account.Recipient, [publicKey(notOwner)]);
+  const constraint = pubkeyMatch('Recipient', [publicKey(notOwner)]);
 
   const asset = await fetchAsset(
     umi,
@@ -148,7 +146,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
     discriminator: AssetDiscriminator.Asset,
     state: AssetState.Unlocked,
     standard: AssetStandard.NonFungible,
-    holder: assetVaultPda[0],
+    owner: assetVaultPda[0],
     authority: umi.identity.publicKey,
     extensions: [
       {
@@ -161,18 +159,10 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
   });
 
   // Update the collectionAsset to have the new constraint
-  const data = getExtensionSerializerFromType(
-    ExtensionType.Royalties
-  ).serialize(royalties({ basisPoints, constraint }));
-
   await update(umi, {
     asset: collectionAsset,
     payer: umi.identity,
-    extension: {
-      extensionType: ExtensionType.Royalties,
-      length: data.length,
-      data,
-    },
+    extension: royalties(basisPoints, constraint),
   }).sendAndConfirm(umi);
 
   const updatedCollectionAsset = await fetchAsset(
@@ -184,7 +174,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
     discriminator: AssetDiscriminator.Asset,
     state: AssetState.Unlocked,
     standard: AssetStandard.NonFungible,
-    holder: collectionVaultPda[0],
+    owner: collectionVaultPda[0],
     authority: umi.identity.publicKey,
     extensions: [
       {
@@ -193,10 +183,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
         uri: 'https://collection.bridge',
       },
       grouping(0, 1), // 1 item in the group
-      royalties({
-        basisPoints,
-        constraint,
-      }),
+      royalties(basisPoints, constraint),
     ],
   });
 
@@ -218,24 +205,16 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
   );
 
   t.like(untransferredAsset, <Asset>{
-    holder: assetVaultPda[0],
+    owner: assetVaultPda[0],
   });
 
   // Now update the royalty extension on the group asset to have the recipient be the pubkey match
-  const newConstraint = pubkeyMatch(Account.Recipient, [publicKey(owner)]);
-
-  const newData = getExtensionSerializerFromType(
-    ExtensionType.Royalties
-  ).serialize(royalties({ basisPoints, constraint: newConstraint }));
+  const newConstraint = pubkeyMatch('Recipient', [publicKey(owner)]);
 
   await update(umi, {
     asset: collectionAsset,
     payer: umi.identity,
-    extension: {
-      extensionType: ExtensionType.Royalties,
-      length: newData.length,
-      data: newData,
-    },
+    extension: royalties(basisPoints, newConstraint),
   }).sendAndConfirm(umi);
 
   const finalCollectionAsset = await fetchAsset(
@@ -248,7 +227,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
     discriminator: AssetDiscriminator.Asset,
     state: AssetState.Unlocked,
     standard: AssetStandard.NonFungible,
-    holder: collectionVaultPda[0],
+    owner: collectionVaultPda[0],
     authority: umi.identity.publicKey,
     extensions: [
       {
@@ -257,10 +236,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
         uri: 'https://collection.bridge',
       },
       grouping(0, 1), // 1 item in the group
-      royalties({
-        basisPoints,
-        constraint: newConstraint,
-      }),
+      royalties(basisPoints, newConstraint),
     ],
   });
 
@@ -278,6 +254,6 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
   );
 
   t.like(transferredAsset, <Asset>{
-    holder: owner.publicKey,
+    owner: owner.publicKey,
   });
 });

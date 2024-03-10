@@ -35,7 +35,7 @@ import {
 export type RevokeInstructionAccounts = {
   /** Asset account */
   asset: PublicKey | Pda;
-  /** Current holder of the asset or delegate */
+  /** Current owner of the asset or delegate */
   signer: Signer;
 };
 

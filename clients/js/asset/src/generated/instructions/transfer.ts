@@ -30,7 +30,7 @@ import {
 export type TransferInstructionAccounts = {
   /** Asset account */
   asset: PublicKey | Pda;
-  /** Current holder of the asset or transfer delegate */
+  /** Current owner of the asset or transfer delegate */
   signer: Signer;
   /** The recipient of the asset */
   recipient: PublicKey | Pda;

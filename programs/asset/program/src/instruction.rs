@@ -5,13 +5,6 @@ use nifty_asset_types::{
 };
 use shank::{ShankContext, ShankInstruction};
 
-#[repr(u8)]
-#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, PartialEq)]
-pub enum DelegateInput {
-    All,
-    Some { roles: Vec<DelegateRole> },
-}
-
 #[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankContext, ShankInstruction)]
 #[rustfmt::skip]
 pub enum Instruction {
@@ -24,7 +17,7 @@ pub enum Instruction {
 
     /// Burns an asset.
     #[account(0, writable, name="asset", desc = "Asset account")]
-    #[account(1, signer, writable, name="signer", desc = "The holder or burn delegate of the asset")]
+    #[account(1, signer, writable, name="signer", desc = "The owner or burn delegate of the asset")]
     #[account(2, optional, writable, name="recipient", desc = "The account receiving refunded rent")]
     #[account(3, optional, writable, name="group", desc = "Asset account of the group")]
     Burn,
@@ -32,15 +25,15 @@ pub enum Instruction {
     /// Creates a new asset.
     #[account(0, signer, writable, name="asset", desc = "Asset account")]
     #[account(1, name="authority", desc = "The authority of the asset")]
-    #[account(2, name="holder", desc = "The holder of the asset")]
+    #[account(2, name="owner", desc = "The owner of the asset")]
     #[account(3, optional, writable, name="group", desc = "Asset account of the group")]
     #[account(4, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
     #[account(5, optional, name="system_program", desc = "The system program")]
-    Create(Metadata),
+    Create(MetadataInput),
 
     /// Approves a delegate to manage an asset.
     #[account(0, writable, name="asset", desc = "Asset account")]
-    #[account(1, signer, name="holder", desc = "The holder of the asset")]
+    #[account(1, signer, name="owner", desc = "The owner of the asset")]
     #[account(2, name="delegate", desc = "The delegate account")]
     Approve(DelegateInput),
 
@@ -48,28 +41,28 @@ pub enum Instruction {
     #[account(0, signer, writable, name="asset", desc = "Asset account")]
     #[account(1, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
     #[account(2, optional, name="system_program", desc = "The system program")]
-    Allocate(Extension),
+    Allocate(AllocateInput),
 
     /// Locks an asset.
     #[account(0, writable, name="asset", desc = "Asset account")]
-    #[account(1, signer, name="authority", desc = "Delegate or holder account")]
+    #[account(1, signer, name="authority", desc = "Delegate or owner account")]
     Lock,
 
     /// Revokes a delegate.
     #[account(0, writable, name="asset", desc = "Asset account")]
-    #[account(1, signer, name="signer", desc = "Current holder of the asset or delegate")]
+    #[account(1, signer, name="signer", desc = "Current owner of the asset or delegate")]
     Revoke(DelegateInput),
 
     /// Transfers ownership of the aseet to a new public key.
     #[account(0, writable, name="asset", desc = "Asset account")]
-    #[account(1, signer, name="signer", desc = "Current holder of the asset or transfer delegate")]
+    #[account(1, signer, name="signer", desc = "Current owner of the asset or transfer delegate")]
     #[account(2, name="recipient", desc = "The recipient of the asset")]
     #[account(3, optional, name="group_asset", desc = "The asset defining the group, if applicable")]
     Transfer,
 
     /// Unlocks an asset.
     #[account(0, writable, name="asset", desc = "Asset account")]
-    #[account(1, signer, name="authority", desc = "Delegate ot holder account")]
+    #[account(1, signer, name="authority", desc = "Delegate or owner account")]
     Unlock,
 
     /// Unverifies a creator.
@@ -94,7 +87,7 @@ pub enum Instruction {
     #[account(0, signer, writable, name="asset", desc = "Asset account")]
     #[account(1, signer, writable, name="payer", desc = "The account paying for the storage fees")]
     #[account(2, name="system_program", desc = "The system program")]
-    Write(Data),
+    Write(DataInput),
 
     /// Adds an asset to a group.
     #[account(0, writable, name="asset", desc = "Asset account")]
@@ -111,20 +104,31 @@ pub enum Instruction {
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
-pub struct Metadata {
-    /// Name of the asset.
-    pub name: String,
+pub struct AllocateInput {
+    /// Extension to initialize.
+    pub extension: ExtensionInput,
+}
 
-    /// Indicates the standard of an asset.
-    pub standard: Standard,
-
-    /// Indicates whether the asset is mutable or not.
-    pub mutable: bool,
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, PartialEq)]
+pub enum DelegateInput {
+    All,
+    Some { roles: Vec<DelegateRole> },
 }
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
-pub struct Extension {
+pub struct DataInput {
+    /// Indicates whether to overwrite the buffer or not.
+    pub overwrite: bool,
+
+    /// Extension data.
+    pub bytes: Vec<u8>,
+}
+
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
+pub struct ExtensionInput {
     /// Extension type to initialize.
     pub extension_type: ExtensionType,
 
@@ -137,12 +141,15 @@ pub struct Extension {
 
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
-pub struct Data {
-    /// Indicates whether to overwrite the buffer or not.
-    pub overwrite: bool,
+pub struct MetadataInput {
+    /// Name of the asset.
+    pub name: String,
 
-    /// Extension data.
-    pub bytes: Vec<u8>,
+    /// Indicates the standard of an asset.
+    pub standard: Standard,
+
+    /// Indicates whether the asset is mutable or not.
+    pub mutable: bool,
 }
 
 #[repr(C)]
@@ -157,5 +164,5 @@ pub struct UpdateInput {
     pub mutable: Option<bool>,
 
     /// Extension to be updated.
-    pub extension: Option<Extension>,
+    pub extension: Option<ExtensionInput>,
 }

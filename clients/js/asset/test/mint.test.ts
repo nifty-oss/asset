@@ -1,4 +1,4 @@
-import { generateSigner } from '@metaplex-foundation/umi';
+import { generateSigner, publicKey } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
   Asset,
@@ -7,9 +7,13 @@ import {
   Standard,
   State,
   attributes,
+  blob,
+  creators,
   fetchAsset,
   links,
+  metadata,
   mint,
+  royalties,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -17,12 +21,12 @@ test('it can mint an asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // When we create a new asset.
   await mint(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
   }).sendAndConfirm(umi);
@@ -32,7 +36,7 @@ test('it can mint an asset', async (t) => {
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.NonFungible,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     authority: umi.identity.publicKey,
   });
 });
@@ -41,12 +45,12 @@ test('it can mint an asset with an extension', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // When we mint a new asset with an extension.
   await mint(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
     extensions: [attributes([{ traitType: 'head', value: 'hat' }])],
@@ -57,7 +61,7 @@ test('it can mint an asset with an extension', async (t) => {
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.NonFungible,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     authority: umi.identity.publicKey,
     extensions: [
       {
@@ -77,30 +81,60 @@ test('it can mint a new asset with multiple extensions', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
-  // When we create a new asset.
+  // And an image.
+  const response = await fetch(
+    'https://arweave.net/wGChHSDTXTP9oAtTaYh9s8j1MRE0IPmYtH5greqWwZ4'
+  );
+  const image = new Uint8Array(await response.arrayBuffer());
+  const contentType = response.headers.get('content-type') ?? 'image/png';
+
+  // When we create a new asset with multiple extensions.
   await mint(umi, {
     asset,
-    holder: holder.publicKey,
+    authority: publicKey('mdaoxg4DVGptU4WSpzGyVpK3zqsgn7Qzx5XNgWTcEA2'),
+    owner: owner.publicKey,
     payer: umi.identity,
-    name: 'Digital Asset',
+    name: 'SMB #1355 (test)',
     extensions: [
       attributes([
         { traitType: 'Attributes Count', value: '2' },
-        { traitType: 'Type', value: 'Dark' },
-        { traitType: 'Clothes', value: 'Purple Shirt' },
+        { traitType: 'Type', value: 'Skeleton' },
+        { traitType: 'Clothes', value: 'Orange Jacket' },
         { traitType: 'Ears', value: 'None' },
         { traitType: 'Mouth', value: 'None' },
         { traitType: 'Eyes', value: 'None' },
-        { traitType: 'Hat', value: 'Blue Cap' },
+        { traitType: 'Hat', value: 'Crown' },
+      ]),
+      creators([
+        {
+          address: publicKey('mdaoxg4DVGptU4WSpzGyVpK3zqsgn7Qzx5XNgWTcEA2'),
+          share: 0,
+        },
+        {
+          address: publicKey('HAryckvjyViFQEmhmMoCtqqBMJnpXEYViamyDhZUJfnG'),
+          share: 100,
+        },
+        {
+          address: publicKey('9uBX3ASjxWvNBAD1xjbVaKA74mWGZys3RGSF7DdeDD3F'),
+          share: 0,
+        },
       ]),
       links([
         {
-          name: 'metadata',
-          uri: 'https://arweave.net/ebBV1qEYt65AKmM2J5wH_Vg-gjBa9YcwSYWFVt0rw9w',
+          name: 'external_url',
+          uri: 'https://solanamonkey.business/',
         },
       ]),
+      blob(contentType, image),
+      metadata({
+        symbol: 'SMB',
+        description:
+          'SMB is a collection of 5000 randomly generated 24x24 pixels NFTs on the Solana Blockchain.\
+          Each SolanaMonkey is unique and comes with different type and attributes varying in rarity.',
+      }),
+      royalties(500),
     ],
   }).sendAndConfirm(umi);
 
@@ -109,30 +143,6 @@ test('it can mint a new asset with multiple extensions', async (t) => {
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.NonFungible,
-    holder: holder.publicKey,
-    authority: umi.identity.publicKey,
-    extensions: [
-      {
-        type: ExtensionType.Attributes,
-        traits: [
-          { traitType: 'Attributes Count', value: '2' },
-          { traitType: 'Type', value: 'Dark' },
-          { traitType: 'Clothes', value: 'Purple Shirt' },
-          { traitType: 'Ears', value: 'None' },
-          { traitType: 'Mouth', value: 'None' },
-          { traitType: 'Eyes', value: 'None' },
-          { traitType: 'Hat', value: 'Blue Cap' },
-        ],
-      },
-      {
-        type: ExtensionType.Links,
-        values: [
-          {
-            name: 'metadata',
-            uri: 'https://arweave.net/ebBV1qEYt65AKmM2J5wH_Vg-gjBa9YcwSYWFVt0rw9w',
-          },
-        ],
-      },
-    ],
+    owner: owner.publicKey,
   });
 });

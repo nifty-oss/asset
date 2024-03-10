@@ -4,7 +4,7 @@ use nifty_asset::{
     extensions::{Attributes, AttributesBuilder, ExtensionBuilder},
     instructions::{AllocateBuilder, CreateBuilder},
     state::{Asset, Discriminator, Standard, State},
-    types::{Extension, ExtensionType},
+    types::{ExtensionInput, ExtensionType},
     ZeroCopy,
 };
 use solana_program::system_program;
@@ -31,7 +31,7 @@ mod create {
         let ix = CreateBuilder::new()
             .asset(asset.pubkey())
             .authority(context.payer.pubkey())
-            .holder(context.payer.pubkey())
+            .owner(context.payer.pubkey())
             .payer(Some(context.payer.pubkey()))
             .system_program(Some(system_program::id()))
             .name("name".to_string())
@@ -64,7 +64,7 @@ mod create {
         assert_eq!(asset.state, State::Unlocked);
         assert_eq!(asset.standard, Standard::NonFungible);
         assert_eq!(asset.authority, context.payer.pubkey());
-        assert_eq!(asset.holder, context.payer.pubkey());
+        assert_eq!(asset.owner, context.payer.pubkey());
         // we are not expecting any extension on the account
         assert!(Asset::get_extensions(account_data).is_empty());
     }
@@ -89,7 +89,7 @@ mod create {
             .asset(asset.pubkey())
             .payer(Some(context.payer.pubkey()))
             .system_program(Some(system_program::id()))
-            .extension(Extension {
+            .extension(ExtensionInput {
                 extension_type: ExtensionType::Attributes,
                 length: data.len() as u32,
                 data: Some(data),
@@ -109,7 +109,7 @@ mod create {
         let ix = CreateBuilder::new()
             .asset(asset.pubkey())
             .authority(context.payer.pubkey())
-            .holder(context.payer.pubkey())
+            .owner(context.payer.pubkey())
             .payer(Some(context.payer.pubkey()))
             .system_program(Some(system_program::id()))
             .name("name".to_string())
@@ -140,7 +140,7 @@ mod create {
         assert_eq!(asset.state, State::Unlocked);
         assert_eq!(asset.standard, Standard::NonFungible);
         assert_eq!(asset.authority, context.payer.pubkey());
-        assert_eq!(asset.holder, context.payer.pubkey());
+        assert_eq!(asset.owner, context.payer.pubkey());
 
         // And we are expecting an extension on the account.
 

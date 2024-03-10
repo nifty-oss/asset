@@ -28,11 +28,11 @@ pub enum AssetError {
     /// 5 (0x5) - Invalid alignment
     #[error("Invalid alignment")]
     InvalidAlignment,
-    /// 6 (0x6) - Invalid holder or burn delegate
-    #[error("Invalid holder or burn delegate")]
+    /// 6 (0x6) - Invalid owner or burn delegate
+    #[error("Invalid owner or burn delegate")]
     InvalidBurnAuthority,
-    /// 7 (0x7) - Invalid holder or transfer delegate
-    #[error("Invalid holder or transfer delegate")]
+    /// 7 (0x7) - Invalid owner or transfer delegate
+    #[error("Invalid owner or transfer delegate")]
     InvalidTransferAuthority,
     /// 8 (0x8) - Delegate not found
     #[error("Delegate not found")]
@@ -43,9 +43,9 @@ pub enum AssetError {
     /// 10 (0xA) - Invalid delegate
     #[error("Invalid delegate")]
     InvalidDelegate,
-    /// 11 (0xB) - Invalid holder
-    #[error("Invalid holder")]
-    InvalidHolder,
+    /// 11 (0xB) - Invalid asset owner
+    #[error("Invalid asset owner")]
+    InvalidAssetOwner,
     /// 12 (0xC) - Asset is locked
     #[error("Asset is locked")]
     LockedAsset,

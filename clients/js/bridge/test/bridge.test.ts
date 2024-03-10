@@ -64,7 +64,7 @@ test('it can bridge an asset to a token (NFT)', async (t) => {
   );
 
   t.like(asset, <Asset>{
-    holder: owner.publicKey,
+    owner: owner.publicKey,
   });
 
   let legacy = await fetchDigitalAssetWithToken(
@@ -106,7 +106,7 @@ test('it can bridge an asset to a token (NFT)', async (t) => {
   );
 
   t.like(asset, <Asset>{
-    holder: vault.publicKey,
+    owner: vault.publicKey,
   });
 
   // And the non-fungible is held by the owner.
@@ -171,7 +171,7 @@ test('it can bridge a token (NFT) to an asset', async (t) => {
   );
 
   t.like(asset, <Asset>{
-    holder: owner.publicKey,
+    owner: owner.publicKey,
   });
 
   // And the non-fungible is held by the bridge.
@@ -227,7 +227,7 @@ test('it can bridge an asset to a token (pNFT)', async (t) => {
   );
 
   t.like(asset, <Asset>{
-    holder: owner.publicKey,
+    owner: owner.publicKey,
   });
 
   let legacy = await fetchDigitalAssetWithToken(
@@ -270,7 +270,7 @@ test('it can bridge an asset to a token (pNFT)', async (t) => {
   );
 
   t.like(asset, <Asset>{
-    holder: vault.publicKey,
+    owner: vault.publicKey,
   });
 
   // And the non-fungible is held by the owner.
@@ -340,7 +340,7 @@ test('it can bridge a token (pNFT) to an asset', async (t) => {
   );
 
   t.like(asset, <Asset>{
-    holder: owner.publicKey,
+    owner: owner.publicKey,
   });
 
   // And the non-fungible is held by the bridge.

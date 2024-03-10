@@ -37,15 +37,15 @@ pub fn process_approve(
     let asset = Asset::load_mut(&mut data);
 
     require!(
-        asset.holder == *ctx.accounts.holder.key,
-        AssetError::InvalidHolder,
-        "holder"
+        asset.owner == *ctx.accounts.owner.key,
+        AssetError::InvalidAssetOwner,
+        "owner"
     );
 
     require!(
-        ctx.accounts.holder.is_signer,
+        ctx.accounts.owner.is_signer,
         ProgramError::MissingRequiredSignature,
-        "holder"
+        "owner"
     );
 
     // Find the roles to apply

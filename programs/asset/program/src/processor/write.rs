@@ -12,7 +12,7 @@ use crate::{
     error::AssetError,
     instruction::{
         accounts::{Context, WriteAccounts},
-        Data,
+        DataInput,
     },
     processor::resize,
     require,
@@ -21,7 +21,7 @@ use crate::{
 pub(crate) fn process_write(
     program_id: &Pubkey,
     ctx: Context<WriteAccounts>,
-    data: Data,
+    data: DataInput,
 ) -> ProgramResult {
     // account validation
 

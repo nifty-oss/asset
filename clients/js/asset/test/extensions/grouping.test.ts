@@ -9,7 +9,6 @@ import {
   State,
   create,
   fetchAsset,
-  getExtensionSerializerFromType,
   group,
   grouping,
   initialize,
@@ -22,7 +21,7 @@ test('it can create a new group asset with a maximum size', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we initialize a metadata extension.
   await initialize(umi, {
@@ -36,7 +35,7 @@ test('it can create a new group asset with a maximum size', async (t) => {
   // When we create the asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Group Asset',
   }).sendAndConfirm(umi);
 
@@ -46,7 +45,7 @@ test('it can create a new group asset with a maximum size', async (t) => {
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.NonFungible,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     authority: umi.identity.publicKey,
     extensions: [
       {
@@ -62,7 +61,7 @@ test('it can create a new group asset of unlimited size', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we initialize a metadata extension.
   await initialize(umi, {
@@ -76,7 +75,7 @@ test('it can create a new group asset of unlimited size', async (t) => {
   // When we create the asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Group Asset',
   }).sendAndConfirm(umi);
 
@@ -86,7 +85,7 @@ test('it can create a new group asset of unlimited size', async (t) => {
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.NonFungible,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     authority: umi.identity.publicKey,
     extensions: [
       {
@@ -149,17 +148,10 @@ test('it can update the maximum size of an existing group', async (t) => {
   });
 
   // When we update the maximum size of the group.
-  const data = getExtensionSerializerFromType(ExtensionType.Grouping).serialize(
-    grouping(1)
-  );
   await update(umi, {
     asset: groupAsset.publicKey,
     payer: umi.identity,
-    extension: {
-      extensionType: ExtensionType.Grouping,
-      length: data.length,
-      data,
-    },
+    extension: grouping(1),
   }).sendAndConfirm(umi);
 
   // The the group maximum size has been updated.
@@ -228,17 +220,10 @@ test('it cannot reduce the size of a group', async (t) => {
   });
 
   // When we try to update the maximum size of the group to a smaller size.
-  const data = getExtensionSerializerFromType(ExtensionType.Grouping).serialize(
-    grouping(4)
-  );
   const promise = update(umi, {
     asset: groupAsset.publicKey,
     payer: umi.identity,
-    extension: {
-      extensionType: ExtensionType.Grouping,
-      length: data.length,
-      data,
-    },
+    extension: grouping(4),
   }).sendAndConfirm(umi);
 
   // Then we expect an error.
@@ -300,17 +285,10 @@ test('it can update the size of a group to unlimited', async (t) => {
   });
 
   // When we update the maximum size of the group to unlimited.
-  const data = getExtensionSerializerFromType(ExtensionType.Grouping).serialize(
-    grouping()
-  );
   await update(umi, {
     asset: groupAsset.publicKey,
     payer: umi.identity,
-    extension: {
-      extensionType: ExtensionType.Grouping,
-      length: data.length,
-      data,
-    },
+    extension: grouping(),
   }).sendAndConfirm(umi);
 
   // The the group maximum size has been updated.
@@ -379,17 +357,10 @@ test('it can increase the size of a group', async (t) => {
   });
 
   // When we update the maximum size of the group.
-  const data = getExtensionSerializerFromType(ExtensionType.Grouping).serialize(
-    grouping(1000)
-  );
   await update(umi, {
     asset: groupAsset.publicKey,
     payer: umi.identity,
-    extension: {
-      extensionType: ExtensionType.Grouping,
-      length: data.length,
-      data,
-    },
+    extension: grouping(1000),
   }).sendAndConfirm(umi);
 
   // The the group maximum size has been updated.

@@ -11,7 +11,7 @@ use crate::{
     error::AssetError,
     instruction::{
         accounts::{Context, CreateAccounts, GroupAccounts},
-        Metadata,
+        MetadataInput,
     },
     require,
 };
@@ -19,7 +19,7 @@ use crate::{
 pub fn process_create(
     program_id: &Pubkey,
     ctx: Context<CreateAccounts>,
-    args: Metadata,
+    args: MetadataInput,
 ) -> ProgramResult {
     // account validation
 
@@ -100,7 +100,7 @@ pub fn process_create(
     asset.discriminator = Discriminator::Asset;
     asset.standard = args.standard;
     asset.mutable = args.mutable.into();
-    asset.holder = *ctx.accounts.holder.key;
+    asset.owner = *ctx.accounts.owner.key;
     asset.authority = *ctx.accounts.authority.key;
     asset.name = args.name.into();
 

@@ -9,7 +9,6 @@ import {
   create,
   creators,
   fetchAsset,
-  getExtensionSerializerFromType,
   initialize,
   update,
   verify,
@@ -20,7 +19,7 @@ test('it can create a new asset with a creator', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And we initialize an asset with a creators extension.
   await initialize(umi, {
@@ -34,7 +33,7 @@ test('it can create a new asset with a creator', async (t) => {
   // When we create the asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Asset with creators',
   }).sendAndConfirm(umi);
 
@@ -44,7 +43,7 @@ test('it can create a new asset with a creator', async (t) => {
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.NonFungible,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     authority: umi.identity.publicKey,
     extensions: [
       {
@@ -65,7 +64,7 @@ test('it can create a new asset with multiple creators', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   const addresses = new Array(10)
     .fill(0)
@@ -83,7 +82,7 @@ test('it can create a new asset with multiple creators', async (t) => {
   // When we create the asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Asset with creators',
   }).sendAndConfirm(umi);
 
@@ -99,7 +98,7 @@ test('it can create a new asset with multiple creators', async (t) => {
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
     standard: Standard.NonFungible,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     authority: umi.identity.publicKey,
     extensions: [
       {
@@ -135,7 +134,7 @@ test('it maintain a creator verified status on update', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And two creators.
   const creator1 = generateSigner(umi);
@@ -154,7 +153,7 @@ test('it maintain a creator verified status on update', async (t) => {
   // And we create the asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Asset with creators',
   }).sendAndConfirm(umi);
 
@@ -207,20 +206,13 @@ test('it maintain a creator verified status on update', async (t) => {
 
   // When we update the extension of the asset removing/adding a new creator.
   const creator3 = generateSigner(umi);
-  const data = getExtensionSerializerFromType(ExtensionType.Creators).serialize(
-    creators([
-      { address: creator1.publicKey, share: 50 },
-      { address: creator3.publicKey, share: 50 },
-    ])
-  );
   await update(umi, {
     asset: asset.publicKey,
     payer: umi.identity,
-    extension: {
-      extensionType: ExtensionType.Creators,
-      length: data.length,
-      data,
-    },
+    extension: creators([
+      { address: creator1.publicKey, share: 50 },
+      { address: creator3.publicKey, share: 50 },
+    ]),
   }).sendAndConfirm(umi);
 
   // Then the creator 1 should remain verified.
@@ -249,7 +241,7 @@ test('it cannot remove a verified creator on update', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And two creators.
   const creator1 = generateSigner(umi);
@@ -268,7 +260,7 @@ test('it cannot remove a verified creator on update', async (t) => {
   // And we create the asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Asset with creators',
   }).sendAndConfirm(umi);
 
@@ -299,17 +291,10 @@ test('it cannot remove a verified creator on update', async (t) => {
   });
 
   // When we try to update the extension removing a verified creator.
-  const data = getExtensionSerializerFromType(ExtensionType.Creators).serialize(
-    creators([{ address: creator2.publicKey, share: 100 }])
-  );
   const promise = update(umi, {
     asset: asset.publicKey,
     payer: umi.identity,
-    extension: {
-      extensionType: ExtensionType.Creators,
-      length: data.length,
-      data,
-    },
+    extension: creators([{ address: creator2.publicKey, share: 100 }]),
   }).sendAndConfirm(umi);
 
   // Then we expect an error.
@@ -320,7 +305,7 @@ test('it can remove an unverified creator on update', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And two creators.
   const creator1 = generateSigner(umi);
@@ -339,7 +324,7 @@ test('it can remove an unverified creator on update', async (t) => {
   // And we create the asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Asset with creators',
   }).sendAndConfirm(umi);
 
@@ -364,17 +349,10 @@ test('it can remove an unverified creator on update', async (t) => {
   });
 
   // When we update the extension removing an unverified creator.
-  const data = getExtensionSerializerFromType(ExtensionType.Creators).serialize(
-    creators([{ address: creator2.publicKey, share: 100 }])
-  );
   await update(umi, {
     asset: asset.publicKey,
     payer: umi.identity,
-    extension: {
-      extensionType: ExtensionType.Creators,
-      length: data.length,
-      data,
-    },
+    extension: creators([{ address: creator2.publicKey, share: 100 }]),
   }).sendAndConfirm(umi);
 
   // Then the unverified creator is removed
@@ -398,7 +376,7 @@ test('it cannot update creators with invalid total share', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
-  const holder = generateSigner(umi);
+  const owner = generateSigner(umi);
 
   // And two creators.
   const creator1 = generateSigner(umi);
@@ -417,7 +395,7 @@ test('it cannot update creators with invalid total share', async (t) => {
   // And we create the asset.
   await create(umi, {
     asset,
-    holder: holder.publicKey,
+    owner: owner.publicKey,
     name: 'Asset with creators',
   }).sendAndConfirm(umi);
 
@@ -442,17 +420,10 @@ test('it cannot update creators with invalid total share', async (t) => {
   });
 
   // When we trye tp update the extension with an invalid total share.
-  const data = getExtensionSerializerFromType(ExtensionType.Creators).serialize(
-    creators([{ address: creator2.publicKey, share: 90 }])
-  );
   const promise = update(umi, {
     asset: asset.publicKey,
     payer: umi.identity,
-    extension: {
-      extensionType: ExtensionType.Creators,
-      length: data.length,
-      data,
-    },
+    extension: creators([{ address: creator2.publicKey, share: 90 }]),
   }).sendAndConfirm(umi);
 
   // Then we expect an error.

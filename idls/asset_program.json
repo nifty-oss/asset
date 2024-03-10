@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.0.0",
   "name": "asset_program",
   "instructions": [
     {
@@ -44,7 +44,7 @@
           "isMut": true,
           "isSigner": true,
           "docs": [
-            "The holder or burn delegate of the asset"
+            "The owner or burn delegate of the asset"
           ]
         },
         {
@@ -92,11 +92,11 @@
           ]
         },
         {
-          "name": "holder",
+          "name": "owner",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "The holder of the asset"
+            "The owner of the asset"
           ]
         },
         {
@@ -129,9 +129,9 @@
       ],
       "args": [
         {
-          "name": "metadata",
+          "name": "metadataInput",
           "type": {
-            "defined": "Metadata"
+            "defined": "MetadataInput"
           }
         }
       ],
@@ -152,11 +152,11 @@
           ]
         },
         {
-          "name": "holder",
+          "name": "owner",
           "isMut": false,
           "isSigner": true,
           "docs": [
-            "The holder of the asset"
+            "The owner of the asset"
           ]
         },
         {
@@ -213,9 +213,9 @@
       ],
       "args": [
         {
-          "name": "extension",
+          "name": "allocateInput",
           "type": {
-            "defined": "Extension"
+            "defined": "AllocateInput"
           }
         }
       ],
@@ -240,7 +240,7 @@
           "isMut": false,
           "isSigner": true,
           "docs": [
-            "Delegate or holder account"
+            "Delegate or owner account"
           ]
         }
       ],
@@ -266,7 +266,7 @@
           "isMut": false,
           "isSigner": true,
           "docs": [
-            "Current holder of the asset or delegate"
+            "Current owner of the asset or delegate"
           ]
         }
       ],
@@ -299,7 +299,7 @@
           "isMut": false,
           "isSigner": true,
           "docs": [
-            "Current holder of the asset or transfer delegate"
+            "Current owner of the asset or transfer delegate"
           ]
         },
         {
@@ -342,7 +342,7 @@
           "isMut": false,
           "isSigner": true,
           "docs": [
-            "Delegate ot holder account"
+            "Delegate or owner account"
           ]
         }
       ],
@@ -494,9 +494,9 @@
       ],
       "args": [
         {
-          "name": "data",
+          "name": "dataInput",
           "type": {
-            "defined": "Data"
+            "defined": "DataInput"
           }
         }
       ],
@@ -576,29 +576,37 @@
   ],
   "types": [
     {
-      "name": "Metadata",
+      "name": "AllocateInput",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "name": "standard",
+            "name": "extension",
             "type": {
-              "defined": "Standard"
+              "defined": "ExtensionInput"
             }
-          },
-          {
-            "name": "mutable",
-            "type": "bool"
           }
         ]
       }
     },
     {
-      "name": "Extension",
+      "name": "DataInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "overwrite",
+            "type": "bool"
+          },
+          {
+            "name": "bytes",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExtensionInput",
       "type": {
         "kind": "struct",
         "fields": [
@@ -622,17 +630,23 @@
       }
     },
     {
-      "name": "Data",
+      "name": "MetadataInput",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "overwrite",
-            "type": "bool"
+            "name": "name",
+            "type": "string"
           },
           {
-            "name": "bytes",
-            "type": "bytes"
+            "name": "standard",
+            "type": {
+              "defined": "Standard"
+            }
+          },
+          {
+            "name": "mutable",
+            "type": "bool"
           }
         ]
       }
@@ -658,7 +672,7 @@
             "name": "extension",
             "type": {
               "option": {
-                "defined": "Extension"
+                "defined": "ExtensionInput"
               }
             }
           }
@@ -724,12 +738,12 @@
     {
       "code": 6,
       "name": "InvalidBurnAuthority",
-      "msg": "Invalid holder or burn delegate"
+      "msg": "Invalid owner or burn delegate"
     },
     {
       "code": 7,
       "name": "InvalidTransferAuthority",
-      "msg": "Invalid holder or transfer delegate"
+      "msg": "Invalid owner or transfer delegate"
     },
     {
       "code": 8,
@@ -748,8 +762,8 @@
     },
     {
       "code": 11,
-      "name": "InvalidHolder",
-      "msg": "Invalid holder"
+      "name": "InvalidAssetOwner",
+      "msg": "Invalid asset owner"
     },
     {
       "code": 12,

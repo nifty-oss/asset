@@ -98,7 +98,7 @@ pub enum Commands {
         #[arg(long)]
         all: bool,
     },
-    /// Transfer an asset to a new holder.
+    /// Transfer an asset to a new owner.
     Transfer {
         /// The asset to transfer.
         asset: Pubkey,

@@ -1,10 +1,10 @@
 //! The `Asset` account consists of a fixed length (header) section followed by an optional
 //! variable length section (extensions). The header section contains the basic information
-//! of an asset, such as the state, standard, name, and holder. The extensions section
+//! of an asset, such as the state, standard, name, and owner. The extensions section
 //! contains additional data that can be attached to the asset.
 //!
-//! Extensions can either represent additional on-chain data or used to include pointer to
-//! external data. For example, an asset can include its image as an extension on-chain or
+//! Extensions can either represent additional on-chain data or used to include pointers to
+//! external data. For example, an asset can include its image on-chain as an extension or
 //! a pointer to an external image.
 //!
 //! # Account layout
@@ -44,8 +44,8 @@ pub struct Asset {
     /// Indicates whether the asset is mutable.
     pub mutable: PodBool,
 
-    /// Current holder of the asset.
-    pub holder: Pubkey,
+    /// Current owner (holder) of the asset.
+    pub owner: Pubkey,
 
     /// Group of the asset.
     ///
@@ -63,7 +63,7 @@ pub struct Asset {
     /// Delegate of the asset.
     ///
     /// The delegate is the account that can control the asset on behalf of
-    /// the holder.
+    /// the owner.
     pub delegate: PodOption<Delegate>,
 
     /// Name of the asset.
