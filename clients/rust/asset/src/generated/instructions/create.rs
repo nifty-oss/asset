@@ -14,7 +14,7 @@ pub struct Create {
     /// Asset account
     pub asset: solana_program::pubkey::Pubkey,
     /// The authority of the asset
-    pub authority: solana_program::pubkey::Pubkey,
+    pub authority: (solana_program::pubkey::Pubkey, bool),
     /// The owner of the asset
     pub owner: solana_program::pubkey::Pubkey,
     /// Asset account of the group
@@ -43,8 +43,8 @@ impl Create {
             self.asset, true,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.authority,
-            false,
+            self.authority.0,
+            self.authority.1,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.owner, false,
@@ -113,7 +113,7 @@ pub struct CreateInstructionArgs {
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` asset
-///   1. `[]` authority
+///   1. `[signer]` authority
 ///   2. `[]` owner
 ///   3. `[writable, optional]` group
 ///   4. `[writable, signer, optional]` payer
@@ -121,7 +121,7 @@ pub struct CreateInstructionArgs {
 #[derive(Default)]
 pub struct CreateBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
-    authority: Option<solana_program::pubkey::Pubkey>,
+    authority: Option<(solana_program::pubkey::Pubkey, bool)>,
     owner: Option<solana_program::pubkey::Pubkey>,
     group: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
@@ -144,8 +144,12 @@ impl CreateBuilder {
     }
     /// The authority of the asset
     #[inline(always)]
-    pub fn authority(&mut self, authority: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.authority = Some(authority);
+    pub fn authority(
+        &mut self,
+        authority: solana_program::pubkey::Pubkey,
+        as_signer: bool,
+    ) -> &mut Self {
+        self.authority = Some((authority, as_signer));
         self
     }
     /// The owner of the asset
@@ -238,7 +242,7 @@ pub struct CreateCpiAccounts<'a, 'b> {
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// The authority of the asset
-    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub authority: (&'b solana_program::account_info::AccountInfo<'a>, bool),
     /// The owner of the asset
     pub owner: &'b solana_program::account_info::AccountInfo<'a>,
     /// Asset account of the group
@@ -256,7 +260,7 @@ pub struct CreateCpi<'a, 'b> {
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// The authority of the asset
-    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub authority: (&'b solana_program::account_info::AccountInfo<'a>, bool),
     /// The owner of the asset
     pub owner: &'b solana_program::account_info::AccountInfo<'a>,
     /// Asset account of the group
@@ -325,8 +329,8 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
             true,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.authority.key,
-            false,
+            *self.authority.0.key,
+            self.authority.1,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.owner.key,
@@ -382,7 +386,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
         let mut account_infos = Vec::with_capacity(6 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset.clone());
-        account_infos.push(self.authority.clone());
+        account_infos.push(self.authority.0.clone());
         account_infos.push(self.owner.clone());
         if let Some(group) = self.group {
             account_infos.push(group.clone());
@@ -410,7 +414,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` asset
-///   1. `[]` authority
+///   1. `[signer]` authority
 ///   2. `[]` owner
 ///   3. `[writable, optional]` group
 ///   4. `[writable, signer, optional]` payer
@@ -447,8 +451,9 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
     pub fn authority(
         &mut self,
         authority: &'b solana_program::account_info::AccountInfo<'a>,
+        as_signer: bool,
     ) -> &mut Self {
-        self.instruction.authority = Some(authority);
+        self.instruction.authority = Some((authority, as_signer));
         self
     }
     /// The owner of the asset
@@ -580,7 +585,7 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
 struct CreateCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    authority: Option<(&'b solana_program::account_info::AccountInfo<'a>, bool)>,
     owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,

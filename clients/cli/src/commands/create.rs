@@ -31,7 +31,7 @@ pub fn handle_create(args: CreateArgs) -> Result<()> {
 
     let ix = Create {
         asset,
-        authority,
+        authority: (authority, false),
         owner,
         payer: Some(authority),
         group: None,

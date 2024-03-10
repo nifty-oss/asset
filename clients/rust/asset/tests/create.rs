@@ -30,7 +30,7 @@ mod create {
 
         let ix = CreateBuilder::new()
             .asset(asset.pubkey())
-            .authority(context.payer.pubkey())
+            .authority(context.payer.pubkey(), false)
             .owner(context.payer.pubkey())
             .payer(Some(context.payer.pubkey()))
             .system_program(Some(system_program::id()))
@@ -108,7 +108,7 @@ mod create {
 
         let ix = CreateBuilder::new()
             .asset(asset.pubkey())
-            .authority(context.payer.pubkey())
+            .authority(context.payer.pubkey(), false)
             .owner(context.payer.pubkey())
             .payer(Some(context.payer.pubkey()))
             .system_program(Some(system_program::id()))
