@@ -47,15 +47,26 @@ jobs:
     uses: ./.github/workflows/test-rust-client.yml
     secrets: inherit
 
+  build_rust_cli:
+    name: Rust CLI
+    uses: ./.github/workflows/build-rust-cli.yml
+    secrets: inherit
+
   publish_crate:
     name: Rust Client / Publish Crate
     runs-on: buildjet-8vcpu-ubuntu-2204
-    needs: test_rust_client
+    needs: [test_rust_client, build_rust_cli]
     permissions:
       contents: write
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
+
+      - name: Download CLI binary
+        uses: actions/download-artifact@v2
+        with:
+          name: rust-cli-builds
+          path: ./client*/cli/target/release
 
       - name: Load environment variables
         run: cat .github/.env >> $GITHUB_ENV
@@ -103,3 +114,14 @@ jobs:
         with:
           commit_message: 'chore: Release ${{ env.CLIENT_NAME }} version ${{ env.CLIENT_VERSION }}'
           tagging_message: ${{ env.CLIENT_NAME }}@v${{ env.CLIENT_VERSION }}
+
+      - name: Upload CLI binary
+        id: upload-rust-cli
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.publish_crate.outputs.upload_url }}
+          asset_path: ./client*/cli/target/release/*nifty-cli-${{ runner.os }}*
+          asset_name: nifty-cli-${{ runner.os }}
+          asset_content_type: application/octet-stream
