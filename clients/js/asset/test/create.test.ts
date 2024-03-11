@@ -180,8 +180,9 @@ test('it can create a soulbound asset', async (t) => {
 });
 
 test('it can create an asset with a group', async (t) => {
-  // Given a Umi instance.
+  // Given a Umi instance and an authority signer.
   const umi = await createUmi();
+  const authority = generateSigner(umi);
 
   // And we create a group asset.
   const groupAsset = generateSigner(umi);
@@ -193,6 +194,7 @@ test('it can create an asset with a group', async (t) => {
 
   await create(umi, {
     asset: groupAsset,
+    authority: authority.publicKey,
     name: 'Group',
   }).sendAndConfirm(umi);
 
@@ -207,11 +209,12 @@ test('it can create an asset with a group', async (t) => {
     ],
   });
 
-  // When we create an asset with a group.
+  // When we create an asset with a group with the same authority.
   const asset = generateSigner(umi);
   await create(umi, {
     asset,
     payer: umi.identity,
+    authority,
     name: 'Asset',
     group: groupAsset.publicKey,
   }).sendAndConfirm(umi);
@@ -233,4 +236,91 @@ test('it can create an asset with a group', async (t) => {
       },
     ],
   });
+});
+
+test('it cannot set a group on create with wrong authority', async (t) => {
+  // Given a Umi instance and an authority signer.
+  const umi = await createUmi();
+  const authority = generateSigner(umi);
+
+  // And we create a group asset.
+  const groupAsset = generateSigner(umi);
+  await initialize(umi, {
+    asset: groupAsset,
+    payer: umi.identity,
+    extension: grouping(10),
+  }).sendAndConfirm(umi);
+
+  await create(umi, {
+    asset: groupAsset,
+    authority: authority.publicKey,
+    name: 'Group',
+  }).sendAndConfirm(umi);
+
+  t.like(await fetchAsset(umi, groupAsset.publicKey), <Asset>{
+    group: null,
+    extensions: [
+      {
+        type: ExtensionType.Grouping,
+        size: 0n,
+        maxSize: 10n,
+      },
+    ],
+  });
+
+  // When we create an asset with a group with the same authority.
+  const asset = generateSigner(umi);
+  const promise = create(umi, {
+    asset,
+    payer: umi.identity,
+    name: 'Asset',
+    group: groupAsset.publicKey,
+  }).sendAndConfirm(umi);
+
+  // Then we expect an error.
+  await t.throwsAsync(promise, { message: /Invalid22 authority/ });
+});
+
+test('it cannot set a group on create with authority not a signer', async (t) => {
+  // Given a Umi instance and an authority signer.
+  const umi = await createUmi();
+  const authority = generateSigner(umi);
+
+  // And we create a group asset.
+  const groupAsset = generateSigner(umi);
+  await initialize(umi, {
+    asset: groupAsset,
+    payer: umi.identity,
+    extension: grouping(10),
+  }).sendAndConfirm(umi);
+
+  await create(umi, {
+    asset: groupAsset,
+    authority: authority.publicKey,
+    name: 'Group',
+  }).sendAndConfirm(umi);
+
+  t.like(await fetchAsset(umi, groupAsset.publicKey), <Asset>{
+    group: null,
+    extensions: [
+      {
+        type: ExtensionType.Grouping,
+        size: 0n,
+        maxSize: 10n,
+      },
+    ],
+  });
+
+  // When we create an asset with a group with the same authority.
+  const asset = generateSigner(umi);
+  const promise = create(umi, {
+    asset,
+    authority: authority.publicKey,
+    payer: umi.identity,
+    name: 'Asset',
+    group: groupAsset.publicKey,
+  }).sendAndConfirm(umi);
+
+  // Then we expect an error.
+  await t.throwsAsync(promise, { message: /missing22 required signature/ });
 });
