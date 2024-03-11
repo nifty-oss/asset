@@ -278,7 +278,7 @@ test('it cannot set a group on create with wrong authority', async (t) => {
   }).sendAndConfirm(umi);
 
   // Then we expect an error.
-  await t.throwsAsync(promise, { message: /Invalid22 authority/ });
+  await t.throwsAsync(promise, { message: /Invalid authority/ });
 });
 
 test('it cannot set a group on create with authority not a signer', async (t) => {
@@ -322,5 +322,5 @@ test('it cannot set a group on create with authority not a signer', async (t) =>
   }).sendAndConfirm(umi);
 
   // Then we expect an error.
-  await t.throwsAsync(promise, { message: /missing22 required signature/ });
+  await t.throwsAsync(promise, { message: /missing required signature/ });
 });
