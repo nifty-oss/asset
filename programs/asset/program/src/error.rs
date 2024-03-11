@@ -87,7 +87,7 @@ pub enum AssetError {
 
 impl PrintProgramError for AssetError {
     fn print<E>(&self) {
-        msg!("⛔️ {}", &self.to_string());
+        msg!("⛔️ {} ({:?})", &self.to_string(), &self);
     }
 }
 
