@@ -268,7 +268,7 @@ test('it cannot set a group on create with wrong authority', async (t) => {
     ],
   });
 
-  // When we create an asset with a group with the same authority.
+  // When we create an asset with a group using the wrong authority.
   const asset = generateSigner(umi);
   const promise = create(umi, {
     asset,
@@ -311,7 +311,7 @@ test('it cannot set a group on create with authority not a signer', async (t) =>
     ],
   });
 
-  // When we create an asset with a group with the same authority.
+  // When we create an asset with a group without the authority as a signer.
   const asset = generateSigner(umi);
   const promise = create(umi, {
     asset,
