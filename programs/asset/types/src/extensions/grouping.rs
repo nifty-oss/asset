@@ -128,26 +128,27 @@ impl Nullable for NullableU64 {
 }
 
 /// Builder for a `Group` extension.
-pub struct GroupBuilder(Vec<u8>);
+pub struct GroupingBuilder(Vec<u8>);
 
-impl Default for GroupBuilder {
+impl Default for GroupingBuilder {
     fn default() -> Self {
         Self(vec![0; std::mem::size_of::<u64>() * 2])
     }
 }
 
-impl GroupBuilder {
+impl GroupingBuilder {
     /// Add a new attribute to the extension.
-    pub fn set_max_size(&mut self, max_size: u64) {
+    pub fn set_max_size(&mut self, max_size: Option<u64>) {
         // setting the data replaces any existing data
         self.0.clear();
 
         self.0.extend_from_slice(&u64::to_le_bytes(0));
-        self.0.extend_from_slice(&u64::to_le_bytes(max_size));
+        self.0
+            .extend_from_slice(&u64::to_le_bytes(max_size.unwrap_or(0)));
     }
 }
 
-impl ExtensionBuilder for GroupBuilder {
+impl ExtensionBuilder for GroupingBuilder {
     const TYPE: ExtensionType = ExtensionType::Grouping;
 
     fn build(&mut self) -> Vec<u8> {
@@ -155,7 +156,7 @@ impl ExtensionBuilder for GroupBuilder {
     }
 }
 
-impl Deref for GroupBuilder {
+impl Deref for GroupingBuilder {
     type Target = Vec<u8>;
 
     fn deref(&self) -> &Self::Target {
@@ -165,13 +166,13 @@ impl Deref for GroupBuilder {
 
 #[cfg(test)]
 mod tests {
-    use crate::extensions::{ExtensionData, GroupBuilder, Grouping};
+    use crate::extensions::{ExtensionData, Grouping, GroupingBuilder};
 
     #[test]
     fn test_set() {
         // max_size set
-        let mut builder = GroupBuilder::default();
-        builder.set_max_size(10);
+        let mut builder = GroupingBuilder::default();
+        builder.set_max_size(Some(10));
         let grouping = Grouping::from_bytes(&builder);
 
         assert_eq!(*grouping.size, 0);
@@ -182,7 +183,7 @@ mod tests {
 
         // "default" max size
 
-        let builder = GroupBuilder::default();
+        let builder = GroupingBuilder::default();
         let grouping = Grouping::from_bytes(&builder);
 
         assert_eq!(*grouping.size, 0);

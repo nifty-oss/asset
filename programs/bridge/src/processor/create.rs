@@ -3,7 +3,7 @@ use mpl_token_metadata::{
     types::{Collection, TokenStandard},
 };
 use nifty_asset::{
-    extensions::{ExtensionBuilder, GroupBuilder, MetadataBuilder, RoyaltiesBuilder},
+    extensions::{ExtensionBuilder, GroupingBuilder, MetadataBuilder, RoyaltiesBuilder},
     instructions::{AllocateCpiBuilder, CreateCpiBuilder},
     types::{ExtensionInput, ExtensionType},
 };
@@ -209,7 +209,7 @@ pub fn process_create(
 
     // if this is a collection NFT, we add the group extension
     if args.is_collection || metadata.collection_details.is_some() {
-        let mut extension = GroupBuilder::default();
+        let mut extension = GroupingBuilder::default();
         let data = extension.build();
 
         AllocateCpiBuilder::new(ctx.accounts.nifty_asset_program)
