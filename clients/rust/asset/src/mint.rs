@@ -361,7 +361,7 @@ pub fn mint(args: MintIxArgs) -> Result<Vec<Instruction>, MintError> {
     instructions.push(
         Create {
             asset: args.accounts.asset,
-            authority: args.accounts.owner,
+            authority: (args.accounts.owner, false),
             owner: args.accounts.owner,
             payer: Some(payer),
             group: None,

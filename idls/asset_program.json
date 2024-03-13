@@ -87,6 +87,7 @@
           "name": "authority",
           "isMut": false,
           "isSigner": false,
+          "isOptionalSigner": true,
           "docs": [
             "The authority of the asset"
           ]
