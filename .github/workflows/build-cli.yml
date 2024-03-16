@@ -52,8 +52,8 @@ jobs:
       - name: Cache Rust CLI dependencies
         uses: nifty-oss/actions/buildjet-cache-crate@v1
         with:
-          folder: '.'
-          key: ${{ runner.os }}-rust-cli-test-${{ hashFiles('Cargo.toml') }}
+          folder: '.' # The action expects the root of the repository, not the crate subdirectory.
+          key: rust-cli
 
       - name: Build Rust CLI
         shell: bash
