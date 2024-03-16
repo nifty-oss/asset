@@ -55,7 +55,7 @@ jobs:
         shell: bash
         working-directory: clients/cli
         run: |
-          cargo build --all-features --release --bin nifty &&
+          cargo build --all-features --release --bin nifty
           mv ./target/release/nifty ./target/release/nifty-cli-${{ matrix.os }}
 
       - name: Upload Rust CLI builds
