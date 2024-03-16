@@ -54,11 +54,13 @@ jobs:
       - name: Build Rust CLI
         shell: bash
         working-directory: clients/cli
-        run: cargo build --all-features --release --bin nifty-cli-${{ runner.os }}
+        run: |
+          cargo build --all-features --release --bin nifty &&
+          mv ./target/release/nifty ./target/release/nifty-cli-${{ matrix.os }}
 
       - name: Upload Rust CLI builds
         uses: actions/upload-artifact@v4
         with:
           name: rust-cli-build
-          path: ./target/release/*nifty-cli-${{ runner.os }}*
+          path: ./target/release/*nifty-cli-${{ matrix.os }}
           if-no-files-found: error
