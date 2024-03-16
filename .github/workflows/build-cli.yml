@@ -59,12 +59,7 @@ jobs:
         shell: bash
         working-directory: clients/cli
         run: |
-          echo "Working directory: $(pwd)"
-          ls -l
-          ls -l ../../
           cargo build --all-features --release --bin nifty
-          ls -l
-          ls -l ../../
           mv ../../target/release/nifty ../../target/release/nifty-cli-${{ runner.os }}
 
       - name: Upload Rust CLI builds
