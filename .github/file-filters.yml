@@ -66,8 +66,8 @@ rust_clients: &rust_clients
 # CLIs.
 
 cli_common: &cli_common
-  - *programs
-  - *client_common
+  - *asset_program
+  - *asset_rust_client
 
 rust_cli: &rust_cli
   - *cli_common
