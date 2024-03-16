@@ -60,8 +60,9 @@ jobs:
         working-directory: clients/cli
         run: |
           echo "Working directory: $(pwd)"
-          ls -l ./target/release
+          ls -l
           cargo build --all-features --release --bin nifty
+          ls -l
           ls -l ./target/release
           mv ./target/release/nifty ./target/release/nifty-cli-${{ runner.os }}
 
