@@ -3,7 +3,7 @@ use crate::instructions::AllocateCpiAccounts;
 impl<'a, 'b> AllocateCpiAccounts<'a, 'b> {
     /// Invokes the `Allocate` instruction.
     ///
-    /// This invokation expects the instruction data to be direcrlt provided, which
+    /// This invocation expects the instruction data to be directly provided, which
     /// will save CU compared to a Borsh equivalent. In most cases, the instruction
     /// data will be generated using `allocate_instruction_data!` macro.
     #[inline(always)]
@@ -17,7 +17,7 @@ impl<'a, 'b> AllocateCpiAccounts<'a, 'b> {
 
     /// Invokes the `Allocate` instruction with the specified signers.
     ///
-    /// This invokation expects the instruction data to be direcrlt provided, which
+    /// This invocation expects the instruction data to be directly provided, which
     /// will save CU compared to a Borsh equivalent. In most cases, the instruction
     /// data will be generated using `allocate_instruction_data!` macro.
     #[inline(always)]
