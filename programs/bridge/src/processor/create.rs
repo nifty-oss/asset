@@ -3,7 +3,9 @@ use mpl_token_metadata::{
     types::{Collection, TokenStandard},
 };
 use nifty_asset::{
-    extensions::{ExtensionBuilder, GroupingBuilder, MetadataBuilder, RoyaltiesBuilder},
+    extensions::{
+        CreatorsBuilder, ExtensionBuilder, GroupingBuilder, MetadataBuilder, RoyaltiesBuilder,
+    },
     instructions::{AllocateCpiBuilder, CreateCpiBuilder},
     types::{ExtensionInput, ExtensionType},
 };
@@ -207,6 +209,26 @@ pub fn process_create(
         })
         .invoke_signed(&[&signer_seeds])?;
 
+    // if we have creators, we add the creators extension
+    if let Some(creators) = metadata.creators {
+        let mut extension = CreatorsBuilder::default();
+        creators.iter().for_each(|creator| {
+            extension.add(&creator.address, creator.verified, creator.share);
+        });
+        let data = extension.build();
+
+        AllocateCpiBuilder::new(ctx.accounts.nifty_asset_program)
+            .asset(ctx.accounts.asset)
+            .payer(Some(ctx.accounts.payer))
+            .system_program(Some(ctx.accounts.system_program))
+            .extension(ExtensionInput {
+                extension_type: ExtensionType::Creators,
+                length: data.len() as u32,
+                data: Some(data),
+            })
+            .invoke_signed(&[&signer_seeds])?;
+    }
+
     // if this is a collection NFT, we add the group extension
     if args.is_collection || metadata.collection_details.is_some() {
         let mut extension = GroupingBuilder::default();
@@ -253,7 +275,5 @@ pub fn process_create(
         .payer(Some(ctx.accounts.payer))
         .system_program(Some(ctx.accounts.system_program))
         .name(metadata.name)
-        .invoke_signed(&[&signer_seeds])?;
-
-    Ok(())
+        .invoke_signed(&[&signer_seeds])
 }
