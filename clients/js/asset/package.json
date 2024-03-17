@@ -20,7 +20,7 @@
     "access": "public",
     "registry": "https://registry.npmjs.org"
   },
-  "homepage": "https://nifty-oss.github.io/asset/",
+  "homepage": "https://nifty-oss.org",
   "repository": "https://github.com/nifty-oss/asset.git",
   "author": "nifty-oss maintainers <maintainers@nifty-oss.org>",
   "license": "Apache-2.0",
