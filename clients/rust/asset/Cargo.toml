@@ -6,7 +6,7 @@ repository = "https://github.com/nifty-oss/asset"
 version = "0.0.1-alpha.2"
 edition = "2021"
 readme = "README.md"
-license-file = "../../../LICENSE"
+license = "Apache-2.0"
 
 [features]
 test-sbf = []
