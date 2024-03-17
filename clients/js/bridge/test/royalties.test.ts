@@ -182,6 +182,16 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
         symbol: 'BA',
         uri: 'https://collection.bridge',
       },
+      {
+        type: ExtensionType.Creators,
+        creators: [
+          {
+            address: umi.identity.publicKey,
+            verified: false,
+            share: 100,
+          },
+        ],
+      },
       grouping(0, 1), // 1 item in the group
       royalties(basisPoints, constraint),
     ],
@@ -234,6 +244,16 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
         type: ExtensionType.Metadata,
         symbol: 'BA',
         uri: 'https://collection.bridge',
+      },
+      {
+        type: ExtensionType.Creators,
+        creators: [
+          {
+            address: umi.identity.publicKey,
+            verified: false,
+            share: 100,
+          },
+        ],
       },
       grouping(0, 1), // 1 item in the group
       royalties(basisPoints, newConstraint),

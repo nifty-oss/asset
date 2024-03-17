@@ -86,13 +86,27 @@ test('it can create a collection asset on the bridge for a pNFT', async (t) => {
   // Given a Umi instance.
   const umi = await createUmi();
 
+  // And a set of creators.
+  const creators = [
+    {
+      address: generateSigner(umi).publicKey,
+      share: 50,
+      verified: false,
+    },
+    {
+      address: generateSigner(umi).publicKey,
+      share: 50,
+      verified: false,
+    },
+  ];
+
   // And a Token Metadata programmable non-fungible.
   const mint = await createProgrammableNft(umi, {
     name: 'Bridge Asset',
     symbol: 'BA',
     uri: 'https://asset.bridge',
     sellerFeeBasisPoints: percentAmount(5.5),
-    mint: undefined,
+    creators,
   });
 
   // When we create the asset on the bridge.
@@ -131,13 +145,17 @@ test('it can create a collection asset on the bridge for a pNFT', async (t) => {
         uri: 'https://asset.bridge',
       },
       {
+        type: ExtensionType.Creators,
+        creators,
+      },
+      {
         type: ExtensionType.Grouping,
-        size: BigInt(0),
-        maxSize: BigInt(0),
+        size: 0n,
+        maxSize: 0n,
       },
       {
         type: ExtensionType.Royalties,
-        basisPoints: BigInt(550),
+        basisPoints: 550n,
         constraint,
       },
     ],
@@ -154,7 +172,6 @@ test('it can create an asset on the bridge for a pNFT', async (t) => {
     symbol: 'BA',
     uri: 'https://asset.bridge',
     sellerFeeBasisPoints: percentAmount(5.5),
-    mint: undefined,
   });
 
   // When we create the asset on the bridge.
