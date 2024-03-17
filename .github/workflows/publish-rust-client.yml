@@ -61,7 +61,7 @@ jobs:
 
   build_rust_cli:
     name: Rust CLI
-    uses: ./.github/workflows/build-rust-cli.yml
+    uses: ./.github/workflows/build-cli.yml
     secrets: inherit
 
   publish_crate:
@@ -73,6 +73,8 @@ jobs:
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SERVICE_TOKEN }}
 
       - name: Download CLI binary
         uses: actions/download-artifact@v2
