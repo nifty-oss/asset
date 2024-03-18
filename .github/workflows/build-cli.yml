@@ -30,6 +30,7 @@ jobs:
         os:
           - buildjet-8vcpu-ubuntu-2004
           - macos-latest
+          - macos-14
     runs-on: ${{ matrix.os }}
     steps:
       - name: Git checkout
