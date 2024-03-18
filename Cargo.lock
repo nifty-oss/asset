@@ -910,17 +910,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "98cc8fbded0c607b7ba9dd60cd98df59af97e84d24e49c8557331cfc26d301ce"
 
 [[package]]
-name = "clocksource"
-version = "0.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "129026dd5a8a9592d96916258f3a5379589e513ea5e86aeb0bd2530286e44e9e"
-dependencies = [
- "libc",
- "time",
- "winapi",
-]
-
-[[package]]
 name = "colorchoice"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1981,25 +1970,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b1a46d1a171d865aa5f83f92695765caa047a9b4cbae2cbf37dbd613a793fd4c"
 
 [[package]]
-name = "jib"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08d3a9d9b02b1dd85267a0552d3823e763fa26104ccdb4b4aa3beef8e508b216"
-dependencies = [
- "bincode",
- "futures-util",
- "indicatif",
- "ratelimit",
- "rayon",
- "serde",
- "solana-client",
- "solana-sdk",
- "thiserror",
- "tokio",
- "tracing",
-]
-
-[[package]]
 name = "jobserver"
 version = "0.1.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2340,7 +2310,6 @@ dependencies = [
  "dirs",
  "indexmap 2.2.5",
  "indicatif",
- "jib",
  "nifty-asset",
  "nifty-asset-types",
  "podded",
@@ -3023,17 +2992,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6f97cdb2a36ed4183de61b2f824cc45c9f1037f28afe0a322e9fff4c108b5aaa"
 dependencies = [
  "rand_core 0.6.4",
-]
-
-[[package]]
-name = "ratelimit"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "969d6064e6e4d98485d83cf363147371243df7423b5d43d59f57ed72dc85943e"
-dependencies = [
- "clocksource",
- "parking_lot",
- "thiserror",
 ]
 
 [[package]]
