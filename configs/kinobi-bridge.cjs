@@ -64,7 +64,7 @@ kinobi.update(
   k.updateAccountsVisitor({
     vault: {
       seeds: [
-        k.constantPdaSeedNodeFromString("nifty::bridge::vault"),
+        k.constantPdaSeedNodeFromString("vault"),
         k.variablePdaSeedNode(
           "mint",
           k.publicKeyTypeNode(),

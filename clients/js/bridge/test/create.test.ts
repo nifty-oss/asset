@@ -3,14 +3,9 @@ import {
   percentAmount,
   publicKey,
 } from '@metaplex-foundation/umi';
-import {
-  publicKey as publicKeySerializer,
-  string,
-} from '@metaplex-foundation/umi/serializers';
 import { Asset, ExtensionType, empty, fetchAsset } from '@nifty-oss/asset';
 import test from 'ava';
 import {
-  BRIDGE_PROGRAM_ID,
   Discriminator,
   State,
   Vault,
@@ -67,10 +62,7 @@ test('it can create an asset on the bridge', async (t) => {
   });
 
   // And the asset is created.
-  const asset = umi.eddsa.findPda(BRIDGE_PROGRAM_ID, [
-    string({ size: 'variable' }).serialize('nifty::bridge::asset'),
-    publicKeySerializer().serialize(mint.publicKey),
-  ]);
+  const asset = findBridgeAssetPda(umi, { mint: mint.publicKey });
   t.like(await fetchAsset(umi, asset), <Asset>{
     extensions: [
       {
@@ -129,10 +121,7 @@ test('it can create a collection asset on the bridge for a pNFT', async (t) => {
   });
 
   // And the asset is created.
-  const asset = umi.eddsa.findPda(BRIDGE_PROGRAM_ID, [
-    string({ size: 'variable' }).serialize('nifty::bridge::asset'),
-    publicKeySerializer().serialize(mint.publicKey),
-  ]);
+  const asset = findBridgeAssetPda(umi, { mint: mint.publicKey });
 
   // An empty constraint is added to the asset representing a 'pass-all' constraint.
   const constraint = empty();
@@ -194,10 +183,7 @@ test('it can create an asset on the bridge for a pNFT', async (t) => {
   });
 
   // And the asset is created.
-  const asset = umi.eddsa.findPda(BRIDGE_PROGRAM_ID, [
-    string({ size: 'variable' }).serialize('nifty::bridge::asset'),
-    publicKeySerializer().serialize(mint.publicKey),
-  ]);
+  const asset = findBridgeAssetPda(umi, { mint: mint.publicKey });
 
   t.like(await fetchAsset(umi, asset), <Asset>{
     extensions: [
