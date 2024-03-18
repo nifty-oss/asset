@@ -1,4 +1,4 @@
-# Nifty Asset Types
+# <img width="23" alt="nifty-oss" src="https://github.com/nifty-oss/asset/assets/729235/880d8e6a-8ca1-4b06-b684-57dc46e481d7"/> Nifty Asset Types
 
 Types for Nifty Asset [program](https://github.com/nifty-oss/asset).
 
