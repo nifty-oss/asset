@@ -217,6 +217,7 @@ impl JsonBlob {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct JsonMetadata {
     pub symbol: String,
+    pub description: String,
     pub uri: String,
 }
 
@@ -227,6 +228,10 @@ impl JsonMetadata {
         let symbol_bytes = self.symbol.into_bytes();
         data.push(symbol_bytes.len() as u8);
         data.extend(symbol_bytes);
+
+        let description_bytes = self.description.into_bytes();
+        data.push(description_bytes.len() as u8);
+        data.extend(description_bytes);
 
         let uri_bytes = self.uri.into_bytes();
         data.push(uri_bytes.len() as u8);

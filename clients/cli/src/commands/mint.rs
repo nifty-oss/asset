@@ -11,7 +11,7 @@ pub struct MintArgs {
 }
 
 pub async fn handle_mint(args: MintArgs) -> Result<()> {
-    let config = CliConfig::new(args.keypair_path, args.rpc_url).unwrap();
+    let config = CliConfig::new(args.keypair_path, args.rpc_url)?;
 
     let asset_data: AssetFile = serde_json::from_reader(File::open(args.asset_file_path)?)?;
 
