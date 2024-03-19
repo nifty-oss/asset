@@ -1,7 +1,7 @@
 use podded::types::{U8PrefixStr, U8PrefixStrMut};
 use std::ops::Deref;
 
-use super::{ExtensionBuilder, ExtensionData, ExtensionType};
+use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle};
 
 /// Extension to add "binary large object" to an asset.
 ///
@@ -29,6 +29,30 @@ impl<'a> ExtensionData<'a> for Blob<'a> {
     }
 }
 
+pub struct BlobMut<'a> {
+    /// The content type of the blob.
+    pub content_type: U8PrefixStrMut<'a>,
+
+    /// The raw data of the extension.
+    pub data: &'a mut [u8],
+}
+
+impl<'a> ExtensionDataMut<'a> for BlobMut<'a> {
+    const TYPE: ExtensionType = ExtensionType::Blob;
+
+    fn from_bytes_mut(bytes: &'a mut [u8]) -> Self {
+        let content_type = U8PrefixStr::from_bytes(bytes);
+        let size = content_type.size();
+
+        let (content_type, data) = bytes.split_at_mut(size);
+        let content_type = U8PrefixStrMut::from_bytes_mut(content_type);
+
+        Self { content_type, data }
+    }
+}
+
+impl Lifecycle for BlobMut<'_> {}
+
 /// Builder for a `Blob` extension.
 #[derive(Default)]
 pub struct BlobBuilder(Vec<u8>);
@@ -50,10 +74,12 @@ impl BlobBuilder {
     }
 }
 
-impl ExtensionBuilder for BlobBuilder {
-    const TYPE: ExtensionType = ExtensionType::Blob;
+impl<'a> ExtensionBuilder<'a, Blob<'a>> for BlobBuilder {
+    fn build(&'a self) -> Blob<'a> {
+        Blob::from_bytes(&self.0)
+    }
 
-    fn build(&mut self) -> Vec<u8> {
+    fn data(&mut self) -> Vec<u8> {
         std::mem::take(&mut self.0)
     }
 }

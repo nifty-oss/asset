@@ -32,6 +32,7 @@ pub use royalties::*;
 use borsh::{BorshDeserialize, BorshSerialize};
 use bytemuck::{Pod, Zeroable};
 use podded::ZeroCopy;
+use std::ops::Deref;
 
 use crate::error::Error;
 
@@ -158,12 +159,15 @@ impl From<ExtensionType> for u32 {
 /// Trait for building an extension.
 ///
 /// The `ExtensionBuilder` encapsulates the logic for building an extension by allocating the
-/// necessary memory and writing the extension data to a buffer. The `build` method can then
-/// be used to get retrieve the data buffer.
-pub trait ExtensionBuilder: Default {
-    const TYPE: ExtensionType;
+/// necessary memory and writing the extension data to a buffer. The `data` method can then
+/// be used to get retrieve the bytes buffer and the `build` method can be used to create the
+/// extension from the buffer.
+pub trait ExtensionBuilder<'a, T: ExtensionData<'a>>: Default + Deref {
+    /// Builds the extension from the data buffer.
+    fn build(&'a self) -> T;
 
-    fn build(&mut self) -> Vec<u8>;
+    /// Returns the data buffer.
+    fn data(&mut self) -> Vec<u8>;
 }
 
 /// Trait to define lifecycle callbacks for an extension.
@@ -219,8 +223,11 @@ macro_rules! validate_extension_type {
 }
 
 validate_extension_type!(
+    (Attributes, AttributesMut),
+    (Blob, BlobMut),
     (Creators, CreatorsMut),
     (Grouping, GroupingMut),
+    (Links, LinksMut),
     (Metadata, MetadataMut),
-    (Royalties, RoyaltiesMut),
+    (Royalties, RoyaltiesMut)
 );

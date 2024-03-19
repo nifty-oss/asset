@@ -1,7 +1,7 @@
 use podded::types::{U8PrefixStr, U8PrefixStrMut};
 use std::{fmt::Debug, ops::Deref};
 
-use super::{ExtensionBuilder, ExtensionData, ExtensionType};
+use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle};
 
 /// Extension to add attributes (traits) to an asset – e.g., `"head": "bald"`.
 ///
@@ -90,6 +90,67 @@ impl Debug for Trait<'_> {
     }
 }
 
+pub struct AttributesMut<'a> {
+    traits: Vec<TraitMut<'a>>,
+}
+
+impl<'a> Deref for AttributesMut<'a> {
+    type Target = Vec<TraitMut<'a>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.traits
+    }
+}
+
+impl<'a> ExtensionDataMut<'a> for AttributesMut<'a> {
+    const TYPE: ExtensionType = ExtensionType::Attributes;
+
+    fn from_bytes_mut(bytes: &'a mut [u8]) -> Self {
+        let mut traits = Vec::new();
+        // mutable reference to the current bytes
+        let mut bytes = bytes;
+
+        while !bytes.is_empty() {
+            let t = Trait::from_bytes(bytes);
+            let cursor = t.length();
+
+            let (current, remainder) = bytes.split_at_mut(cursor);
+            let t = TraitMut::from_bytes_mut(current);
+            bytes = remainder;
+
+            traits.push(t);
+        }
+        Self { traits }
+    }
+}
+
+impl Lifecycle for AttributesMut<'_> {}
+
+pub struct TraitMut<'a> {
+    /// Name of the trait.
+    pub name: U8PrefixStrMut<'a>,
+
+    /// Value of the trait.
+    pub value: U8PrefixStrMut<'a>,
+}
+
+impl<'a> TraitMut<'a> {
+    pub fn from_bytes_mut(bytes: &'a mut [u8]) -> Self {
+        let name = U8PrefixStr::from_bytes(bytes);
+        let name_size = name.size();
+
+        let (name, value) = bytes.split_at_mut(name_size);
+
+        let name = U8PrefixStrMut::from_bytes_mut(name);
+        let value = U8PrefixStrMut::from_bytes_mut(value);
+        Self { name, value }
+    }
+
+    pub fn length(&self) -> usize {
+        self.name.size() + self.value.size()
+    }
+}
+
 /// Builder for an `Attributes` extension.
 #[derive(Default)]
 pub struct AttributesBuilder(Vec<u8>);
@@ -111,10 +172,12 @@ impl AttributesBuilder {
     }
 }
 
-impl ExtensionBuilder for AttributesBuilder {
-    const TYPE: ExtensionType = ExtensionType::Attributes;
+impl<'a> ExtensionBuilder<'a, Attributes<'a>> for AttributesBuilder {
+    fn build(&self) -> Attributes {
+        Attributes::from_bytes(&self.0)
+    }
 
-    fn build(&mut self) -> Vec<u8> {
+    fn data(&mut self) -> Vec<u8> {
         std::mem::take(&mut self.0)
     }
 }
@@ -129,14 +192,14 @@ impl Deref for AttributesBuilder {
 
 #[cfg(test)]
 mod tests {
-    use crate::extensions::{Attributes, AttributesBuilder, ExtensionData};
+    use crate::extensions::{AttributesBuilder, ExtensionBuilder};
 
     #[test]
     fn test_add() {
         let mut builder = AttributesBuilder::default();
         builder.add("head", "bald");
         builder.add("hat", "wizard");
-        let attributes = Attributes::from_bytes(&builder);
+        let attributes = builder.build();
 
         assert_eq!(attributes.traits.len(), 2);
         assert_eq!(attributes.traits[0].name.as_str(), "head");

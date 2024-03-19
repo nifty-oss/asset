@@ -148,10 +148,12 @@ impl GroupingBuilder {
     }
 }
 
-impl ExtensionBuilder for GroupingBuilder {
-    const TYPE: ExtensionType = ExtensionType::Grouping;
+impl<'a> ExtensionBuilder<'a, Grouping<'a>> for GroupingBuilder {
+    fn build(&'a self) -> Grouping<'a> {
+        Grouping::from_bytes(&self.0)
+    }
 
-    fn build(&mut self) -> Vec<u8> {
+    fn data(&mut self) -> Vec<u8> {
         std::mem::take(&mut self.0)
     }
 }
@@ -166,14 +168,14 @@ impl Deref for GroupingBuilder {
 
 #[cfg(test)]
 mod tests {
-    use crate::extensions::{ExtensionData, Grouping, GroupingBuilder};
+    use crate::extensions::{ExtensionBuilder, GroupingBuilder};
 
     #[test]
-    fn test_set() {
+    fn test_set_max_size() {
         // max_size set
         let mut builder = GroupingBuilder::default();
         builder.set_max_size(Some(10));
-        let grouping = Grouping::from_bytes(&builder);
+        let grouping = builder.build();
 
         assert_eq!(*grouping.size, 0);
         assert!(grouping.max_size.value().is_some());
@@ -184,7 +186,7 @@ mod tests {
         // "default" max size
 
         let builder = GroupingBuilder::default();
-        let grouping = Grouping::from_bytes(&builder);
+        let grouping = builder.build();
 
         assert_eq!(*grouping.size, 0);
         assert!(grouping.max_size.value().is_none());
