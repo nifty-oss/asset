@@ -19,7 +19,7 @@ pub enum BridgeError {
 
 impl PrintProgramError for BridgeError {
     fn print<E>(&self) {
-        msg!("⛔️ {}", &self.to_string());
+        msg!("⛔️ {} ({:?})", &self.to_string(), &self);
     }
 }
 

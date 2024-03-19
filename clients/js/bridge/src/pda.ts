@@ -16,7 +16,7 @@ export function findBridgeAssetPda(
     'BridgezKrNugsZwTcyAMYba643Z93RzC2yN1Y24LwAkm'
   );
   return context.eddsa.findPda(programId, [
-    string({ size: 'variable' }).serialize('nifty::bridge::asset'),
+    string({ size: 'variable' }).serialize('asset'),
     publicKeySerializer().serialize(seeds.mint),
   ]);
 }

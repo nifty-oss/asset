@@ -28,7 +28,7 @@ impl Vault {
     pub const LEN: usize = std::mem::size_of::<Vault>();
 
     /// Prefix value for the PDA derivation.
-    pub const PREFIX: &'static [u8] = b"nifty::bridge::vault";
+    pub const PREFIX: &'static [u8] = b"vault";
 }
 
 impl ZeroCopy<'_, Vault> for Vault {}

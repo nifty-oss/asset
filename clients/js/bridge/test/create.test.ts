@@ -3,14 +3,9 @@ import {
   percentAmount,
   publicKey,
 } from '@metaplex-foundation/umi';
-import {
-  publicKey as publicKeySerializer,
-  string,
-} from '@metaplex-foundation/umi/serializers';
 import { Asset, ExtensionType, empty, fetchAsset } from '@nifty-oss/asset';
 import test from 'ava';
 import {
-  BRIDGE_PROGRAM_ID,
   Discriminator,
   State,
   Vault,
@@ -67,10 +62,7 @@ test('it can create an asset on the bridge', async (t) => {
   });
 
   // And the asset is created.
-  const asset = umi.eddsa.findPda(BRIDGE_PROGRAM_ID, [
-    string({ size: 'variable' }).serialize('nifty::bridge::asset'),
-    publicKeySerializer().serialize(mint.publicKey),
-  ]);
+  const asset = findBridgeAssetPda(umi, { mint: mint.publicKey });
   t.like(await fetchAsset(umi, asset), <Asset>{
     extensions: [
       {
@@ -86,13 +78,27 @@ test('it can create a collection asset on the bridge for a pNFT', async (t) => {
   // Given a Umi instance.
   const umi = await createUmi();
 
+  // And a set of creators.
+  const creators = [
+    {
+      address: generateSigner(umi).publicKey,
+      share: 50,
+      verified: false,
+    },
+    {
+      address: generateSigner(umi).publicKey,
+      share: 50,
+      verified: false,
+    },
+  ];
+
   // And a Token Metadata programmable non-fungible.
   const mint = await createProgrammableNft(umi, {
     name: 'Bridge Asset',
     symbol: 'BA',
     uri: 'https://asset.bridge',
     sellerFeeBasisPoints: percentAmount(5.5),
-    mint: undefined,
+    creators,
   });
 
   // When we create the asset on the bridge.
@@ -115,10 +121,7 @@ test('it can create a collection asset on the bridge for a pNFT', async (t) => {
   });
 
   // And the asset is created.
-  const asset = umi.eddsa.findPda(BRIDGE_PROGRAM_ID, [
-    string({ size: 'variable' }).serialize('nifty::bridge::asset'),
-    publicKeySerializer().serialize(mint.publicKey),
-  ]);
+  const asset = findBridgeAssetPda(umi, { mint: mint.publicKey });
 
   // An empty constraint is added to the asset representing a 'pass-all' constraint.
   const constraint = empty();
@@ -131,13 +134,17 @@ test('it can create a collection asset on the bridge for a pNFT', async (t) => {
         uri: 'https://asset.bridge',
       },
       {
+        type: ExtensionType.Creators,
+        creators,
+      },
+      {
         type: ExtensionType.Grouping,
-        size: BigInt(0),
-        maxSize: BigInt(0),
+        size: 0n,
+        maxSize: 0n,
       },
       {
         type: ExtensionType.Royalties,
-        basisPoints: BigInt(550),
+        basisPoints: 550n,
         constraint,
       },
     ],
@@ -154,7 +161,6 @@ test('it can create an asset on the bridge for a pNFT', async (t) => {
     symbol: 'BA',
     uri: 'https://asset.bridge',
     sellerFeeBasisPoints: percentAmount(5.5),
-    mint: undefined,
   });
 
   // When we create the asset on the bridge.
@@ -177,10 +183,7 @@ test('it can create an asset on the bridge for a pNFT', async (t) => {
   });
 
   // And the asset is created.
-  const asset = umi.eddsa.findPda(BRIDGE_PROGRAM_ID, [
-    string({ size: 'variable' }).serialize('nifty::bridge::asset'),
-    publicKeySerializer().serialize(mint.publicKey),
-  ]);
+  const asset = findBridgeAssetPda(umi, { mint: mint.publicKey });
 
   t.like(await fetchAsset(umi, asset), <Asset>{
     extensions: [
