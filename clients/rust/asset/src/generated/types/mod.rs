@@ -22,6 +22,7 @@ pub(crate) mod r#links;
 pub(crate) mod r#metadata;
 pub(crate) mod r#standard;
 pub(crate) mod r#state;
+pub(crate) mod r#subscription;
 pub(crate) mod r#trait;
 
 pub use self::r#attributes::*;
@@ -41,4 +42,5 @@ pub use self::r#links::*;
 pub use self::r#metadata::*;
 pub use self::r#standard::*;
 pub use self::r#state::*;
+pub use self::r#subscription::*;
 pub use self::r#trait::*;

@@ -20,6 +20,7 @@ mod grouping;
 mod links;
 mod metadata;
 mod royalties;
+mod subscription;
 
 pub use attributes::*;
 pub use blob::*;
@@ -28,6 +29,7 @@ pub use grouping::*;
 pub use links::*;
 pub use metadata::*;
 pub use royalties::*;
+pub use subscription::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
 use bytemuck::{Pod, Zeroable};
@@ -60,8 +62,22 @@ impl Extension {
         }
     }
 
+    /// Try to get the extension type.
+    ///
+    /// The extension type is stored as a `u32` on the acccount data. This method tries to
+    /// perform the conversion to an `ExtensionType` and returns an error if the conversion
+    /// fails – e.g., the `u32` value is not a valid extension type. This can happen when
+    /// a new extension type is added and a older version of the library is used.
+    pub fn try_extension_type(&self) -> Result<ExtensionType, Error> {
+        self.data[0].try_into()
+    }
+
+    /// Returns the extension type.
+    ///
+    /// This method is similar to `try_extension_type`, but panics if the `u32` value on the
+    /// account data cannot be converted to an `ExtensionType`.
     pub fn extension_type(&self) -> ExtensionType {
-        self.data[0].into()
+        self.data[0].try_into().unwrap()
     }
 
     pub fn set_extension_type(&mut self, extension_type: ExtensionType) {
@@ -123,20 +139,24 @@ pub enum ExtensionType {
     Metadata,
     Grouping,
     Royalties,
+    Subscription,
 }
 
-impl From<u32> for ExtensionType {
-    fn from(value: u32) -> Self {
+impl TryFrom<u32> for ExtensionType {
+    type Error = Error;
+
+    fn try_from(value: u32) -> Result<Self, Self::Error> {
         match value {
-            0 => ExtensionType::None,
-            1 => ExtensionType::Attributes,
-            2 => ExtensionType::Blob,
-            3 => ExtensionType::Creators,
-            4 => ExtensionType::Links,
-            5 => ExtensionType::Metadata,
-            6 => ExtensionType::Grouping,
-            7 => ExtensionType::Royalties,
-            _ => panic!("invalid extension value: {value}"),
+            0 => Ok(ExtensionType::None),
+            1 => Ok(ExtensionType::Attributes),
+            2 => Ok(ExtensionType::Blob),
+            3 => Ok(ExtensionType::Creators),
+            4 => Ok(ExtensionType::Links),
+            5 => Ok(ExtensionType::Metadata),
+            6 => Ok(ExtensionType::Grouping),
+            7 => Ok(ExtensionType::Royalties),
+            8 => Ok(ExtensionType::Subscription),
+            _ => Err(Error::InvalidExtensionType(value)),
         }
     }
 }
@@ -152,6 +172,7 @@ impl From<ExtensionType> for u32 {
             ExtensionType::Metadata => 5,
             ExtensionType::Grouping => 6,
             ExtensionType::Royalties => 7,
+            ExtensionType::Subscription => 8,
         }
     }
 }
@@ -229,5 +250,6 @@ validate_extension_type!(
     (Grouping, GroupingMut),
     (Links, LinksMut),
     (Metadata, MetadataMut),
-    (Royalties, RoyaltiesMut)
+    (Royalties, RoyaltiesMut),
+    (Subscription, SubscriptionMut)
 );

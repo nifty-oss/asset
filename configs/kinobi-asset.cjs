@@ -126,6 +126,7 @@ kinobi.update(
                   { name: "Metadata" },
                   { name: "Grouping" },
                   { name: "Royalties" },
+                  { name: "Subscription" },
                 ],
               },
             }),
@@ -313,6 +314,16 @@ kinobi.update(
                 k.structFieldTypeNode({
                   name: "maxSize",
                   type: k.numberTypeNode("u64"),
+                }),
+              ]),
+            }),
+            // subscription
+            k.definedTypeNode({
+              name: "subscription",
+              type: k.structTypeNode([
+                k.structFieldTypeNode({
+                  name: "authority",
+                  type: k.publicKeyTypeNode(),
                 }),
               ]),
             }),

@@ -1,5 +1,5 @@
 use nifty_asset::{
-    extensions::{Blob, Links, Royalties},
+    extensions::{Blob, Links, Royalties, Subscription},
     JsonCreator,
 };
 use nifty_asset_types::{
@@ -136,6 +136,11 @@ pub fn handle_decode(args: DecodeArgs) -> Result<()> {
 
                 let constraints = handle_constraints(&constraint, index, extension_data);
                 println!("Constraints: {constraints:#?}");
+            }
+            ExtensionType::Subscription => {
+                let subscription: Subscription = Subscription::from_bytes(extension_data);
+                let authority = subscription.authority;
+                println!("authority: {authority:#?}");
             }
             ExtensionType::None => {
                 println!("None");
