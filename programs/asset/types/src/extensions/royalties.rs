@@ -1,6 +1,8 @@
+use std::ops::Deref;
+
 use crate::constraints::{Constraint, ConstraintBuilder, FromBytes};
 
-use super::{ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle};
+use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle};
 
 pub struct Royalties<'a> {
     pub basis_points: &'a u64,
@@ -61,12 +63,22 @@ impl RoyaltiesBuilder {
         self.0.extend_from_slice(&basis_points.to_le_bytes());
         self.0.extend_from_slice(&constraint.build());
     }
+}
 
-    pub fn build(&self) -> Royalties {
+impl<'a> ExtensionBuilder<'a, Royalties<'a>> for RoyaltiesBuilder {
+    fn build(&'a self) -> Royalties<'a> {
         Royalties::from_bytes(&self.0)
     }
 
-    pub fn data(&mut self) -> Vec<u8> {
+    fn data(&mut self) -> Vec<u8> {
         std::mem::take(&mut self.0)
+    }
+}
+
+impl Deref for RoyaltiesBuilder {
+    type Target = Vec<u8>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }

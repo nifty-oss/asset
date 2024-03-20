@@ -175,10 +175,12 @@ impl CreatorsBuilder {
     }
 }
 
-impl ExtensionBuilder for CreatorsBuilder {
-    const TYPE: ExtensionType = ExtensionType::Creators;
+impl<'a> ExtensionBuilder<'a, Creators<'a>> for CreatorsBuilder {
+    fn build(&'a self) -> Creators<'a> {
+        Creators::from_bytes(&self.data)
+    }
 
-    fn build(&mut self) -> Vec<u8> {
+    fn data(&mut self) -> Vec<u8> {
         std::mem::take(&mut self.data)
     }
 }
@@ -193,11 +195,9 @@ impl Deref for CreatorsBuilder {
 
 #[cfg(test)]
 mod tests {
-    use crate::extensions::{CreatorsBuilder, ExtensionData};
+    use crate::extensions::{CreatorsBuilder, ExtensionBuilder};
     use podded::pod::PodBool;
     use solana_program::pubkey;
-
-    use super::Creators;
 
     #[test]
     fn test_add() {
@@ -207,7 +207,8 @@ mod tests {
             true,
             100,
         );
-        let list = Creators::from_bytes(&builder);
+        let list = builder.build();
+
         assert_eq!(list.creators.len(), 1);
         assert_eq!(
             list.creators[0].address,
