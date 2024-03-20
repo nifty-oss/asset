@@ -21,4 +21,8 @@ pub enum Error {
     /// 4 - Invalid maximum group size
     #[error("Maximum group size if invalid (expected at least {0}, got {1})")]
     InvalidMaximumGroupSize(u64, u64),
+
+    /// 5 - Invalid extension type
+    #[error("Invalid extension type: {0}")]
+    InvalidExtensionType(u32),
 }
