@@ -106,6 +106,29 @@ impl Extension {
     pub fn set_boundary(&mut self, boundary: u32) {
         self.data[2] = boundary;
     }
+
+    /// Returns the extension data of a given type.
+    ///
+    /// This function expects a slice of bytes of extension data only and it will return the first
+    /// extension of the given type; if the extension type is not found, `None` is returned.
+    pub fn get<'a, T: ExtensionData<'a>>(data: &'a [u8]) -> Option<T> {
+        let mut cursor = 0;
+
+        while cursor < data.len() {
+            let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
+
+            match extension.try_extension_type() {
+                Ok(t) if t == T::TYPE => {
+                    let start = cursor + Extension::LEN;
+                    let end = start + extension.length() as usize;
+                    return Some(T::from_bytes(&data[start..end]));
+                }
+                _ => cursor = extension.boundary() as usize,
+            }
+        }
+
+        None
+    }
 }
 
 /// Default implementation for zero-copy trait.
