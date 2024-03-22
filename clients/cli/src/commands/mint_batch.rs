@@ -2,7 +2,7 @@ use std::{sync::Arc, time::Duration};
 
 use super::*;
 
-use indicatif::ProgressBar;
+use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use tokio::sync::Mutex;
 
 pub struct MintBatchArgs {
@@ -44,6 +44,8 @@ impl TxResult {
         }
     }
 }
+
+const DELAY_MS: u64 = 100;
 
 pub async fn handle_mint_batch(args: MintBatchArgs) -> Result<()> {
     let config = CliConfig::new(args.keypair_path, args.rpc_url)?;
@@ -125,8 +127,11 @@ pub async fn handle_mint_batch(args: MintBatchArgs) -> Result<()> {
     let client = Arc::new(config.client);
     let authority_sk = Arc::new(authority_sk);
 
-    let pb = ProgressBar::new(instructions.iter().flatten().count() as u64);
-    pb.set_message("Minting assets");
+    let mp = MultiProgress::new();
+    let sty =
+        ProgressStyle::with_template("[{percent}%] {bar:40.blue/white} {pos:>7}/{len:7} {msg}")
+            .unwrap()
+            .progress_chars("=>-");
 
     for (i, asset_instructions) in instructions.into_iter().enumerate() {
         let client = client.clone();
@@ -134,12 +139,18 @@ pub async fn handle_mint_batch(args: MintBatchArgs) -> Result<()> {
         let asset_keys = asset_keys.clone();
         let asset_results = asset_results.clone();
 
-        let pb = pb.clone();
+        let mp = mp.clone();
+        let sty = sty.clone();
 
         futures.push(tokio::spawn(async move {
+            let pb = mp.add(ProgressBar::new(asset_instructions.len() as u64));
+            pb.set_style(sty.clone());
+
             for instruction in asset_instructions {
                 let asset_sk = &asset_keys.lock().await[i];
+                let asset_address = &asset_sk.pubkey();
                 let res = send_and_confirm_tx(&client, &[&authority_sk, &asset_sk], &[instruction]);
+                pb.set_message(format!("sending transactions for asset {asset_address}"));
                 pb.inc(1);
 
                 match res {
@@ -154,17 +165,12 @@ pub async fn handle_mint_batch(args: MintBatchArgs) -> Result<()> {
         }));
 
         // Sleep for a short time to avoid sending transactions too quickly
-        tokio::time::sleep(Duration::from_millis(500)).await;
+        tokio::time::sleep(Duration::from_millis(DELAY_MS)).await;
     }
-    pb.finish_and_clear();
 
-    let pb = ProgressBar::new(asset_results.lock().await.len() as u64);
-    pb.set_message("Waiting for confirmations");
     for future in futures {
         future.await?;
-        pb.inc(1);
     }
-    pb.finish_and_clear();
 
     let results = asset_results.lock().await;
     for result in results.iter() {
