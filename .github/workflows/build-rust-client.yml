@@ -50,11 +50,11 @@ jobs:
           version: ${{ inputs.solana || env.SOLANA_VERSION }}
           cache: ${{ env.CACHE }}
 
-      - name: Cache Rust client test dependencies
+      - name: Cache Rust client build dependencies
         uses: nifty-oss/actions/buildjet-cache-crate@v1
         with:
           folder: '.'
-          key: ${{ matrix.client }}-rust-client-test
+          key: ${{ matrix.client }}-rust-client-build
 
       - name: Build Rust client
         shell: bash

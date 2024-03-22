@@ -165,7 +165,7 @@ export function findVaultPda(
     'BridgezKrNugsZwTcyAMYba643Z93RzC2yN1Y24LwAkm'
   );
   return context.eddsa.findPda(programId, [
-    string({ size: 'variable' }).serialize('nifty::bridge::vault'),
+    string({ size: 'variable' }).serialize('vault'),
     publicKeySerializer().serialize(seeds.mint),
   ]);
 }

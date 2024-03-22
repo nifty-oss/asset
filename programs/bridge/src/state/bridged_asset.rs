@@ -1,7 +1,7 @@
 use solana_program::pubkey::{Pubkey, PubkeyError};
 
 /// Prefix value for the PDA derivation of bridged assets.
-pub const BRIDGED_ASSET_PREFIX: &[u8] = b"nifty::bridge::asset";
+pub const BRIDGED_ASSET_PREFIX: &[u8] = b"asset";
 
 pub fn create_pda(mint: Pubkey, bump: u8) -> Result<Pubkey, PubkeyError> {
     solana_program::pubkey::Pubkey::create_program_address(

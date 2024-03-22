@@ -83,7 +83,7 @@ mod create {
 
         let mut attributes = AttributesBuilder::default();
         attributes.add("hat", "nifty");
-        let data = attributes.build();
+        let data = attributes.data();
 
         let ix = AllocateBuilder::new()
             .asset(asset.pubkey())

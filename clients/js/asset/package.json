@@ -1,6 +1,6 @@
 {
   "name": "@nifty-oss/asset",
-  "version": "0.0.0",
+  "version": "0.0.1-alpha.1",
   "description": "A lightweight standard for non-fungible assets on Solana",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -20,7 +20,7 @@
     "access": "public",
     "registry": "https://registry.npmjs.org"
   },
-  "homepage": "https://nifty-oss.github.io/asset/",
+  "homepage": "https://nifty-oss.org",
   "repository": "https://github.com/nifty-oss/asset.git",
   "author": "nifty-oss maintainers <maintainers@nifty-oss.org>",
   "license": "Apache-2.0",

@@ -6,10 +6,6 @@ import {
 } from '@metaplex-foundation/umi';
 import { createUmi as basecreateUmi } from '@metaplex-foundation/umi-bundle-tests';
 import {
-  publicKey as publicKeySerializer,
-  string,
-} from '@metaplex-foundation/umi/serializers';
-import {
   Asset,
   Discriminator as AssetDiscriminator,
   Standard as AssetStandard,
@@ -25,7 +21,6 @@ import {
 } from '@nifty-oss/asset';
 import test from 'ava';
 import {
-  BRIDGE_PROGRAM_ID,
   Discriminator,
   State,
   Vault,
@@ -118,15 +113,10 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
   });
 
   // Derive both asset pubkeys
-  const collectionAsset = umi.eddsa.findPda(BRIDGE_PROGRAM_ID, [
-    string({ size: 'variable' }).serialize('nifty::bridge::asset'),
-    publicKeySerializer().serialize(collectionMint.publicKey),
-  ]);
-
-  const itemAsset = umi.eddsa.findPda(BRIDGE_PROGRAM_ID, [
-    string({ size: 'variable' }).serialize('nifty::bridge::asset'),
-    publicKeySerializer().serialize(itemMint.publicKey),
-  ]);
+  const collectionAsset = findBridgeAssetPda(umi, {
+    mint: collectionMint.publicKey,
+  });
+  const itemAsset = findBridgeAssetPda(umi, { mint: itemMint.publicKey });
 
   // Update the item to be a member of the group.
   await group(umi, {
@@ -182,6 +172,16 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
         symbol: 'BA',
         uri: 'https://collection.bridge',
       },
+      {
+        type: ExtensionType.Creators,
+        creators: [
+          {
+            address: umi.identity.publicKey,
+            verified: false,
+            share: 100,
+          },
+        ],
+      },
       grouping(0, 1), // 1 item in the group
       royalties(basisPoints, constraint),
     ],
@@ -234,6 +234,16 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
         type: ExtensionType.Metadata,
         symbol: 'BA',
         uri: 'https://collection.bridge',
+      },
+      {
+        type: ExtensionType.Creators,
+        creators: [
+          {
+            address: umi.identity.publicKey,
+            verified: false,
+            share: 100,
+          },
+        ],
       },
       grouping(0, 1), // 1 item in the group
       royalties(basisPoints, newConstraint),

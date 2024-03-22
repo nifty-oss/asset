@@ -134,10 +134,12 @@ impl MetadataBuilder {
     }
 }
 
-impl ExtensionBuilder for MetadataBuilder {
-    const TYPE: ExtensionType = ExtensionType::Metadata;
+impl<'a> ExtensionBuilder<'a, Metadata<'a>> for MetadataBuilder {
+    fn build(&'a self) -> Metadata<'a> {
+        Metadata::from_bytes(&self.0)
+    }
 
-    fn build(&mut self) -> Vec<u8> {
+    fn data(&mut self) -> Vec<u8> {
         std::mem::take(&mut self.0)
     }
 }
@@ -155,7 +157,7 @@ mod tests {
     use crate::extensions::{ExtensionData, Metadata, MetadataBuilder};
 
     #[test]
-    fn test_add() {
+    fn test_set() {
         let mut builder = MetadataBuilder::default();
         builder.set(
             Some("SMB"),

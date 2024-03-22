@@ -1,7 +1,7 @@
 use podded::types::{U8PrefixStr, U8PrefixStrMut};
 use std::{fmt::Debug, ops::Deref};
 
-use super::{ExtensionBuilder, ExtensionData, ExtensionType};
+use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle};
 
 /// Extension to add external links.
 ///
@@ -10,7 +10,15 @@ use super::{ExtensionBuilder, ExtensionData, ExtensionType};
 ///   * `name` - name of the link.
 ///   * `uri` - URI value.
 pub struct Links<'a> {
-    pub values: Vec<Link<'a>>,
+    values: Vec<Link<'a>>,
+}
+
+impl<'a> Deref for Links<'a> {
+    type Target = Vec<Link<'a>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.values
+    }
 }
 
 impl<'a> ExtensionData<'a> for Links<'a> {
@@ -71,6 +79,67 @@ impl Debug for Link<'_> {
     }
 }
 
+pub struct LinksMut<'a> {
+    pub values: Vec<LinkMut<'a>>,
+}
+
+impl<'a> Deref for LinksMut<'a> {
+    type Target = Vec<LinkMut<'a>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.values
+    }
+}
+
+impl<'a> ExtensionDataMut<'a> for LinksMut<'a> {
+    const TYPE: ExtensionType = ExtensionType::Links;
+
+    fn from_bytes_mut(bytes: &'a mut [u8]) -> Self {
+        let mut values = Vec::new();
+        // mutable reference to the current bytes
+        let mut bytes = bytes;
+
+        while !bytes.is_empty() {
+            let link = Link::from_bytes(bytes);
+            let cursor = link.length();
+
+            let (current, remainder) = bytes.split_at_mut(cursor);
+            let link = LinkMut::from_bytes_mut(current);
+            bytes = remainder;
+
+            values.push(link);
+        }
+        Self { values }
+    }
+}
+
+impl Lifecycle for LinksMut<'_> {}
+
+pub struct LinkMut<'a> {
+    /// Name of the link.
+    pub name: U8PrefixStrMut<'a>,
+
+    /// URI value.
+    pub uri: U8PrefixStrMut<'a>,
+}
+
+impl<'a> LinkMut<'a> {
+    pub fn from_bytes_mut(bytes: &'a mut [u8]) -> Self {
+        let name = U8PrefixStr::from_bytes(bytes);
+        let name_size = name.size();
+
+        let (name, uri) = bytes.split_at_mut(name_size);
+
+        let name = U8PrefixStrMut::from_bytes_mut(name);
+        let uri = U8PrefixStrMut::from_bytes_mut(uri);
+        Self { name, uri }
+    }
+
+    pub fn length(&self) -> usize {
+        self.name.size() + self.uri.size()
+    }
+}
+
 /// Builder for a `Links` extension.
 #[derive(Default)]
 pub struct LinksBuilder(Vec<u8>);
@@ -92,10 +161,12 @@ impl LinksBuilder {
     }
 }
 
-impl ExtensionBuilder for LinksBuilder {
-    const TYPE: ExtensionType = ExtensionType::Links;
+impl<'a> ExtensionBuilder<'a, Links<'a>> for LinksBuilder {
+    fn build(&'a self) -> Links<'a> {
+        Links::from_bytes(&self.0)
+    }
 
-    fn build(&mut self) -> Vec<u8> {
+    fn data(&mut self) -> Vec<u8> {
         std::mem::take(&mut self.0)
     }
 }
@@ -110,7 +181,7 @@ impl Deref for LinksBuilder {
 
 #[cfg(test)]
 mod tests {
-    use crate::extensions::{ExtensionData, Links, LinksBuilder};
+    use crate::extensions::{ExtensionBuilder, LinksBuilder};
 
     #[test]
     fn test_add() {
@@ -123,7 +194,7 @@ mod tests {
             "image",
             "https://arweave.net/aFnc6QVyRR-gVx6pKYSFu0MiwijQzFdU4fMSuApJqms",
         );
-        let links = Links::from_bytes(&builder);
+        let links = builder.build();
 
         assert_eq!(links.values.len(), 2);
         assert_eq!(links.values[0].name.as_str(), "metadata");

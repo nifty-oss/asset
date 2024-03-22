@@ -1,12 +1,12 @@
 [package]
 name = "nifty-asset-types"
-version = "0.0.1-alpha.1"
+version = "0.0.1-alpha.2"
 description = "Types for Nifty Asset program"
 authors = ["nifty-oss maintainers <maintainers@nifty-oss.org>"]
 repository = "https://github.com/nifty-oss/asset"
 edition = "2021"
 readme = "README.md"
-license-file = "../../../LICENSE"
+license = "Apache-2.0"
 
 [dependencies]
 borsh = "0.10.3"

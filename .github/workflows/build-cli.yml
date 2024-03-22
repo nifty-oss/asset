@@ -24,9 +24,15 @@ env:
   CACHE: true
 
 jobs:
-  build_sdk:
+  build_cli:
     name: Build
-    runs-on: buildjet-8vcpu-ubuntu-2204
+    strategy:
+      matrix:
+        os:
+          - buildjet-8vcpu-ubuntu-2004
+          - macos-latest
+          - macos-14
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
@@ -48,17 +54,18 @@ jobs:
       - name: Cache Rust CLI dependencies
         uses: nifty-oss/actions/buildjet-cache-crate@v1
         with:
-          folder: '.'
-          key: rust-cli-test
+          folder: '.' # The action expects the root of the repository, not the crate subdirectory.
+          key: rust-cli-${{ matrix.os }}
 
       - name: Build Rust CLI
-        shell: bash
         working-directory: clients/cli
-        run: cargo build --all-features --release --bin nifty-cli-${{ runner.os }}
+        run: |
+          cargo build --all-features --release --bin nifty
+          mv ../../target/release/nifty ../../target/release/nifty-cli-${{ runner.os }}
 
       - name: Upload Rust CLI builds
         uses: actions/upload-artifact@v4
         with:
-          name: rust-cli-build
-          path: ./target/release/*nifty-cli-${{ runner.os }}*
+          name: rust-cli-build-${{ matrix.os }}
+          path: ./target/release/*nifty-cli-${{ runner.os }}
           if-no-files-found: error
