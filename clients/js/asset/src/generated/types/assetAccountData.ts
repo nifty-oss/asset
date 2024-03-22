@@ -28,6 +28,11 @@ import {
   getStandardSerializer,
   getStateSerializer,
 } from '.';
+import {
+  NullablePublicKey,
+  NullablePublicKeyArgs,
+  getNullablePublicKeySerializer,
+} from '../../hooked';
 
 export type AssetAccountData = {
   discriminator: Discriminator;
@@ -35,7 +40,7 @@ export type AssetAccountData = {
   standard: Standard;
   mutable: boolean;
   owner: PublicKey;
-  group: PublicKey;
+  group: NullablePublicKey;
   authority: PublicKey;
   delegate: Delegate;
   name: string;
@@ -46,7 +51,7 @@ export type AssetAccountDataArgs = {
   standard: StandardArgs;
   mutable: boolean;
   owner: PublicKey;
-  group: PublicKey;
+  group: NullablePublicKeyArgs;
   authority: PublicKey;
   delegate: DelegateArgs;
   name: string;
@@ -64,7 +69,7 @@ export function getAssetAccountDataSerializer(): Serializer<
         ['standard', getStandardSerializer()],
         ['mutable', bool()],
         ['owner', publicKeySerializer()],
-        ['group', publicKeySerializer()],
+        ['group', getNullablePublicKeySerializer()],
         ['authority', publicKeySerializer()],
         ['delegate', getDelegateSerializer()],
         ['name', string({ size: 35 })],

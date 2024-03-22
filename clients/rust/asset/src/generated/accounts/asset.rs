@@ -9,6 +9,7 @@ use crate::generated::types::Delegate;
 use crate::generated::types::Discriminator;
 use crate::generated::types::Standard;
 use crate::generated::types::State;
+use crate::hooked::NullablePublicKey;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use solana_program::pubkey::Pubkey;
@@ -25,11 +26,7 @@ pub struct Asset {
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
     )]
     pub owner: Pubkey,
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
-    )]
-    pub group: Pubkey,
+    pub group: NullablePublicKey,
     #[cfg_attr(
         feature = "serde",
         serde(with = "serde_with::As::<serde_with::DisplayFromStr>")

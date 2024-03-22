@@ -6,22 +6,18 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { PublicKey } from '@metaplex-foundation/umi';
-import {
-  Serializer,
-  publicKey as publicKeySerializer,
-  struct,
-} from '@metaplex-foundation/umi/serializers';
+import { Serializer, struct } from '@metaplex-foundation/umi/serializers';
+import { Delegate, DelegateArgs, getDelegateSerializer } from '.';
 
-export type Subscription = { authority: PublicKey };
+export type Subscription = { delegate: Delegate };
 
-export type SubscriptionArgs = Subscription;
+export type SubscriptionArgs = { delegate: DelegateArgs };
 
 export function getSubscriptionSerializer(): Serializer<
   SubscriptionArgs,
   Subscription
 > {
-  return struct<Subscription>([['authority', publicKeySerializer()]], {
+  return struct<Subscription>([['delegate', getDelegateSerializer()]], {
     description: 'Subscription',
   }) as Serializer<SubscriptionArgs, Subscription>;
 }

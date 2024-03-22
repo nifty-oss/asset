@@ -52,7 +52,7 @@ kinobi.update(
                 }),
                 k.structFieldTypeNode({
                   name: "group",
-                  type: k.publicKeyTypeNode(),
+                  type: k.definedTypeLinkNode("nullablePublicKey", "hooked"),
                 }),
                 k.structFieldTypeNode({
                   name: "authority",
@@ -136,11 +136,11 @@ kinobi.update(
               type: k.structTypeNode([
                 k.structFieldTypeNode({
                   name: "address",
-                  type: k.publicKeyTypeNode(),
+                  type: k.definedTypeLinkNode("nullablePublicKey", "hooked"),
                 }),
                 k.structFieldTypeNode({
                   name: "roles",
-                  type: k.numberTypeNode("u8"),
+                  type: k.definedTypeLinkNode("delegateRoles", "hooked"),
                 }),
               ]),
             }),
@@ -322,8 +322,8 @@ kinobi.update(
               name: "subscription",
               type: k.structTypeNode([
                 k.structFieldTypeNode({
-                  name: "authority",
-                  type: k.publicKeyTypeNode(),
+                  name: "delegate",
+                  type: k.definedTypeLinkNode("delegate"),
                 }),
               ]),
             }),
