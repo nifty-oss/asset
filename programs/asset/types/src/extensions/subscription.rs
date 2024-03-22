@@ -1,5 +1,8 @@
-use solana_program::pubkey::Pubkey;
+use bytemuck::bytes_of;
+use podded::ZeroCopy;
 use std::{fmt::Debug, ops::Deref};
+
+use crate::state::Delegate;
 
 use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle};
 
@@ -10,42 +13,42 @@ use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Li
 ///
 /// This extension can only be used in `Subscription` asset accounts.
 pub struct Subscription<'a> {
-    /// The number of assets in the group.
-    pub authority: &'a Pubkey,
+    /// The subscription delegate address.
+    pub delegate: &'a Delegate,
 }
 
 impl<'a> ExtensionData<'a> for Subscription<'a> {
     const TYPE: ExtensionType = ExtensionType::Subscription;
 
     fn from_bytes(bytes: &'a [u8]) -> Self {
-        let authority = bytemuck::from_bytes(bytes);
-        Self { authority }
+        let delegate = Delegate::load(bytes);
+        Self { delegate }
     }
 
     fn length(&self) -> usize {
-        std::mem::size_of::<Pubkey>()
+        std::mem::size_of::<Delegate>()
     }
 }
 
 impl Debug for Subscription<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Subscription")
-            .field("authority", &self.authority.to_string())
+            .field("delegate", &self.delegate.address)
             .finish()
     }
 }
 
 pub struct SubscriptionMut<'a> {
-    /// The number of assets in the group.
-    pub authority: &'a mut Pubkey,
+    /// The subscription delegate address.
+    pub delegate: &'a mut Delegate,
 }
 
 impl<'a> ExtensionDataMut<'a> for SubscriptionMut<'a> {
     const TYPE: ExtensionType = ExtensionType::Subscription;
 
     fn from_bytes_mut(bytes: &'a mut [u8]) -> Self {
-        let authority = bytemuck::from_bytes_mut(bytes);
-        Self { authority }
+        let delegate = Delegate::load_mut(bytes);
+        Self { delegate }
     }
 }
 
@@ -55,10 +58,10 @@ impl Lifecycle for SubscriptionMut<'_> {}
 pub struct SubscriptionBuilder(Vec<u8>);
 
 impl SubscriptionBuilder {
-    pub fn set(&mut self, authority: &Pubkey) {
+    pub fn set(&mut self, delegate: &Delegate) {
         // setting the data replaces any existing data
         self.0.clear();
-        self.0.extend_from_slice(authority.as_ref());
+        self.0.extend_from_slice(bytes_of(delegate));
     }
 
     pub fn build(&self) -> Subscription {
@@ -90,16 +93,36 @@ impl Deref for SubscriptionBuilder {
 
 #[cfg(test)]
 mod tests {
-    use solana_program::pubkey::Pubkey;
-
-    use crate::extensions::{ExtensionData, Subscription, SubscriptionBuilder};
+    use crate::{
+        extensions::{ExtensionData, Subscription, SubscriptionBuilder},
+        state::{Delegate, NullablePubkey},
+    };
+    use podded::pod::Nullable;
+    use solana_program::sysvar;
 
     #[test]
     fn test_set() {
+        // default delegate address
         let mut builder = SubscriptionBuilder::default();
-        builder.set(&Pubkey::default());
+        builder.set(&Delegate::default());
         let subscription = Subscription::from_bytes(&builder);
 
-        assert_eq!(*subscription.authority, Pubkey::default());
+        assert!(subscription.delegate.is_none());
+        assert_eq!(subscription.delegate.address, Delegate::default().address);
+
+        // "custom" delegate address
+        let mut builder = SubscriptionBuilder::default();
+        builder.set(&Delegate {
+            address: NullablePubkey::new(sysvar::ID),
+            roles: Delegate::ALL_ROLES_MASK,
+        });
+        let subscription = Subscription::from_bytes(&builder);
+
+        assert!(subscription.delegate.is_some());
+        assert_eq!(subscription.delegate.roles, Delegate::ALL_ROLES_MASK);
+        assert_eq!(
+            subscription.delegate.address,
+            NullablePubkey::new(sysvar::ID)
+        );
     }
 }
