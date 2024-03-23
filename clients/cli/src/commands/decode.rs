@@ -1,3 +1,5 @@
+use std::{fmt, ops::Deref};
+
 use nifty_asset::{
     extensions::{Blob, Creator, Links, Royalties, Subscription},
     JsonCreator,
@@ -22,6 +24,49 @@ pub struct DecodeArgs {
 
 const ASSET_LEN: usize = 168;
 
+// Use a wrapper struct to override the debug implementation on Asset
+// to print a str instead of bytes for the name field.
+pub struct AssetWrapper(pub Asset);
+
+impl fmt::Debug for AssetWrapper {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let name = name_to_string(&self.name);
+
+        f.debug_struct("Asset")
+            .field("discriminator", &self.0.discriminator)
+            .field("state", &self.0.state)
+            .field("standard", &self.0.standard)
+            .field("mutable", &self.0.mutable)
+            .field("owner", &self.0.owner)
+            .field("group", &self.0.group)
+            .field("authority", &self.0.authority)
+            .field("delegate", &self.0.delegate)
+            .field("name", &name)
+            .finish()
+    }
+}
+
+impl AssetWrapper {
+    pub fn name(&self) -> String {
+        name_to_string(&self.name)
+    }
+}
+
+impl Deref for AssetWrapper {
+    type Target = Asset;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+pub fn name_to_string(bytes: &[u8]) -> String {
+    std::str::from_utf8(bytes)
+        .unwrap_or("[invalid UTF-8]")
+        .trim_end_matches('\0')
+        .to_string()
+}
+
 pub fn handle_decode(args: DecodeArgs) -> Result<()> {
     let config = CliConfig::new(None, args.rpc_url)?;
 
@@ -33,6 +78,7 @@ pub fn handle_decode(args: DecodeArgs) -> Result<()> {
     }
 
     let asset = Asset::from_bytes(&data).unwrap();
+    let asset = AssetWrapper(asset);
 
     if let Some(field) = args.field {
         match field.to_lowercase().as_str() {
@@ -59,13 +105,13 @@ pub fn handle_decode(args: DecodeArgs) -> Result<()> {
             }
             "delegate" => {
                 println!("delegate address: {:?}", asset.delegate.address);
-                println!("delegate roles: {:?}", asset.delegate.roles.to_vec());
+                println!("delegate roles: {:?}", asset.delegate.roles);
             }
             "name" => {
-                println!("name: {:?}", asset.name);
+                println!("name: {:?}", asset.name());
             }
             _ => {
-                println!("Unknown field: {}", field);
+                println!("Unknown field: {:?}", field);
             }
         }
         return Ok(());
