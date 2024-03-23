@@ -9,15 +9,12 @@
 import { Serializer, struct } from '@metaplex-foundation/umi/serializers';
 import { Delegate, DelegateArgs, getDelegateSerializer } from '.';
 
-export type Subscription = { delegate: Delegate };
+export type Manager = { delegate: Delegate };
 
-export type SubscriptionArgs = { delegate: DelegateArgs };
+export type ManagerArgs = { delegate: DelegateArgs };
 
-export function getSubscriptionSerializer(): Serializer<
-  SubscriptionArgs,
-  Subscription
-> {
-  return struct<Subscription>([['delegate', getDelegateSerializer()]], {
-    description: 'Subscription',
-  }) as Serializer<SubscriptionArgs, Subscription>;
+export function getManagerSerializer(): Serializer<ManagerArgs, Manager> {
+  return struct<Manager>([['delegate', getDelegateSerializer()]], {
+    description: 'Manager',
+  }) as Serializer<ManagerArgs, Manager>;
 }

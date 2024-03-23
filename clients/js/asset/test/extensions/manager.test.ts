@@ -10,11 +10,11 @@ import {
   create,
   fetchAsset,
   initialize,
-  subscription,
+  manager,
 } from '../../src';
 import { createUmi } from '../_setup';
 
-test('it can create a new suscriptoin asset', async (t) => {
+test('it can create a new managed asset', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
@@ -24,7 +24,7 @@ test('it can create a new suscriptoin asset', async (t) => {
   await initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: subscription(umi.identity.publicKey, DelegateRole.Transfer),
+    extension: manager(umi.identity.publicKey, DelegateRole.Transfer),
   }).sendAndConfirm(umi);
 
   t.true(await umi.rpc.accountExists(asset.publicKey), 'asset exists');
@@ -33,8 +33,8 @@ test('it can create a new suscriptoin asset', async (t) => {
   await create(umi, {
     asset,
     owner: owner.publicKey,
-    name: 'Subscription Asset',
-    standard: Standard.Subscription,
+    name: 'Managed Asset',
+    standard: Standard.Managed,
   }).sendAndConfirm(umi);
 
   // Then an asset was created with the correct data.
@@ -42,12 +42,12 @@ test('it can create a new suscriptoin asset', async (t) => {
   t.like(assetAccount, <Asset>{
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
-    standard: Standard.Subscription,
+    standard: Standard.Managed,
     owner: owner.publicKey,
     authority: umi.identity.publicKey,
     extensions: [
       {
-        type: ExtensionType.Subscription,
+        type: ExtensionType.Manager,
         delegate: {
           address: umi.identity.publicKey,
           roles: [DelegateRole.Transfer],
@@ -57,7 +57,7 @@ test('it can create a new suscriptoin asset', async (t) => {
   });
 });
 
-test('it can create a new suscriptoin asset with multiple delegate roles', async (t) => {
+test('it can create a new managed asset with multiple delegate roles', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
@@ -67,7 +67,7 @@ test('it can create a new suscriptoin asset with multiple delegate roles', async
   await initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: subscription(umi.identity.publicKey, [
+    extension: manager(umi.identity.publicKey, [
       DelegateRole.Transfer,
       DelegateRole.Burn,
     ]),
@@ -79,8 +79,8 @@ test('it can create a new suscriptoin asset with multiple delegate roles', async
   await create(umi, {
     asset,
     owner: owner.publicKey,
-    name: 'Subscription Asset',
-    standard: Standard.Subscription,
+    name: 'Managed Asset',
+    standard: Standard.Managed,
   }).sendAndConfirm(umi);
 
   // Then an asset was created with the correct data.
@@ -88,12 +88,12 @@ test('it can create a new suscriptoin asset with multiple delegate roles', async
   t.like(assetAccount, <Asset>{
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
-    standard: Standard.Subscription,
+    standard: Standard.Managed,
     owner: owner.publicKey,
     authority: umi.identity.publicKey,
     extensions: [
       {
-        type: ExtensionType.Subscription,
+        type: ExtensionType.Manager,
         delegate: {
           address: umi.identity.publicKey,
           roles: [DelegateRole.Transfer, DelegateRole.Burn],
@@ -103,7 +103,7 @@ test('it can create a new suscriptoin asset with multiple delegate roles', async
   });
 });
 
-test('it cannot create a new subscription asset without the extension', async (t) => {
+test('it cannot create a new managed asset without the manager extension', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
@@ -114,15 +114,15 @@ test('it cannot create a new subscription asset without the extension', async (t
     asset,
     owner: owner.publicKey,
     payer: umi.identity,
-    name: 'Subscription Asset',
-    standard: Standard.Subscription,
+    name: 'Managed Asset',
+    standard: Standard.Managed,
   }).sendAndConfirm(umi);
 
   // Then we expect an error.
   await t.throwsAsync(promise, { message: /Extension data invalid/ });
 });
 
-test('it cannot create a non-subscription asset with the extension', async (t) => {
+test('it cannot create a non-subscription asset with the manager extension', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
@@ -132,7 +132,7 @@ test('it cannot create a non-subscription asset with the extension', async (t) =
   await initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: subscription(umi.identity.publicKey, DelegateRole.Transfer),
+    extension: manager(umi.identity.publicKey, DelegateRole.Transfer),
   }).sendAndConfirm(umi);
 
   t.true(await umi.rpc.accountExists(asset.publicKey), 'asset exists');
@@ -142,7 +142,7 @@ test('it cannot create a non-subscription asset with the extension', async (t) =
     asset,
     owner: owner.publicKey,
     payer: umi.identity,
-    name: 'Non-Subscription Asset',
+    name: 'Non-Managed Asset',
   }).sendAndConfirm(umi);
 
   // Then we expect an error.

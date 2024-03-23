@@ -1,20 +1,13 @@
 import { TypedExtension } from '.';
-import {
-  Delegate,
-  DelegateInputArgs,
-  DelegateRole,
-  ExtensionType,
-} from '../generated';
+import { Delegate, DelegateRole, ExtensionType } from '../generated';
 
-export type RoleInput = DelegateInputArgs;
-
-export const subscription = (
+export const manager = (
   address: Delegate['address'],
   roles: Delegate['roles'] | DelegateRole
 ): TypedExtension => {
   const roleArray = Array.isArray(roles) ? roles : [roles];
   return {
-    type: ExtensionType.Subscription,
+    type: ExtensionType.Manager,
     delegate: { address, roles: roleArray },
   };
 };
