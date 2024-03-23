@@ -1,7 +1,8 @@
 use std::{fmt, ops::Deref};
 
 use nifty_asset::{
-    extensions::{Blob, Creator, Links, Royalties, Subscription},
+    extensions::{Blob, Links, Manager, Royalties},
+    types::Creator,
     JsonCreator,
 };
 use nifty_asset_types::{
@@ -179,9 +180,9 @@ pub fn handle_decode(args: DecodeArgs) -> Result<()> {
                 let constraints = handle_constraints(&constraint, index, extension_data);
                 println!("Constraints: {constraints:#?}");
             }
-            ExtensionType::Subscription => {
-                let subscription: Subscription = Subscription::from_bytes(extension_data);
-                let delegate = subscription.delegate;
+            ExtensionType::Manager => {
+                let manager: Manager = Manager::from_bytes(extension_data);
+                let delegate = manager.delegate;
                 println!("authority: {delegate:#?}");
             }
             ExtensionType::None => {

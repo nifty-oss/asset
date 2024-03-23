@@ -53,6 +53,7 @@ kinobi.update(
                 k.structFieldTypeNode({
                   name: "group",
                   type: k.definedTypeLinkNode("nullablePublicKey", "hooked"),
+                  type: k.definedTypeLinkNode("nullablePublicKey", "hooked"),
                 }),
                 k.structFieldTypeNode({
                   name: "authority",
@@ -86,7 +87,7 @@ kinobi.update(
                 kind: "enum",
                 variants: [
                   { name: "NonFungible" },
-                  { name: "Subscription" },
+                  { name: "Managed" },
                   { name: "Soulbound" },
                 ],
               },
@@ -126,7 +127,7 @@ kinobi.update(
                   { name: "Metadata" },
                   { name: "Grouping" },
                   { name: "Royalties" },
-                  { name: "Subscription" },
+                  { name: "Manager" },
                 ],
               },
             }),
@@ -317,9 +318,9 @@ kinobi.update(
                 }),
               ]),
             }),
-            // subscription
+            // manager
             k.definedTypeNode({
-              name: "subscription",
+              name: "manager",
               type: k.structTypeNode([
                 k.structFieldTypeNode({
                   name: "delegate",

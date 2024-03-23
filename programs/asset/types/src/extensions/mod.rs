@@ -18,18 +18,18 @@ mod blob;
 mod creators;
 mod grouping;
 mod links;
+mod manager;
 mod metadata;
 mod royalties;
-mod subscription;
 
 pub use attributes::*;
 pub use blob::*;
 pub use creators::*;
 pub use grouping::*;
 pub use links::*;
+pub use manager::*;
 pub use metadata::*;
 pub use royalties::*;
-pub use subscription::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
 use bytemuck::{Pod, Zeroable};
@@ -162,7 +162,7 @@ pub enum ExtensionType {
     Metadata,
     Grouping,
     Royalties,
-    Subscription,
+    Manager,
 }
 
 impl TryFrom<u32> for ExtensionType {
@@ -178,7 +178,7 @@ impl TryFrom<u32> for ExtensionType {
             5 => Ok(ExtensionType::Metadata),
             6 => Ok(ExtensionType::Grouping),
             7 => Ok(ExtensionType::Royalties),
-            8 => Ok(ExtensionType::Subscription),
+            8 => Ok(ExtensionType::Manager),
             _ => Err(Error::InvalidExtensionType(value)),
         }
     }
@@ -195,7 +195,7 @@ impl From<ExtensionType> for u32 {
             ExtensionType::Metadata => 5,
             ExtensionType::Grouping => 6,
             ExtensionType::Royalties => 7,
-            ExtensionType::Subscription => 8,
+            ExtensionType::Manager => 8,
         }
     }
 }
@@ -274,5 +274,5 @@ validate_extension_type!(
     (Links, LinksMut),
     (Metadata, MetadataMut),
     (Royalties, RoyaltiesMut),
-    (Subscription, SubscriptionMut)
+    (Manager, ManagerMut)
 );

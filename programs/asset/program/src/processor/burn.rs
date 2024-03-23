@@ -1,5 +1,5 @@
 use nifty_asset_types::{
-    extensions::{GroupingMut, Subscription},
+    extensions::{GroupingMut, Manager},
     podded::ZeroCopy,
     state::{Asset, DelegateRole, Discriminator},
 };
@@ -44,7 +44,7 @@ pub fn process_burn(program_id: &Pubkey, ctx: Context<BurnAccounts>) -> ProgramR
     let is_delegate = assert_delegate(
         &[
             asset.delegate.value(),
-            Asset::get::<Subscription>(extensions).map(|s| s.delegate),
+            Asset::get::<Manager>(extensions).map(|s| s.delegate),
         ],
         ctx.accounts.signer.key,
         DelegateRole::Burn,
