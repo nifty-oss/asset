@@ -1,6 +1,8 @@
+use std::fmt::Debug;
+
 use borsh::{BorshDeserialize, BorshSerialize};
 use bytemuck::{Pod, Zeroable};
-use podded::pod::PodOption;
+use podded::{pod::PodOption, ZeroCopy};
 
 use super::{Nullable, NullablePubkey};
 
@@ -60,6 +62,24 @@ impl From<Delegate> for PodOption<Delegate> {
         PodOption::new(value)
     }
 }
+
+impl Debug for Delegate {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Delegate")
+            .field(
+                "address",
+                if self.address.is_some() {
+                    &self.address
+                } else {
+                    &"None"
+                },
+            )
+            .field("roles", &Delegate::decode_roles(self.roles))
+            .finish()
+    }
+}
+
+impl ZeroCopy<'_, Delegate> for Delegate {}
 
 #[repr(u8)]
 #[derive(BorshSerialize, BorshDeserialize, Clone, Copy, Debug, Default, PartialEq)]

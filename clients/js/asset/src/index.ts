@@ -5,7 +5,6 @@ export * from './initialize';
 export * from './extensions';
 export * from './mint';
 export * from './plugin';
-export * from './types';
 export * from './update';
 export * from './updateWithBuffer';
 export * from './write';

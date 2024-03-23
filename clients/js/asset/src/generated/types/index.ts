@@ -20,6 +20,7 @@ export * from './extensionType';
 export * from './grouping';
 export * from './link';
 export * from './links';
+export * from './manager';
 export * from './metadata';
 export * from './standard';
 export * from './state';

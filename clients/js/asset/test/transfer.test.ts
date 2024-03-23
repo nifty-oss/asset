@@ -8,6 +8,8 @@ import {
   create,
   delegateInput,
   fetchAsset,
+  mint,
+  manager,
   transfer,
 } from '../src';
 import { createUmi } from './_setup';
@@ -283,5 +285,74 @@ test('it cannot transfer a soulbound asset', async (t) => {
   // Then we expect an error.
   await t.throwsAsync(promise, {
     message: /Soulbound assets are non-transferable/,
+  });
+});
+
+test('it can transfer an asset as a manager delegate', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const assetSigner = generateSigner(umi);
+  const ownerSigner = generateSigner(umi);
+  const delegateSigner = generateSigner(umi);
+  const recipient = generateSigner(umi).publicKey;
+
+  // When we create a new subscription asset.
+  await mint(umi, {
+    asset: assetSigner,
+    owner: ownerSigner.publicKey,
+    payer: umi.identity,
+    name: 'Managed Asset',
+    standard: Standard.Managed,
+    extensions: [manager(delegateSigner.publicKey, DelegateRole.Transfer)],
+  }).sendAndConfirm(umi);
+
+  // the owner is correct.
+  let asset = await fetchAsset(umi, assetSigner.publicKey);
+  t.true(asset.owner === ownerSigner.publicKey);
+
+  // When we transfer the asset as the delegate.
+  await transfer(umi, {
+    asset: assetSigner.publicKey,
+    signer: delegateSigner,
+    recipient,
+  }).sendAndConfirm(umi);
+
+  // Then the asset was transferred.
+  asset = await fetchAsset(umi, assetSigner.publicKey);
+  t.true(asset.owner === recipient);
+});
+
+test('it cannot transfer an asset with the wrong manager delegate', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const assetSigner = generateSigner(umi);
+  const ownerSigner = generateSigner(umi);
+  const delegateSigner = generateSigner(umi);
+  const recipient = generateSigner(umi).publicKey;
+
+  // When we create a new subscription asset.
+  await mint(umi, {
+    asset: assetSigner,
+    owner: ownerSigner.publicKey,
+    payer: umi.identity,
+    name: 'Managed Asset',
+    standard: Standard.Managed,
+    extensions: [manager(delegateSigner.publicKey, DelegateRole.Transfer)],
+  }).sendAndConfirm(umi);
+
+  // the owner is correct.
+  let asset = await fetchAsset(umi, assetSigner.publicKey);
+  t.true(asset.owner === ownerSigner.publicKey);
+
+  // When we try to transfer the asset with the wrong delegate.
+  const promise = transfer(umi, {
+    asset: assetSigner.publicKey,
+    signer: umi.identity,
+    recipient,
+  }).sendAndConfirm(umi);
+
+  // Then we expect an error.
+  await t.throwsAsync(promise, {
+    message: /Invalid owner or transfer delegate/,
   });
 });

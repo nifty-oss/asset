@@ -6,23 +6,28 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { PublicKey } from '@metaplex-foundation/umi';
+import { Serializer, struct } from '@metaplex-foundation/umi/serializers';
 import {
-  Serializer,
-  publicKey as publicKeySerializer,
-  struct,
-  u8,
-} from '@metaplex-foundation/umi/serializers';
+  DelegateRoles,
+  DelegateRolesArgs,
+  NullablePublicKey,
+  NullablePublicKeyArgs,
+  getDelegateRolesSerializer,
+  getNullablePublicKeySerializer,
+} from '../../hooked';
 
-export type Delegate = { address: PublicKey; roles: number };
+export type Delegate = { address: NullablePublicKey; roles: DelegateRoles };
 
-export type DelegateArgs = Delegate;
+export type DelegateArgs = {
+  address: NullablePublicKeyArgs;
+  roles: DelegateRolesArgs;
+};
 
 export function getDelegateSerializer(): Serializer<DelegateArgs, Delegate> {
   return struct<Delegate>(
     [
-      ['address', publicKeySerializer()],
-      ['roles', u8()],
+      ['address', getNullablePublicKeySerializer()],
+      ['roles', getDelegateRolesSerializer()],
     ],
     { description: 'Delegate' }
   ) as Serializer<DelegateArgs, Delegate>;

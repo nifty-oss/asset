@@ -22,11 +22,7 @@ pub fn handle_burn(args: BurnArgs) -> Result<()> {
         asset,
         signer,
         recipient: args.recipient,
-        group: if asset_account.group == Pubkey::default() {
-            None
-        } else {
-            Some(asset_account.group)
-        },
+        group: asset_account.group.to_option(),
     }
     .instruction();
 

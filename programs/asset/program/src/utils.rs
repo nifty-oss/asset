@@ -1,4 +1,4 @@
-use nifty_asset_types::state::{Asset, DelegateRole};
+use nifty_asset_types::state::{Delegate, DelegateRole};
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, pubkey::Pubkey, system_program,
 };
@@ -24,24 +24,36 @@ pub fn close_program_account<'a>(
     Ok(())
 }
 
+#[allow(clippy::manual_try_fold)]
 #[inline(always)]
-pub fn assert_delegate(asset: &Asset, target: &Pubkey, role: DelegateRole) -> ProgramResult {
-    let delegate = asset.delegate.value().ok_or(AssetError::DelegateNotFound)?;
+pub fn assert_delegate(
+    delegates: &[Option<&Delegate>],
+    target: &Pubkey,
+    role: DelegateRole,
+) -> ProgramResult {
+    delegates.iter().fold(
+        Err(AssetError::DelegateNotFound.into()),
+        |result, delegate| {
+            if let Some(delegate) = delegate {
+                require!(
+                    delegate.is_active(role),
+                    AssetError::DelegateRoleNotActive,
+                    "missing \"{:?}\" role",
+                    role
+                );
 
-    require!(
-        delegate.is_active(role),
-        AssetError::DelegateRoleNotActive,
-        "missing \"{:?}\" role",
-        role
-    );
+                require!(
+                    *delegate.address == *target,
+                    AssetError::InvalidDelegate,
+                    "invalid delegate"
+                );
 
-    require!(
-        *delegate.address == *target,
-        AssetError::InvalidDelegate,
-        "invalid delegate"
-    );
-
-    Ok(())
+                Ok(())
+            } else {
+                result
+            }
+        },
+    )
 }
 
 #[macro_export]

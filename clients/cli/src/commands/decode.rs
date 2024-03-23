@@ -1,5 +1,5 @@
 use nifty_asset::{
-    extensions::{Blob, Links, Royalties},
+    extensions::{Blob, Links, Manager, Royalties},
     JsonCreator,
 };
 use nifty_asset_types::{
@@ -8,7 +8,6 @@ use nifty_asset_types::{
     },
     extensions::{Attributes, Extension, ExtensionData, ExtensionType, Grouping, Metadata},
     podded::ZeroCopy,
-    state::Delegate,
 };
 use serde_json::{json, Value};
 
@@ -60,10 +59,7 @@ pub fn handle_decode(args: DecodeArgs) -> Result<()> {
             }
             "delegate" => {
                 println!("delegate address: {:?}", asset.delegate.address);
-                println!(
-                    "delegate roles: {:?}",
-                    Delegate::decode_roles(asset.delegate.roles)
-                );
+                println!("delegate roles: {:?}", asset.delegate.roles.to_vec());
             }
             "name" => {
                 println!("name: {:?}", asset.name);
@@ -136,6 +132,11 @@ pub fn handle_decode(args: DecodeArgs) -> Result<()> {
 
                 let constraints = handle_constraints(&constraint, index, extension_data);
                 println!("Constraints: {constraints:#?}");
+            }
+            ExtensionType::Manager => {
+                let manager: Manager = Manager::from_bytes(extension_data);
+                let delegate = manager.delegate;
+                println!("authority: {delegate:#?}");
             }
             ExtensionType::None => {
                 println!("None");

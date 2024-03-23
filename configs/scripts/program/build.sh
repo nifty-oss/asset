@@ -32,6 +32,10 @@ WORKING_DIR=$(pwd)
 export SBF_OUT_DIR="${WORKING_DIR}/${OUTPUT}"
 
 for p in ${PROGRAMS[@]}; do
-    cd ${WORKING_DIR}/programs/${p}
+    PROGRAM_DIR=${p}
+    if [ "${p}" == "asset" ]; then
+        PROGRAM_DIR="asset/program"
+    fi
+    cd ${WORKING_DIR}/programs/${PROGRAM_DIR}
     cargo build-sbf --sbf-out-dir ${WORKING_DIR}/${OUTPUT} $ARGS
 done

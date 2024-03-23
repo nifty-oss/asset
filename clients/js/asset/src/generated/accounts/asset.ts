@@ -24,7 +24,12 @@ import {
   publicKey as publicKeySerializer,
   string,
 } from '@metaplex-foundation/umi/serializers';
-import { AssetAccountData, getAssetAccountDataSerializer } from '../../hooked';
+import {
+  AssetAccountData,
+  NullablePublicKeyArgs,
+  getAssetAccountDataSerializer,
+  getNullablePublicKeySerializer,
+} from '../../hooked';
 import {
   DelegateArgs,
   Discriminator,
@@ -109,7 +114,7 @@ export function getAssetGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
       standard: StandardArgs;
       mutable: boolean;
       owner: PublicKey;
-      group: PublicKey;
+      group: NullablePublicKeyArgs;
       authority: PublicKey;
       delegate: DelegateArgs;
       name: string;
@@ -119,10 +124,10 @@ export function getAssetGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
       standard: [2, getStandardSerializer()],
       mutable: [3, bool()],
       owner: [4, publicKeySerializer()],
-      group: [36, publicKeySerializer()],
-      authority: [68, publicKeySerializer()],
-      delegate: [100, getDelegateSerializer()],
-      name: [133, string({ size: 35 })],
+      group: [36, getNullablePublicKeySerializer()],
+      authority: [null, publicKeySerializer()],
+      delegate: [null, getDelegateSerializer()],
+      name: [null, string({ size: 35 })],
     })
     .deserializeUsing<Asset>((account) => deserializeAsset(account))
     .whereField('discriminator', Discriminator.Asset);

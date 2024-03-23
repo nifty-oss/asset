@@ -1,6 +1,6 @@
 use nifty_asset_types::{
     constraints::{Assertion, Context as ConstraintContext},
-    extensions::Royalties,
+    extensions::{Extension, Manager, Royalties},
     podded::{
         pod::{Nullable, PodOption},
         ZeroCopy,
@@ -50,7 +50,8 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
     // First we check if the asset itself has the royalties extension, and validate the constraint.
     let royalties_checked = process_royalties!(ctx, &data);
 
-    let asset = Asset::load_mut(&mut data);
+    let (asset, extensions) = data.split_at_mut(Asset::LEN);
+    let asset = Asset::load_mut(asset);
 
     // Cannot transfer soulbound assets.
     require!(
@@ -61,8 +62,15 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
 
     let is_owner = asset.owner == *ctx.accounts.signer.key;
 
-    let is_delegate =
-        assert_delegate(asset, ctx.accounts.signer.key, DelegateRole::Transfer).is_ok();
+    let is_delegate = assert_delegate(
+        &[
+            asset.delegate.value(),
+            Extension::get::<Manager>(extensions).map(|s| s.delegate),
+        ],
+        ctx.accounts.signer.key,
+        DelegateRole::Transfer,
+    )
+    .is_ok();
 
     // Signing account must be owner or a transfer delegate.
     require!(

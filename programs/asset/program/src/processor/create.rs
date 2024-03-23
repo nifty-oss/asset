@@ -1,6 +1,7 @@
 use nifty_asset_types::{
+    extensions::ExtensionType,
     podded::ZeroCopy,
-    state::{Asset, Discriminator},
+    state::{Asset, Discriminator, Standard},
 };
 use solana_program::{
     entrypoint::ProgramResult, msg, program::invoke, program_error::ProgramError, pubkey::Pubkey,
@@ -105,6 +106,20 @@ pub fn process_create(
     asset.name = args.name.into();
 
     let extensions = Asset::get_extensions(&data);
+    let has_manager = extensions
+        .iter()
+        .any(|extension| extension == &ExtensionType::Manager);
+
+    // make sure that a managed asset is created with the manager
+    // extension; and vice versa, a non-subscription asset is created
+    // without the manager extension
+    require!(
+        matches!(args.standard, Standard::Managed) == has_manager,
+        AssetError::ExtensionDataInvalid,
+        "{:?} asset + manager extension ({})",
+        args.standard,
+        has_manager
+    );
 
     if !extensions.is_empty() {
         msg!("Asset created with {:?} extension(s)", extensions);

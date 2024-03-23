@@ -50,11 +50,11 @@ pub enum Standard {
     #[default]
     NonFungible,
 
-    /// A unique asset representing a subscription.
+    /// A unique managed asset.
     ///
-    /// Holding this asset grants the owner access to a service, but does not
-    /// grant permanent ownership rights.
-    Subscription,
+    /// Managed assets have an additional delegate that can control the asset. Holding
+    /// a managed asset does not grant permanent ownership rights.
+    Managed,
 
     /// A unique non-transferable asset.
     Soulbound,
@@ -64,7 +64,7 @@ impl From<u8> for Standard {
     fn from(value: u8) -> Self {
         match value {
             0 => Standard::NonFungible,
-            1 => Standard::Subscription,
+            1 => Standard::Managed,
             2 => Standard::Soulbound,
             _ => panic!("invalid standard value: {value}"),
         }
@@ -75,7 +75,7 @@ impl From<Standard> for u8 {
     fn from(value: Standard) -> Self {
         match value {
             Standard::NonFungible => 0,
-            Standard::Subscription => 1,
+            Standard::Managed => 1,
             Standard::Soulbound => 2,
         }
     }
