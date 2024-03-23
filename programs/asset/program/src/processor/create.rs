@@ -111,7 +111,7 @@ pub fn process_create(
         .any(|extension| extension == &ExtensionType::Manager);
 
     // make sure that a managed asset is created with the manager
-    // extension; and vice versa, a non-subscription asset is created
+    // extension; and vice versa, a non-managed asset is created
     // without the manager extension
     require!(
         matches!(args.standard, Standard::Managed) == has_manager,

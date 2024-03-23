@@ -296,7 +296,7 @@ test('it can transfer an asset as a manager delegate', async (t) => {
   const delegateSigner = generateSigner(umi);
   const recipient = generateSigner(umi).publicKey;
 
-  // When we create a new subscription asset.
+  // When we create a new managed asset.
   await mint(umi, {
     asset: assetSigner,
     owner: ownerSigner.publicKey,
@@ -330,7 +330,7 @@ test('it cannot transfer an asset with the wrong manager delegate', async (t) =>
   const delegateSigner = generateSigner(umi);
   const recipient = generateSigner(umi).publicKey;
 
-  // When we create a new subscription asset.
+  // When we create a new managed asset.
   await mint(umi, {
     asset: assetSigner,
     owner: ownerSigner.publicKey,

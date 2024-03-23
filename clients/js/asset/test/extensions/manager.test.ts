@@ -20,7 +20,7 @@ test('it can create a new managed asset', async (t) => {
   const asset = generateSigner(umi);
   const owner = generateSigner(umi);
 
-  // And we initialize an asset with a subscription extension.
+  // And we initialize an asset with a managed extension.
   await initialize(umi, {
     asset,
     payer: umi.identity,
@@ -63,7 +63,7 @@ test('it can create a new managed asset with multiple delegate roles', async (t)
   const asset = generateSigner(umi);
   const owner = generateSigner(umi);
 
-  // And we initialize an asset with a subscription extension.
+  // And we initialize an asset with a managed extension.
   await initialize(umi, {
     asset,
     payer: umi.identity,
@@ -109,7 +109,7 @@ test('it cannot create a new managed asset without the manager extension', async
   const asset = generateSigner(umi);
   const owner = generateSigner(umi);
 
-  // When we create try to create a subscription asset without the extension.
+  // When we create try to create a managed asset without the extension.
   const promise = create(umi, {
     asset,
     owner: owner.publicKey,
@@ -122,13 +122,13 @@ test('it cannot create a new managed asset without the manager extension', async
   await t.throwsAsync(promise, { message: /Extension data invalid/ });
 });
 
-test('it cannot create a non-subscription asset with the manager extension', async (t) => {
+test('it cannot create a non-managed asset with the manager extension', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
   const owner = generateSigner(umi);
 
-  // And we initialize an asset with a subscription extension.
+  // And we initialize an asset with a managed extension.
   await initialize(umi, {
     asset,
     payer: umi.identity,
@@ -137,7 +137,7 @@ test('it cannot create a non-subscription asset with the manager extension', asy
 
   t.true(await umi.rpc.accountExists(asset.publicKey), 'asset exists');
 
-  // When we create try to create a subscription asset without the extension.
+  // When we create try to create a managed asset without the extension.
   const promise = create(umi, {
     asset,
     owner: owner.publicKey,

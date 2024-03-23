@@ -105,10 +105,10 @@ mod tests {
         // default delegate address
         let mut builder = ManagerBuilder::default();
         builder.set(&Delegate::default());
-        let subscription = Manager::from_bytes(&builder);
+        let manager = Manager::from_bytes(&builder);
 
-        assert!(subscription.delegate.is_none());
-        assert_eq!(subscription.delegate.address, Delegate::default().address);
+        assert!(manager.delegate.is_none());
+        assert_eq!(manager.delegate.address, Delegate::default().address);
 
         // "custom" delegate address
         let mut builder = ManagerBuilder::default();
@@ -116,13 +116,10 @@ mod tests {
             address: NullablePubkey::new(sysvar::ID),
             roles: Delegate::ALL_ROLES_MASK,
         });
-        let subscription = Manager::from_bytes(&builder);
+        let manager = Manager::from_bytes(&builder);
 
-        assert!(subscription.delegate.is_some());
-        assert_eq!(subscription.delegate.roles, Delegate::ALL_ROLES_MASK);
-        assert_eq!(
-            subscription.delegate.address,
-            NullablePubkey::new(sysvar::ID)
-        );
+        assert!(manager.delegate.is_some());
+        assert_eq!(manager.delegate.roles, Delegate::ALL_ROLES_MASK);
+        assert_eq!(manager.delegate.address, NullablePubkey::new(sysvar::ID));
     }
 }
