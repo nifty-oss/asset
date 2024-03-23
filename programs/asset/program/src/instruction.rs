@@ -12,7 +12,7 @@ pub enum Instruction {
     /// 
     /// You can only close the buffer account if it has not been used to create an asset.
     #[account(0, signer, writable, name="buffer", desc = "The unitialized buffer account")]
-    #[account(1, writable, name="destination", desc = "The account receiving refunded rent")]
+    #[account(1, writable, name="recipient", desc = "The account receiving refunded rent")]
     Close,
 
     /// Burns an asset.
@@ -45,7 +45,7 @@ pub enum Instruction {
 
     /// Locks an asset.
     #[account(0, writable, name="asset", desc = "Asset account")]
-    #[account(1, signer, name="authority", desc = "Delegate or owner account")]
+    #[account(1, signer, name="signer", desc = "Delegate or owner account")]
     Lock,
 
     /// Revokes a delegate.
@@ -62,7 +62,7 @@ pub enum Instruction {
 
     /// Unlocks an asset.
     #[account(0, writable, name="asset", desc = "Asset account")]
-    #[account(1, signer, name="authority", desc = "Delegate or owner account")]
+    #[account(1, signer, name="signer", desc = "Delegate or owner account")]
     Unlock,
 
     /// Unverifies a creator.

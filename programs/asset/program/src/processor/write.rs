@@ -18,6 +18,13 @@ use crate::{
     require,
 };
 
+/// Writes data to an extension.
+///
+/// ### Accounts:
+///
+///   0. `[writable, signer]` asset
+///   1. `[writable, signer]` payer
+///   2. `[optional]` system_program
 pub(crate) fn process_write(
     program_id: &Pubkey,
     ctx: Context<WriteAccounts>,
@@ -79,7 +86,9 @@ pub(crate) fn process_write(
     drop(asset_data);
 
     let offset = if data.overwrite {
+        #[cfg(feature = "logging")]
         msg!("Overwriting extension data");
+
         resize(
             offset.saturating_add(data.bytes.len()),
             ctx.accounts.asset,
@@ -89,7 +98,9 @@ pub(crate) fn process_write(
         // when overwriting, we start from the beginning of the offset
         offset
     } else {
+        #[cfg(feature = "logging")]
         msg!("Appending extension data");
+
         let offset = ctx.accounts.asset.data_len();
         let mut extended = offset.saturating_add(data.bytes.len());
 

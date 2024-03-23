@@ -13,13 +13,19 @@ use crate::{
     utils::assert_delegate,
 };
 
+/// Locks an asset.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[signer]` signer
 pub fn process_lock(program_id: &Pubkey, ctx: Context<LockAccounts>) -> ProgramResult {
     // account validation
 
     require!(
-        ctx.accounts.authority.is_signer,
+        ctx.accounts.signer.is_signer,
         ProgramError::MissingRequiredSignature,
-        "authority"
+        "signer"
     );
 
     require!(
@@ -38,8 +44,8 @@ pub fn process_lock(program_id: &Pubkey, ctx: Context<LockAccounts>) -> ProgramR
 
     // locks the asset
     //
-    // if the asset has a delegate, the authority must be the delegate;
-    // otherwise, the authority must be the owner
+    // if the asset has a delegate, the signer must be the delegate;
+    // otherwise, the signer must be the owner
 
     let (asset, extensions) = data.split_at_mut(Asset::LEN);
     let asset = Asset::load_mut(asset);
@@ -50,11 +56,11 @@ pub fn process_lock(program_id: &Pubkey, ctx: Context<LockAccounts>) -> ProgramR
                 asset.delegate.value(),
                 Extension::get::<Manager>(extensions).map(|s| s.delegate),
             ],
-            ctx.accounts.authority.key,
+            ctx.accounts.signer.key,
             DelegateRole::Lock,
         )?;
-    } else if asset.owner != *ctx.accounts.authority.key {
-        return err!(AssetError::InvalidAuthority);
+    } else if asset.owner != *ctx.accounts.signer.key {
+        return err!(AssetError::InvalidAssetOwner);
     }
 
     asset.state = State::Locked;

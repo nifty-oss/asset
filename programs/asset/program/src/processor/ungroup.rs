@@ -12,6 +12,13 @@ use crate::{
     require,
 };
 
+/// Removes an asset from a group.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[writable]` group
+///   2. `[signer]` authority
 pub fn process_ungroup(program_id: &Pubkey, ctx: Context<UngroupAccounts>) -> ProgramResult {
     // account validation
 

@@ -17,6 +17,16 @@ use crate::{
     require,
 };
 
+/// Creates a new asset.
+///
+/// ### Accounts:
+///
+///   0. `[writable, signer]` asset
+///   1. `[signer]` authority
+///   2. `[]` owner
+///   3. `[writable, optional]` group
+///   4. `[writable, signer, optional]` payer
+///   5. `[optional]` system_program
 pub fn process_create(
     program_id: &Pubkey,
     ctx: Context<CreateAccounts>,

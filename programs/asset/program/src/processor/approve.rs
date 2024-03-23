@@ -13,6 +13,13 @@ use crate::{
     require,
 };
 
+/// Approves a delegate to manage an asset.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[signer]` owner
+///   2. `[]` delegate
 pub fn process_approve(
     program_id: &Pubkey,
     ctx: Context<ApproveAccounts>,

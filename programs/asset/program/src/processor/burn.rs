@@ -14,6 +14,14 @@ use crate::{
     utils::{assert_delegate, close_program_account},
 };
 
+/// Burns an asset.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[writable, signer]` signer
+///   2. `[writable, optional]` recipient
+///   3. `[writable, optional]` group
 pub fn process_burn(program_id: &Pubkey, ctx: Context<BurnAccounts>) -> ProgramResult {
     require!(
         ctx.accounts.asset.owner == program_id,
@@ -40,19 +48,19 @@ pub fn process_burn(program_id: &Pubkey, ctx: Context<BurnAccounts>) -> ProgramR
     let asset = Asset::load(asset);
 
     // Validate the signer is the owner or the burn delegate.
-    let is_owner = asset.owner == *ctx.accounts.signer.key;
-    let is_delegate = assert_delegate(
-        &[
-            asset.delegate.value(),
-            Asset::get::<Manager>(extensions).map(|s| s.delegate),
-        ],
-        ctx.accounts.signer.key,
-        DelegateRole::Burn,
-    )
-    .is_ok();
+    let is_allowed = asset.owner == *ctx.accounts.signer.key
+        || assert_delegate(
+            &[
+                asset.delegate.value(),
+                Asset::get::<Manager>(extensions).map(|s| s.delegate),
+            ],
+            ctx.accounts.signer.key,
+            DelegateRole::Burn,
+        )
+        .is_ok();
 
     require!(
-        is_owner || is_delegate,
+        is_allowed,
         AssetError::InvalidBurnAuthority,
         "not an owner or burn delegate"
     );
@@ -84,14 +92,16 @@ pub fn process_burn(program_id: &Pubkey, ctx: Context<BurnAccounts>) -> ProgramR
                 "Missing required [Grouping] extension"
             );
         };
-        // decrease the group size
-        *grouping.size -= 1;
+        // (safely) decrease the group size
+        *grouping.size = grouping
+            .size
+            .checked_sub(1)
+            .ok_or(ProgramError::InvalidAccountData)?;
     }
 
-    let recipient = ctx.accounts.recipient.unwrap_or(ctx.accounts.signer);
-
-    // Free up asset account reference.
+    // drop asset account reference
     drop(data);
 
+    let recipient = ctx.accounts.recipient.unwrap_or(ctx.accounts.signer);
     close_program_account(ctx.accounts.asset, recipient)
 }

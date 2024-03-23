@@ -12,6 +12,13 @@ use crate::{
     require,
 };
 
+/// Adds an asset to a group.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[writable]` group
+///   2. `[signer]` authority
 pub fn process_group(program_id: &Pubkey, ctx: Context<GroupAccounts>) -> ProgramResult {
     // account validation
 
