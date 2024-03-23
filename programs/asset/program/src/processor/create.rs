@@ -106,19 +106,19 @@ pub fn process_create(
     asset.name = args.name.into();
 
     let extensions = Asset::get_extensions(&data);
-    let has_subscription = extensions
+    let has_manager = extensions
         .iter()
-        .any(|extension| extension == &ExtensionType::Subscription);
+        .any(|extension| extension == &ExtensionType::Manager);
 
-    // make sure that a subscription asset is created with the subscription
-    // extension; and vice versa, a non-subscription asset is created without
-    // the subscription extension.
+    // make sure that a managed asset is created with the manager
+    // extension; and vice versa, a non-subscription asset is created
+    // without the manager extension
     require!(
-        matches!(args.standard, Standard::Subscription) == has_subscription,
+        matches!(args.standard, Standard::Managed) == has_manager,
         AssetError::ExtensionDataInvalid,
-        "{:?} asset + subscription extension ({})",
+        "{:?} asset + manager extension ({})",
         args.standard,
-        has_subscription
+        has_manager
     );
 
     if !extensions.is_empty() {

@@ -10,7 +10,7 @@ import { Serializer, scalarEnum } from '@metaplex-foundation/umi/serializers';
 
 export enum Standard {
   NonFungible,
-  Subscription,
+  Managed,
   Soulbound,
 }
 

@@ -19,5 +19,5 @@ pub enum ExtensionType {
     Metadata,
     Grouping,
     Royalties,
-    Subscription,
+    Manager,
 }

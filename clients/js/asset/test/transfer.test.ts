@@ -9,7 +9,7 @@ import {
   delegateInput,
   fetchAsset,
   mint,
-  subscription,
+  manager,
   transfer,
 } from '../src';
 import { createUmi } from './_setup';
@@ -288,7 +288,7 @@ test('it cannot transfer a soulbound asset', async (t) => {
   });
 });
 
-test('it can transfer an asset as a subscription delegate', async (t) => {
+test('it can transfer an asset as a manager delegate', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetSigner = generateSigner(umi);
@@ -301,9 +301,9 @@ test('it can transfer an asset as a subscription delegate', async (t) => {
     asset: assetSigner,
     owner: ownerSigner.publicKey,
     payer: umi.identity,
-    name: 'Subscription Asset',
-    standard: Standard.Subscription,
-    extensions: [subscription(delegateSigner.publicKey, DelegateRole.Transfer)],
+    name: 'Managed Asset',
+    standard: Standard.Managed,
+    extensions: [manager(delegateSigner.publicKey, DelegateRole.Transfer)],
   }).sendAndConfirm(umi);
 
   // the owner is correct.
@@ -322,7 +322,7 @@ test('it can transfer an asset as a subscription delegate', async (t) => {
   t.true(asset.owner === recipient);
 });
 
-test('it cannot transfer an asset with the wrong subscription delegate', async (t) => {
+test('it cannot transfer an asset with the wrong manager delegate', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const assetSigner = generateSigner(umi);
@@ -335,9 +335,9 @@ test('it cannot transfer an asset with the wrong subscription delegate', async (
     asset: assetSigner,
     owner: ownerSigner.publicKey,
     payer: umi.identity,
-    name: 'Subscription Asset',
-    standard: Standard.Subscription,
-    extensions: [subscription(delegateSigner.publicKey, DelegateRole.Transfer)],
+    name: 'Managed Asset',
+    standard: Standard.Managed,
+    extensions: [manager(delegateSigner.publicKey, DelegateRole.Transfer)],
   }).sendAndConfirm(umi);
 
   // the owner is correct.

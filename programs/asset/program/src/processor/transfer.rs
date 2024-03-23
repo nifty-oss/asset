@@ -1,6 +1,6 @@
 use nifty_asset_types::{
     constraints::{Assertion, Context as ConstraintContext},
-    extensions::{Extension, Royalties, Subscription},
+    extensions::{Extension, Manager, Royalties},
     podded::{
         pod::{Nullable, PodOption},
         ZeroCopy,
@@ -65,7 +65,7 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
     let is_delegate = assert_delegate(
         &[
             asset.delegate.value(),
-            Extension::get::<Subscription>(extensions).map(|s| s.delegate),
+            Extension::get::<Manager>(extensions).map(|s| s.delegate),
         ],
         ctx.accounts.signer.key,
         DelegateRole::Transfer,

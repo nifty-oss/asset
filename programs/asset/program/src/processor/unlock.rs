@@ -1,5 +1,5 @@
 use nifty_asset_types::{
-    extensions::{Extension, Subscription},
+    extensions::{Extension, Manager},
     podded::ZeroCopy,
     state::{Asset, DelegateRole, Discriminator, State},
 };
@@ -45,7 +45,7 @@ pub fn process_unlock(program_id: &Pubkey, ctx: Context<UnlockAccounts>) -> Prog
         assert_delegate(
             &[
                 asset.delegate.value(),
-                Extension::get::<Subscription>(extensions).map(|s| s.delegate),
+                Extension::get::<Manager>(extensions).map(|s| s.delegate),
             ],
             ctx.accounts.authority.key,
             DelegateRole::Lock,
