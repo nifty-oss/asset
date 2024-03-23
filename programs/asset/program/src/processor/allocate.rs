@@ -127,6 +127,7 @@ pub fn process_allocate(
     // initialize the extension
 
     let (length, data): (u32, &[u8]) = if let Some(data) = &args.extension.data {
+        #[cfg(feature = "logging")]
         if args.extension.length as usize == data.len() {
             msg!(
                 "Initializing extension [{:?}] with instruction data",

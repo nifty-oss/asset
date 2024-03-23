@@ -1,4 +1,5 @@
 use nifty_asset_types::{
+    extensions::{Extension, Subscription},
     podded::ZeroCopy,
     state::{Asset, DelegateRole, Discriminator, State},
 };
@@ -40,10 +41,18 @@ pub fn process_lock(program_id: &Pubkey, ctx: Context<LockAccounts>) -> ProgramR
     // if the asset has a delegate, the authority must be the delegate;
     // otherwise, the authority must be the owner
 
-    let asset = Asset::load_mut(&mut data);
+    let (asset, extensions) = data.split_at_mut(Asset::LEN);
+    let asset = Asset::load_mut(asset);
 
     if asset.delegate.value().is_some() {
-        assert_delegate(asset, ctx.accounts.authority.key, DelegateRole::Lock)?;
+        assert_delegate(
+            &[
+                asset.delegate.value(),
+                Extension::get::<Subscription>(extensions).map(|s| s.delegate),
+            ],
+            ctx.accounts.authority.key,
+            DelegateRole::Lock,
+        )?;
     } else if asset.owner != *ctx.accounts.authority.key {
         return err!(AssetError::InvalidAuthority);
     }

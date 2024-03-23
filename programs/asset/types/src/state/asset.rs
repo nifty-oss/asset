@@ -81,11 +81,10 @@ impl Asset {
         while cursor < data.len() {
             let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
 
-            if extension.extension_type() == extension_type {
-                return true;
+            match extension.try_extension_type() {
+                Ok(t) if t == extension_type => return true,
+                _ => cursor = extension.boundary() as usize,
             }
-
-            cursor = extension.boundary() as usize;
         }
 
         false
@@ -101,13 +100,14 @@ impl Asset {
         while cursor < data.len() {
             let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
 
-            if extension.extension_type() == T::TYPE {
-                let start = cursor + Extension::LEN;
-                let end = start + extension.length() as usize;
-                return Some(T::from_bytes(&data[start..end]));
+            match extension.try_extension_type() {
+                Ok(t) if t == T::TYPE => {
+                    let start = cursor + Extension::LEN;
+                    let end = start + extension.length() as usize;
+                    return Some(T::from_bytes(&data[start..end]));
+                }
+                _ => cursor = extension.boundary() as usize,
             }
-
-            cursor = extension.boundary() as usize;
         }
 
         None
@@ -123,29 +123,38 @@ impl Asset {
         while cursor < data.len() {
             let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
 
-            if extension.extension_type() == T::TYPE {
-                let start = cursor + Extension::LEN;
-                let end = start + extension.length() as usize;
-                return Some(T::from_bytes_mut(&mut data[start..end]));
+            match extension.try_extension_type() {
+                Ok(t) if t == T::TYPE => {
+                    let start = cursor + Extension::LEN;
+                    let end = start + extension.length() as usize;
+                    return Some(T::from_bytes_mut(&mut data[start..end]));
+                }
+                _ => cursor = extension.boundary() as usize,
             }
-
-            cursor = extension.boundary() as usize;
         }
 
         None
     }
 
-    /// Returns the extensions of the account.
+    /// Returns the extensions on the account data.
     ///
-    /// This function will return a list of `ExtensionType` that are present
-    /// on the account.
+    /// This function will return a list of `ExtensionType`s that are present
+    /// on the account data.
+    ///
+    /// The account data might have extensions that are not recognized if an older
+    /// version of the library is used. In this case, this method will only return
+    /// the list of recognized extensions.
     pub fn get_extensions(data: &[u8]) -> Vec<ExtensionType> {
         let mut cursor = Asset::LEN;
         let mut extensions = Vec::new();
 
         while cursor < data.len() {
             let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
-            extensions.push(extension.extension_type());
+
+            if let Ok(t) = extension.try_extension_type() {
+                extensions.push(t);
+            }
+
             cursor = extension.boundary() as usize;
         }
 
@@ -189,7 +198,7 @@ impl Asset {
     /// Returns the extension given its type.
     ///
     /// This function will return a tuple containing the extension type and the
-    /// offset of the extension data. If the account does not contain any extension,
+    /// slice of the extension data. If the account does not contain any extension,
     /// `None` is returned.
     pub fn get_extension(
         extension_type: ExtensionType,
@@ -200,11 +209,10 @@ impl Asset {
         while cursor < data.len() {
             let extension = Extension::load(&data[cursor..]);
 
-            if extension.extension_type() == extension_type {
-                return Some((extension, cursor + Extension::LEN));
+            match extension.try_extension_type() {
+                Ok(t) if t == extension_type => return Some((extension, cursor + Extension::LEN)),
+                _ => cursor = extension.boundary() as usize,
             }
-
-            cursor = extension.boundary() as usize;
         }
 
         None

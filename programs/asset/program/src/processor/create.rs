@@ -1,6 +1,7 @@
 use nifty_asset_types::{
+    extensions::ExtensionType,
     podded::ZeroCopy,
-    state::{Asset, Discriminator},
+    state::{Asset, Discriminator, Standard},
 };
 use solana_program::{
     entrypoint::ProgramResult, msg, program::invoke, program_error::ProgramError, pubkey::Pubkey,
@@ -105,6 +106,20 @@ pub fn process_create(
     asset.name = args.name.into();
 
     let extensions = Asset::get_extensions(&data);
+    let has_subscription = extensions
+        .iter()
+        .any(|extension| extension == &ExtensionType::Subscription);
+
+    // make sure that a subscription asset is created with the subscription
+    // extension; and vice versa, a non-subscription asset is created without
+    // the subscription extension.
+    require!(
+        matches!(args.standard, Standard::Subscription) == has_subscription,
+        AssetError::ExtensionDataInvalid,
+        "{:?} asset + subscription extension ({})",
+        args.standard,
+        has_subscription
+    );
 
     if !extensions.is_empty() {
         msg!("Asset created with {:?} extension(s)", extensions);

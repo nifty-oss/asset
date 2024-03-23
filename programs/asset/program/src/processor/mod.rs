@@ -176,6 +176,7 @@ fn resize<'a>(
         let delta = required.saturating_sub(account.lamports());
 
         if delta > 0 {
+            #[cfg(feature = "logging")]
             msg!("Funding {} lamports for account resize", delta);
 
             let payer = payer.ok_or_else(|| {
@@ -207,6 +208,7 @@ fn resize<'a>(
         }
     }
 
+    #[cfg(feature = "logging")]
     msg!(
         "Resizing account from {} to {} bytes",
         account.data_len(),

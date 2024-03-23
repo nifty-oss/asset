@@ -23,4 +23,5 @@ export * from './links';
 export * from './metadata';
 export * from './standard';
 export * from './state';
+export * from './subscription';
 export * from './trait';

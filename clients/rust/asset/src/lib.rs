@@ -1,9 +1,11 @@
 mod generated;
+mod hooked;
 mod impls;
 mod mint;
 
 pub use generated::programs::ASSET_ID as ID;
 pub use generated::*;
+pub use hooked::*;
 pub use mint::*;
 
 // Re-export nifty_asset_types for convenience
