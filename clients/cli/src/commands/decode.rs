@@ -1,5 +1,5 @@
 use nifty_asset::{
-    extensions::{Blob, Links, Royalties, Subscription},
+    extensions::{Blob, Creator, Links, Royalties, Subscription},
     JsonCreator,
 };
 use nifty_asset_types::{
@@ -102,7 +102,7 @@ pub fn handle_decode(args: DecodeArgs) -> Result<()> {
             }
             ExtensionType::Creators => {
                 let creators: Vec<JsonCreator> = extension_data
-                    .chunks(40)
+                    .chunks(std::mem::size_of::<Creator>())
                     .map(JsonCreator::from_data)
                     .collect();
                 println!("{creators:#?}");
