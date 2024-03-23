@@ -71,8 +71,11 @@ impl<'a, 'b> AllocateCpiAccounts<'a, 'b> {
 ///
 ///   1. You can provide the data directly as a byte slice;
 ///   2. You can provide the length of the data and the instruction data will have the
-///     correct capacity. This is useful when you want to write the data (bytes) iteratively
-///     without having to allocate a new `Vec` for it.
+///      correct capacity. This is useful when you want to write the data (bytes) iteratively
+///      without having to allocate a new `Vec` for it. The length of the data can be updated
+///      later using the `update_data_length!` macro.
+///
+/// The macro will return a `Vec<u8>` containing the instruction data.
 ///
 /// # Arguments
 ///
@@ -81,7 +84,7 @@ impl<'a, 'b> AllocateCpiAccounts<'a, 'b> {
 /// 3. `data` - (optional) the extension data as a byte slice.
 #[macro_export]
 macro_rules! allocate_instruction_data {
-    ( $extension_type:expr, $length:expr, $data:tt ) => {{
+    ( $extension_type:expr, $length:expr, $data:expr ) => {{
         let discriminator: u8 = 4;
 
         let mut size = std::mem::size_of::<u8>() // discriminator
@@ -120,5 +123,21 @@ macro_rules! allocate_instruction_data {
         instruction_data.extend_from_slice(&u32::to_le_bytes($length as u32));
 
         instruction_data
+    }};
+}
+
+/// Updates the length of the extension data in the `Allocate` instruction data.
+#[macro_export]
+macro_rules! allocate_update_data_length {
+    ( $length:expr, $data:expr ) => {{
+        let length_index = std::mem::size_of::<u8>() // discriminator
+            + std::mem::size_of::<u8>();             // extension type
+
+        let data_length_index = length_index
+            + std::mem::size_of::<u32>()             // length
+            + std::mem::size_of::<u8>();             // option
+
+        $data[length_index..length_index + std::mem::size_of::<u32>()].copy_from_slice(&u32::to_le_bytes($length as u32));
+        $data[data_length_index..data_length_index + std::mem::size_of::<u32>()].copy_from_slice(&u32::to_le_bytes($length as u32));
     }};
 }
