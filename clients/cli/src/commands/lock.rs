@@ -6,7 +6,7 @@ pub struct LockArgs {
     pub keypair_path: Option<PathBuf>,
     pub rpc_url: Option<String>,
     pub asset: Pubkey,
-    pub authority_keypair_path: Option<PathBuf>,
+    pub signer_keypair_path: Option<PathBuf>,
 }
 
 pub fn handle_lock(args: LockArgs) -> Result<()> {
@@ -14,20 +14,20 @@ pub fn handle_lock(args: LockArgs) -> Result<()> {
 
     let payer_sk = Keypair::from_bytes(&config.keypair.to_bytes())?;
 
-    // Use provided authority keypair, or default to the signer.
-    let authority_sk = if let Some(authority) = args.authority_keypair_path {
-        read_keypair_file(authority)
-            .map_err(|err| anyhow!("Failed to read authority keypair file: {}", err))?
+    // Use provided signer keypair, or default to the config keypair.
+    let signer_sk = if let Some(signer) = args.signer_keypair_path {
+        read_keypair_file(signer)
+            .map_err(|err| anyhow!("Failed to read signer keypair file: {}", err))?
     } else {
         Keypair::from_bytes(&config.keypair.to_bytes())?
     };
 
-    let authority = authority_sk.pubkey();
+    let signer = signer_sk.pubkey();
     let asset = args.asset;
 
-    let ix = Lock { asset, authority }.instruction();
+    let ix = Lock { asset, signer }.instruction();
 
-    let sig = send_and_confirm_tx(&config.client, &[&payer_sk, &authority_sk], &[ix])?;
+    let sig = send_and_confirm_tx(&config.client, &[&payer_sk, &signer_sk], &[ix])?;
 
     println!("Locking asset {asset} in tx: {sig}");
 
