@@ -69,6 +69,14 @@ async fn main() -> Result<()> {
             })
             .await
         }
+        Commands::MintBatch { asset_files_dir } => {
+            handle_mint_batch(MintBatchArgs {
+                keypair_path,
+                rpc_url,
+                asset_files_dir,
+            })
+            .await
+        }
         Commands::Revoke { asset, role, all } => handle_revoke(RevokeArgs {
             keypair_path,
             rpc_url,

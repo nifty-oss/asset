@@ -28,10 +28,11 @@ pub enum Commands {
         /// The recipient to receive reclaimed rent. Defaults to the signer.
         recipient: Option<Pubkey>,
     },
-    Mint {
-        asset_file_path: PathBuf,
-    },
-    /// Create an asset.
+    /// Create an asset with extension data.
+    Mint { asset_file_path: PathBuf },
+    /// Create a batch of assets with extension data.
+    MintBatch { asset_files_dir: PathBuf },
+    /// Create a basic asset with no extensions.
     Create {
         /// The name of the asset.
         #[arg(short, long)]
