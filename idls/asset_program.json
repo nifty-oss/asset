@@ -14,7 +14,7 @@
           ]
         },
         {
-          "name": "destination",
+          "name": "recipient",
           "isMut": true,
           "isSigner": false,
           "docs": [
@@ -237,7 +237,7 @@
           ]
         },
         {
-          "name": "authority",
+          "name": "signer",
           "isMut": false,
           "isSigner": true,
           "docs": [
@@ -339,7 +339,7 @@
           ]
         },
         {
-          "name": "authority",
+          "name": "signer",
           "isMut": false,
           "isSigner": true,
           "docs": [
