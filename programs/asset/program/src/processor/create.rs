@@ -96,7 +96,7 @@ pub fn process_create(
             "asset"
         );
 
-        let data = (*ctx.accounts.asset.data).borrow();
+        let data = &mut (*ctx.accounts.asset.data).borrow_mut();
 
         // make sure that the asset is not already initialized since the
         // account might have been created adding extensions
@@ -107,20 +107,15 @@ pub fn process_create(
         );
 
         // validates that the last extension is complete
-        if let Some((extension, offset)) = Asset::last_extension(&data) {
+        if let Some((extension, offset)) = Asset::last_extension(data) {
             let extension_type = extension.extension_type();
             let length = extension.length() as usize;
-            // drop the borrow before since we need a mutable reference
-            drop(data);
 
-            let asset_data = &mut (*ctx.accounts.asset.data).borrow_mut();
             // validates the last extension found on the account
-            on_create(extension_type, &mut asset_data[offset..offset + length]).map_err(
-                |error| {
-                    msg!("[ERROR] {}", error);
-                    AssetError::ExtensionDataInvalid
-                },
-            )?;
+            on_create(extension_type, &mut data[offset..offset + length]).map_err(|error| {
+                msg!("[ERROR] {}", error);
+                AssetError::ExtensionDataInvalid
+            })?;
         }
     }
 
@@ -140,7 +135,7 @@ pub fn process_create(
         .any(|extension| extension == &ExtensionType::Manager);
 
     // make sure that a managed asset is created with the manager
-    // extension; and vice versa, a non-subscription asset is created
+    // extension; and vice versa, a non-managed asset is created
     // without the manager extension
     require!(
         matches!(args.standard, Standard::Managed) == has_manager,

@@ -237,6 +237,7 @@ pub trait Lifecycle {
 /// `Lifecycle` trait.
 macro_rules! validate_extension_type {
     ( $( ($member:tt, $member_mut:tt) ),+ $(,)? ) => {
+        #[inline(always)]
         pub fn on_create(
             extension_type: ExtensionType,
             data: &mut [u8],
@@ -249,6 +250,7 @@ macro_rules! validate_extension_type {
             }
         }
 
+        #[inline(always)]
         pub fn on_update(
             extension_type: ExtensionType,
             data: &mut [u8],
