@@ -1,5 +1,5 @@
 use nifty_asset_types::{
-    extensions::ExtensionType,
+    extensions::{on_create, ExtensionType},
     podded::ZeroCopy,
     state::{Asset, Discriminator, Standard},
 };
@@ -95,17 +95,36 @@ pub fn process_create(
             AssetError::InvalidAccountLength,
             "asset"
         );
+
+        let data = (*ctx.accounts.asset.data).borrow();
+
+        // make sure that the asset is not already initialized since the
+        // account might have been created adding extensions
+        require!(
+            data[0] == Discriminator::Uninitialized.into(),
+            AssetError::AlreadyInitialized,
+            "asset"
+        );
+
+        // validates that the last extension is complete
+        if let Some((extension, offset)) = Asset::last_extension(&data) {
+            let extension_type = extension.extension_type();
+            let length = extension.length() as usize;
+            // drop the borrow before since we need a mutable reference
+            drop(data);
+
+            let asset_data = &mut (*ctx.accounts.asset.data).borrow_mut();
+            // validates the last extension found on the account
+            on_create(extension_type, &mut asset_data[offset..offset + length]).map_err(
+                |error| {
+                    msg!("[ERROR] {}", error);
+                    AssetError::ExtensionDataInvalid
+                },
+            )?;
+        }
     }
 
     let mut data = (*ctx.accounts.asset.data).borrow_mut();
-    // make sure that the asset is not already initialized since the
-    // account might have been created adding extensions
-    require!(
-        data[0] == Discriminator::Uninitialized.into(),
-        AssetError::AlreadyInitialized,
-        "asset"
-    );
-
     let asset = Asset::load_mut(&mut data);
 
     asset.discriminator = Discriminator::Asset;
