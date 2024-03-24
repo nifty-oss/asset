@@ -1,4 +1,4 @@
-# Nifty Asset SDK
+# <img width="145" alt="nifty-asset" src="https://github.com/nifty-oss/asset/assets/729235/92312720-c4f3-47cf-9bdd-33963f9a43ba"/>
 
 A Umi-compatible JavaScript library for Nifty Asset [program](https://github.com/nifty-oss/asset).
 
@@ -10,7 +10,7 @@ A Umi-compatible JavaScript library for Nifty Asset [program](https://github.com
    ```sh
    npm install @nifty-oss/asset
    ```
-2. Finally, register the library with your Umi instance like so.
+2. Finally, register the library with your Umi instance.
    ```ts
    import { niftyAsset } from '@nifty-oss/asset';
    umi.use(niftyAsset());
