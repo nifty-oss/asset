@@ -1,11 +1,16 @@
 #![cfg(feature = "test-sbf")]
 
+use std::fs::File;
+
 use nifty_asset::{
     extensions::ExtensionType as NiftyExtensionType,
+    extensions::{Creators, Royalties},
     mint,
     state::{Asset, Discriminator, Standard as NiftyStandard, State},
+    types::ExtensionType,
     types::Standard,
-    AssetArgs, ExtensionValue, MintAccounts, MintIxArgs, ZeroCopy,
+    AssetArgs, ExtensionArgs, ExtensionValue, JsonCreator, JsonRoyalties, MintAccounts, MintIxArgs,
+    ZeroCopy,
 };
 use solana_program_test::{tokio, ProgramTest};
 use solana_sdk::{
@@ -14,15 +19,6 @@ use solana_sdk::{
 };
 
 mod mint {
-
-    use std::fs::File;
-
-    use nifty_asset::{
-        extensions::{Creators, Royalties},
-        types::ExtensionType,
-        ExtensionArgs, JsonCreator, JsonRoyalties,
-    };
-
     use super::*;
 
     #[tokio::test]
