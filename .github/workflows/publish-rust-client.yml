@@ -59,15 +59,10 @@ jobs:
     with:
       client_matrix: "[\"${{ inputs.client }}\"]"
 
-  build_rust_cli:
-    name: Rust CLI
-    uses: ./.github/workflows/build-cli.yml
-    secrets: inherit
-
   publish_crate:
     name: Rust Client / Publish Crate
     runs-on: buildjet-8vcpu-ubuntu-2204
-    needs: [test_rust_client, build_rust_cli]
+    needs: test_rust_client
     permissions:
       contents: write
     steps:
@@ -128,14 +123,3 @@ jobs:
         with:
           commit_message: 'chore: Release ${{ env.CLIENT_NAME }} version ${{ env.CLIENT_VERSION }}'
           tagging_message: ${{ env.CLIENT_NAME }}@v${{ env.CLIENT_VERSION }}
-
-      - name: Upload CLI binary
-        id: upload-rust-cli
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.publish_crate.outputs.upload_url }}
-          asset_path: ./target/release/*nifty-cli-${{ runner.os }}*
-          asset_name: nifty-cli-${{ runner.os }}
-          asset_content_type: application/octet-stream
