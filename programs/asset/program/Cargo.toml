@@ -4,7 +4,7 @@ version = "0.0.0"
 authors = ["nifty-oss maintainers <maintainers@nifty-oss.org>"]
 edition = "2021"
 readme = "./README.md"
-license-file = "../../../LICENSE"
+license-file = "Apache-2.0"
 publish = false
 
 [lib]

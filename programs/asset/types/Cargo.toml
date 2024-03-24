@@ -1,6 +1,6 @@
 [package]
 name = "nifty-asset-types"
-version = "0.0.1-alpha.2"
+version = "0.0.1-alpha.3"
 description = "Types for Nifty Asset program"
 authors = ["nifty-oss maintainers <maintainers@nifty-oss.org>"]
 repository = "https://github.com/nifty-oss/asset"
@@ -9,7 +9,7 @@ readme = "README.md"
 license = "Apache-2.0"
 
 [dependencies]
-borsh = "0.10.3"
+borsh = "^0.10"
 bytemuck = "1.14"
 podded = "0.5.1"
 solana-program = "^1.16"
