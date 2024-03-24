@@ -1,0 +1,125 @@
+name: Publish Rust Types
+
+on:
+  workflow_dispatch:
+    inputs:
+      types:
+        description: Types
+        required: true
+        default: asset
+        type: choice
+        options:
+          - asset
+          - bridge
+      level:
+        description: Level
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - rc
+          - beta
+          - alpha
+          - release
+          - version
+      version:
+        description: Version
+        required: false
+        type: string
+      dry_run:
+        description: Dry run
+        required: true
+        default: true
+        type: boolean
+
+env:
+  CACHE: true
+
+jobs:
+  build_programs:
+    name: Programs
+    uses: ./.github/workflows/build-programs.yml
+    secrets: inherit
+
+  test_js:
+      name: JS client
+      needs: build_programs
+      uses: ./.github/workflows/test-js-client.yml
+      secrets: inherit
+      with:
+        client_matrix: "[\"${{ inputs.client }}\"]"
+
+  test_rust_client:
+    name: Rust client
+    needs: build_programs
+    uses: ./.github/workflows/test-rust-client.yml
+    secrets: inherit
+    with:
+      client_matrix: "[\"${{ inputs.client }}\"]"
+
+  publish_crate:
+    name: Rust Types / Publish Crate
+    runs-on: buildjet-8vcpu-ubuntu-2204
+    needs: [test_js, test_rust_client]
+    permissions:
+      contents: write
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SERVICE_TOKEN }}
+
+      - name: Download program builds
+        uses: actions/download-artifact@v4
+        with:
+          name: program-builds
+
+      - name: Load environment variables
+        run: cat .github/.env >> $GITHUB_ENV
+
+      - name: Install Rust
+        uses: nifty-oss/actions/install-rust@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+
+      - name: Install cargo-release
+        uses: nifty-oss/actions/install-cargo-release@v1
+        with:
+          cache: ${{ env.CACHE }}
+
+      - name: Publish crate
+        working-directory: ./programs/asset/types
+        run: |
+          if [ "${{ inputs.level }}" == "version" ]; then
+            BUMP=${{ inputs.version }}
+          else
+            BUMP=${{ inputs.level }}
+          fi
+
+          if [ "${{ inputs.dry_run }}" == "false" ]; then
+            git config user.name ${{ env.COMMIT_USER_NAME }}
+            git config user.email ${{ env.COMMIT_USER_EMAIL }}
+      
+            cargo login ${{ secrets.CRATES_TOKEN }}
+            cargo release $BUMP --no-push --no-tag --no-confirm --execute
+        
+            git reset --soft HEAD~1
+
+            CRATE_NAME=`grep -E '^name\s*=' Cargo.toml | awk -F '"' '{print $2}'`
+            CRATE_VERSION=`grep -E '^version\s*=' Cargo.toml | awk -F '"' '{print $2}'`
+            echo CRATE_NAME="${CRATE_NAME}" >> $GITHUB_ENV
+            echo CRATE_VERSION="${CRATE_VERSION}" >> $GITHUB_ENV
+          else
+            cargo login ${{ secrets.CRATES_TOKEN }}
+            cargo release $BUMP || true
+          fi
+
+      - name: Commit and tag new version
+        uses: stefanzweifel/git-auto-commit-action@v4
+        if: github.event.inputs.dry_run == 'false'
+        with:
+          commit_message: 'chore: Release ${{ env.CRATE_NAME }} version ${{ env.CRATE_VERSION }}'
+          tagging_message: ${{ env.CRATE_NAME }}@v${{ env.CRATE_VERSION }}
