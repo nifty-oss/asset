@@ -13,7 +13,7 @@ pub struct Unlock {
     /// Asset account
     pub asset: solana_program::pubkey::Pubkey,
     /// Delegate or owner account
-    pub authority: solana_program::pubkey::Pubkey,
+    pub signer: solana_program::pubkey::Pubkey,
 }
 
 impl Unlock {
@@ -30,7 +30,7 @@ impl Unlock {
             self.asset, false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.authority,
+            self.signer,
             true,
         ));
         accounts.extend_from_slice(remaining_accounts);
@@ -60,11 +60,11 @@ impl UnlockInstructionData {
 /// ### Accounts:
 ///
 ///   0. `[writable]` asset
-///   1. `[signer]` authority
+///   1. `[signer]` signer
 #[derive(Default)]
 pub struct UnlockBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
-    authority: Option<solana_program::pubkey::Pubkey>,
+    signer: Option<solana_program::pubkey::Pubkey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -80,8 +80,8 @@ impl UnlockBuilder {
     }
     /// Delegate or owner account
     #[inline(always)]
-    pub fn authority(&mut self, authority: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.authority = Some(authority);
+    pub fn signer(&mut self, signer: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.signer = Some(signer);
         self
     }
     /// Add an aditional account to the instruction.
@@ -106,7 +106,7 @@ impl UnlockBuilder {
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
         let accounts = Unlock {
             asset: self.asset.expect("asset is not set"),
-            authority: self.authority.expect("authority is not set"),
+            signer: self.signer.expect("signer is not set"),
         };
 
         accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
@@ -118,7 +118,7 @@ pub struct UnlockCpiAccounts<'a, 'b> {
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// Delegate or owner account
-    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub signer: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
 /// `unlock` CPI instruction.
@@ -128,7 +128,7 @@ pub struct UnlockCpi<'a, 'b> {
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// Delegate or owner account
-    pub authority: &'b solana_program::account_info::AccountInfo<'a>,
+    pub signer: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
 impl<'a, 'b> UnlockCpi<'a, 'b> {
@@ -139,7 +139,7 @@ impl<'a, 'b> UnlockCpi<'a, 'b> {
         Self {
             __program: program,
             asset: accounts.asset,
-            authority: accounts.authority,
+            signer: accounts.signer,
         }
     }
     #[inline(always)]
@@ -181,7 +181,7 @@ impl<'a, 'b> UnlockCpi<'a, 'b> {
             false,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.authority.key,
+            *self.signer.key,
             true,
         ));
         remaining_accounts.iter().for_each(|remaining_account| {
@@ -201,7 +201,7 @@ impl<'a, 'b> UnlockCpi<'a, 'b> {
         let mut account_infos = Vec::with_capacity(2 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset.clone());
-        account_infos.push(self.authority.clone());
+        account_infos.push(self.signer.clone());
         remaining_accounts
             .iter()
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
@@ -219,7 +219,7 @@ impl<'a, 'b> UnlockCpi<'a, 'b> {
 /// ### Accounts:
 ///
 ///   0. `[writable]` asset
-///   1. `[signer]` authority
+///   1. `[signer]` signer
 pub struct UnlockCpiBuilder<'a, 'b> {
     instruction: Box<UnlockCpiBuilderInstruction<'a, 'b>>,
 }
@@ -229,7 +229,7 @@ impl<'a, 'b> UnlockCpiBuilder<'a, 'b> {
         let instruction = Box::new(UnlockCpiBuilderInstruction {
             __program: program,
             asset: None,
-            authority: None,
+            signer: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -242,11 +242,11 @@ impl<'a, 'b> UnlockCpiBuilder<'a, 'b> {
     }
     /// Delegate or owner account
     #[inline(always)]
-    pub fn authority(
+    pub fn signer(
         &mut self,
-        authority: &'b solana_program::account_info::AccountInfo<'a>,
+        signer: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.authority = Some(authority);
+        self.instruction.signer = Some(signer);
         self
     }
     /// Add an additional account to the instruction.
@@ -295,7 +295,7 @@ impl<'a, 'b> UnlockCpiBuilder<'a, 'b> {
 
             asset: self.instruction.asset.expect("asset is not set"),
 
-            authority: self.instruction.authority.expect("authority is not set"),
+            signer: self.instruction.signer.expect("signer is not set"),
         };
         instruction.invoke_signed_with_remaining_accounts(
             signers_seeds,
@@ -307,7 +307,7 @@ impl<'a, 'b> UnlockCpiBuilder<'a, 'b> {
 struct UnlockCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    signer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

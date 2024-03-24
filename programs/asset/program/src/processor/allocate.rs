@@ -16,6 +16,13 @@ use crate::{
     require,
 };
 
+/// Allocates an extension into an uninitialized asset (buffer) account.
+///
+/// ### Accounts:
+///
+///   0. `[writable, signer]` asset
+///   1. `[writable, signer, optional]` payer
+///   2. `[optional]` system_program
 #[inline(always)]
 pub fn process_allocate(
     program_id: &Pubkey,
@@ -118,7 +125,8 @@ pub fn process_allocate(
     require!(
         !Asset::contains(args.extension.extension_type, &data),
         AssetError::AlreadyInitialized,
-        "asset"
+        "extension [{:?}] already initialized",
+        args.extension.extension_type
     );
 
     // drop the reference to resize the account

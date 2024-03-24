@@ -13,13 +13,19 @@ use crate::{
     utils::assert_delegate,
 };
 
+/// Unlocks an asset.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[signer]` signer
 pub fn process_unlock(program_id: &Pubkey, ctx: Context<UnlockAccounts>) -> ProgramResult {
     // account validation
 
     require!(
-        ctx.accounts.authority.is_signer,
+        ctx.accounts.signer.is_signer,
         ProgramError::MissingRequiredSignature,
-        "delegate"
+        "signer"
     );
 
     require!(
@@ -31,8 +37,8 @@ pub fn process_unlock(program_id: &Pubkey, ctx: Context<UnlockAccounts>) -> Prog
     let mut data = (*ctx.accounts.asset.data).borrow_mut();
 
     require!(
-        data[0] == Discriminator::Asset.into(),
-        ProgramError::UninitializedAccount,
+        data.len() >= Asset::LEN && data[0] == Discriminator::Asset.into(),
+        AssetError::Uninitialized,
         "asset"
     );
 
@@ -47,11 +53,11 @@ pub fn process_unlock(program_id: &Pubkey, ctx: Context<UnlockAccounts>) -> Prog
                 asset.delegate.value(),
                 Extension::get::<Manager>(extensions).map(|s| s.delegate),
             ],
-            ctx.accounts.authority.key,
+            ctx.accounts.signer.key,
             DelegateRole::Lock,
         )?;
-    } else if asset.owner != *ctx.accounts.authority.key {
-        return err!(AssetError::InvalidAuthority);
+    } else if asset.owner != *ctx.accounts.signer.key {
+        return err!(AssetError::InvalidAssetOwner);
     }
 
     asset.state = State::Unlocked;

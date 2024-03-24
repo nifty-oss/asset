@@ -13,7 +13,7 @@ pub struct Close {
     /// The unitialized buffer account
     pub buffer: solana_program::pubkey::Pubkey,
     /// The account receiving refunded rent
-    pub destination: solana_program::pubkey::Pubkey,
+    pub recipient: solana_program::pubkey::Pubkey,
 }
 
 impl Close {
@@ -31,7 +31,7 @@ impl Close {
             true,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
-            self.destination,
+            self.recipient,
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
@@ -61,11 +61,11 @@ impl CloseInstructionData {
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` buffer
-///   1. `[writable]` destination
+///   1. `[writable]` recipient
 #[derive(Default)]
 pub struct CloseBuilder {
     buffer: Option<solana_program::pubkey::Pubkey>,
-    destination: Option<solana_program::pubkey::Pubkey>,
+    recipient: Option<solana_program::pubkey::Pubkey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -81,8 +81,8 @@ impl CloseBuilder {
     }
     /// The account receiving refunded rent
     #[inline(always)]
-    pub fn destination(&mut self, destination: solana_program::pubkey::Pubkey) -> &mut Self {
-        self.destination = Some(destination);
+    pub fn recipient(&mut self, recipient: solana_program::pubkey::Pubkey) -> &mut Self {
+        self.recipient = Some(recipient);
         self
     }
     /// Add an aditional account to the instruction.
@@ -107,7 +107,7 @@ impl CloseBuilder {
     pub fn instruction(&self) -> solana_program::instruction::Instruction {
         let accounts = Close {
             buffer: self.buffer.expect("buffer is not set"),
-            destination: self.destination.expect("destination is not set"),
+            recipient: self.recipient.expect("recipient is not set"),
         };
 
         accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
@@ -119,7 +119,7 @@ pub struct CloseCpiAccounts<'a, 'b> {
     /// The unitialized buffer account
     pub buffer: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account receiving refunded rent
-    pub destination: &'b solana_program::account_info::AccountInfo<'a>,
+    pub recipient: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
 /// `close` CPI instruction.
@@ -129,7 +129,7 @@ pub struct CloseCpi<'a, 'b> {
     /// The unitialized buffer account
     pub buffer: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account receiving refunded rent
-    pub destination: &'b solana_program::account_info::AccountInfo<'a>,
+    pub recipient: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
 impl<'a, 'b> CloseCpi<'a, 'b> {
@@ -140,7 +140,7 @@ impl<'a, 'b> CloseCpi<'a, 'b> {
         Self {
             __program: program,
             buffer: accounts.buffer,
-            destination: accounts.destination,
+            recipient: accounts.recipient,
         }
     }
     #[inline(always)]
@@ -182,7 +182,7 @@ impl<'a, 'b> CloseCpi<'a, 'b> {
             true,
         ));
         accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.destination.key,
+            *self.recipient.key,
             false,
         ));
         remaining_accounts.iter().for_each(|remaining_account| {
@@ -202,7 +202,7 @@ impl<'a, 'b> CloseCpi<'a, 'b> {
         let mut account_infos = Vec::with_capacity(2 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.buffer.clone());
-        account_infos.push(self.destination.clone());
+        account_infos.push(self.recipient.clone());
         remaining_accounts
             .iter()
             .for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
@@ -220,7 +220,7 @@ impl<'a, 'b> CloseCpi<'a, 'b> {
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` buffer
-///   1. `[writable]` destination
+///   1. `[writable]` recipient
 pub struct CloseCpiBuilder<'a, 'b> {
     instruction: Box<CloseCpiBuilderInstruction<'a, 'b>>,
 }
@@ -230,7 +230,7 @@ impl<'a, 'b> CloseCpiBuilder<'a, 'b> {
         let instruction = Box::new(CloseCpiBuilderInstruction {
             __program: program,
             buffer: None,
-            destination: None,
+            recipient: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -246,11 +246,11 @@ impl<'a, 'b> CloseCpiBuilder<'a, 'b> {
     }
     /// The account receiving refunded rent
     #[inline(always)]
-    pub fn destination(
+    pub fn recipient(
         &mut self,
-        destination: &'b solana_program::account_info::AccountInfo<'a>,
+        recipient: &'b solana_program::account_info::AccountInfo<'a>,
     ) -> &mut Self {
-        self.instruction.destination = Some(destination);
+        self.instruction.recipient = Some(recipient);
         self
     }
     /// Add an additional account to the instruction.
@@ -299,10 +299,7 @@ impl<'a, 'b> CloseCpiBuilder<'a, 'b> {
 
             buffer: self.instruction.buffer.expect("buffer is not set"),
 
-            destination: self
-                .instruction
-                .destination
-                .expect("destination is not set"),
+            recipient: self.instruction.recipient.expect("recipient is not set"),
         };
         instruction.invoke_signed_with_remaining_accounts(
             signers_seeds,
@@ -314,7 +311,7 @@ impl<'a, 'b> CloseCpiBuilder<'a, 'b> {
 struct CloseCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_program::account_info::AccountInfo<'a>,
     buffer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    destination: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    recipient: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

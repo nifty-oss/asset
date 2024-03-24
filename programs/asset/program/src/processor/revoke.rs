@@ -14,6 +14,12 @@ use crate::{
     require,
 };
 
+/// Revokes a delegate.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[signer]` signer
 pub fn process_revoke(
     program_id: &Pubkey,
     ctx: Context<RevokeAccounts>,
@@ -36,22 +42,22 @@ pub fn process_revoke(
     let mut data = (*ctx.accounts.asset.data).borrow_mut();
 
     require!(
-        data[0] == Discriminator::Asset.into(),
-        ProgramError::UninitializedAccount,
+        data.len() >= Asset::LEN && data[0] == Discriminator::Asset.into(),
+        AssetError::Uninitialized,
         "asset"
     );
 
     let asset = Asset::load_mut(&mut data);
 
-    let is_owner = asset.owner == *ctx.accounts.signer.key;
-
-    let is_delegate = asset
-        .delegate
-        .value()
-        .map(|delegate| *delegate.address == *ctx.accounts.signer.key);
+    let is_allowed = asset.owner == *ctx.accounts.signer.key
+        || asset
+            .delegate
+            .value()
+            .map(|delegate| *delegate.address == *ctx.accounts.signer.key)
+            == Some(true);
 
     // we only revoke a delegate if the signer is the owner or the current delegate
-    if !(is_owner || is_delegate == Some(true)) {
+    if !is_allowed {
         return err!(AssetError::InvalidAuthority, "not an owner or delegate");
     }
 

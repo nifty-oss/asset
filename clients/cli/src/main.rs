@@ -54,12 +54,12 @@ async fn main() -> Result<()> {
         }),
         Commands::Lock {
             asset,
-            authority_keypair_path,
+            signer_keypair_path,
         } => handle_lock(LockArgs {
             keypair_path,
             rpc_url,
             asset,
-            authority_keypair_path,
+            signer_keypair_path,
         }),
         Commands::Mint { asset_file_path } => {
             handle_mint(MintArgs {
@@ -84,12 +84,12 @@ async fn main() -> Result<()> {
         }),
         Commands::Unlock {
             asset,
-            authority_keypair_path,
+            signer_keypair_path,
         } => handle_unlock(UnlockArgs {
             keypair_path,
             rpc_url,
             asset,
-            authority_keypair_path,
+            signer_keypair_path,
         }),
     }
 }

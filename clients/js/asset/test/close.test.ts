@@ -20,7 +20,7 @@ test('it can close an uninitialized asset buffer account', async (t) => {
   // When we close the asset buffer.
   await close(umi, {
     buffer: asset,
-    destination: umi.identity.publicKey,
+    recipient: umi.identity.publicKey,
   }).sendAndConfirm(umi);
 
   // Then the asset buffer account was closed.
@@ -44,7 +44,7 @@ test('it cannot close an initialized asset account', async (t) => {
   // When we try to close the asset account.
   const promise = close(umi, {
     buffer: asset,
-    destination: umi.identity.publicKey,
+    recipient: umi.identity.publicKey,
   }).sendAndConfirm(umi);
 
   // Then we expect an error.

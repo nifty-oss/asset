@@ -13,6 +13,13 @@ use crate::{
     require,
 };
 
+/// Approves a delegate to manage an asset.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[signer]` owner
+///   2. `[]` delegate
 pub fn process_approve(
     program_id: &Pubkey,
     ctx: Context<ApproveAccounts>,
@@ -29,8 +36,8 @@ pub fn process_approve(
     let mut data = (*ctx.accounts.asset.data).borrow_mut();
 
     require!(
-        data[0] == Discriminator::Asset.into(),
-        ProgramError::UninitializedAccount,
+        data.len() >= Asset::LEN && data[0] == Discriminator::Asset.into(),
+        AssetError::Uninitialized,
         "asset"
     );
 

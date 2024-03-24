@@ -28,11 +28,11 @@ test('it can unlock an asset', async (t) => {
   }).sendAndConfirm(umi);
 
   // And we set a delegate that can lock the asset.
-  const authority = generateSigner(umi);
+  const signer = generateSigner(umi);
   await approve(umi, {
     asset: asset.publicKey,
     owner,
-    delegate: authority.publicKey,
+    delegate: signer.publicKey,
     delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Lock],
     }),
@@ -41,7 +41,7 @@ test('it can unlock an asset', async (t) => {
   // And we lock the asset.
   await lock(umi, {
     asset: asset.publicKey,
-    authority,
+    signer,
   }).sendAndConfirm(umi);
 
   let account = await fetchAsset(umi, asset.publicKey);
@@ -52,7 +52,7 @@ test('it can unlock an asset', async (t) => {
   // When we unlock the asset.
   await unlock(umi, {
     asset: asset.publicKey,
-    authority,
+    signer,
   }).sendAndConfirm(umi);
 
   // Then the asset is unlocked.
@@ -77,11 +77,11 @@ test('it cannot unlock an asset with an invalid delegate', async (t) => {
   }).sendAndConfirm(umi);
 
   // And we set a delegate that can lock the asset.
-  const authority = generateSigner(umi);
+  const signer = generateSigner(umi);
   await approve(umi, {
     asset: asset.publicKey,
     owner,
-    delegate: authority.publicKey,
+    delegate: signer.publicKey,
     delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Lock],
     }),
@@ -90,7 +90,7 @@ test('it cannot unlock an asset with an invalid delegate', async (t) => {
   // And we lock the asset.
   await lock(umi, {
     asset: asset.publicKey,
-    authority,
+    signer,
   }).sendAndConfirm(umi);
 
   let account = await fetchAsset(umi, asset.publicKey);
@@ -102,7 +102,7 @@ test('it cannot unlock an asset with an invalid delegate', async (t) => {
   const fake = generateSigner(umi);
   const promise = unlock(umi, {
     asset: asset.publicKey,
-    authority: fake,
+    signer: fake,
   }).sendAndConfirm(umi);
 
   // Then we get an error.
@@ -130,11 +130,11 @@ test('it cannot unlock an asset locked with a delegate as an owner', async (t) =
   }).sendAndConfirm(umi);
 
   // And we set a delegate that can lock the asset.
-  const authority = generateSigner(umi);
+  const signer = generateSigner(umi);
   await approve(umi, {
     asset: asset.publicKey,
     owner,
-    delegate: authority.publicKey,
+    delegate: signer.publicKey,
     delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Lock],
     }),
@@ -143,7 +143,7 @@ test('it cannot unlock an asset locked with a delegate as an owner', async (t) =
   // And we lock the asset.
   await lock(umi, {
     asset: asset.publicKey,
-    authority,
+    signer,
   }).sendAndConfirm(umi);
 
   let account = await fetchAsset(umi, asset.publicKey);
@@ -154,7 +154,7 @@ test('it cannot unlock an asset locked with a delegate as an owner', async (t) =
   // When we try unlock the asset as an owner.
   const promise = unlock(umi, {
     asset: asset.publicKey,
-    authority: owner,
+    signer: owner,
   }).sendAndConfirm(umi);
 
   // Then we get an error.
@@ -184,7 +184,7 @@ test('it can unlock an asset as an owner', async (t) => {
   // And we lock the asset as an owner.
   await lock(umi, {
     asset: asset.publicKey,
-    authority: owner,
+    signer: owner,
   }).sendAndConfirm(umi);
 
   let account = await fetchAsset(umi, asset.publicKey);
@@ -195,7 +195,7 @@ test('it can unlock an asset as an owner', async (t) => {
   // When we unlock the asset as an owner.
   await unlock(umi, {
     asset: asset.publicKey,
-    authority: owner,
+    signer: owner,
   }).sendAndConfirm(umi);
 
   // Then the asset is unlocked.
@@ -220,11 +220,11 @@ test('it can unlock an asset that is unlocked', async (t) => {
   }).sendAndConfirm(umi);
 
   // And we set a delegate that can lock the asset.
-  const authority = generateSigner(umi);
+  const signer = generateSigner(umi);
   await approve(umi, {
     asset: asset.publicKey,
     owner,
-    delegate: authority.publicKey,
+    delegate: signer.publicKey,
     delegateInput: delegateInput('Some', {
       roles: [DelegateRole.Lock],
     }),
@@ -233,7 +233,7 @@ test('it can unlock an asset that is unlocked', async (t) => {
   // When we unlock an unlocked asset.
   await unlock(umi, {
     asset: asset.publicKey,
-    authority,
+    signer,
   }).sendAndConfirm(umi);
 
   // Then the asset is (still) unlocked.

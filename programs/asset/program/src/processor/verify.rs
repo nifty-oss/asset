@@ -11,27 +11,33 @@ use crate::{
     require,
 };
 
+/// Verifies a creator.
+///
+/// ### Accounts:
+///
+///   0. `[writable]` asset
+///   1. `[signer]` creator
 pub fn process_verify(program_id: &Pubkey, ctx: Context<VerifyAccounts>) -> ProgramResult {
     // account validation
 
     require!(
         ctx.accounts.creator.is_signer,
         ProgramError::MissingRequiredSignature,
-        "Missing creator signature"
+        "missing creator signature"
     );
 
     require!(
         ctx.accounts.asset.owner == program_id,
         ProgramError::IllegalOwner,
-        "Invalid asset account owner"
+        "invalid asset account owner"
     );
 
     let mut data = (*ctx.accounts.asset.data).borrow_mut();
 
     require!(
-        data[0] == Discriminator::Asset.into(),
-        ProgramError::UninitializedAccount,
-        "Asset account uninitialized"
+        data.len() >= Asset::LEN && data[0] == Discriminator::Asset.into(),
+        AssetError::Uninitialized,
+        "asset"
     );
 
     let extension = if let Some(creators) = Asset::get_mut::<CreatorsMut>(&mut data) {
@@ -44,6 +50,7 @@ pub fn process_verify(program_id: &Pubkey, ctx: Context<VerifyAccounts>) -> Prog
     };
 
     // verifies the creator
+
     let mut found = false;
 
     extension.creators.iter_mut().for_each(|creator| {

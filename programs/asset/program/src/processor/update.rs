@@ -57,8 +57,8 @@ pub fn process_update(
     let mut account_data = (*ctx.accounts.asset.data).borrow_mut();
 
     require!(
-        account_data[0] == Discriminator::Asset.into(),
-        ProgramError::UninitializedAccount,
+        account_data.len() >= Asset::LEN && account_data[0] == Discriminator::Asset.into(),
+        AssetError::Uninitialized,
         "asset"
     );
 
@@ -164,7 +164,9 @@ pub fn process_update(
                 AssetError::ExtensionDataInvalid
             })?;
 
+            #[cfg(feature = "logging")]
             msg!("Updating extension from buffer account");
+
             header_length
         } else {
             let length = if let Some(extension_data) = args.data.as_mut() {
@@ -182,11 +184,13 @@ pub fn process_update(
 
                 extension_data.len()
             } else {
-                // extension do not have any data
+                // extension does not have any data
                 0
             };
 
+            #[cfg(feature = "logging")]
             msg!("Updating extension from instruction data");
+
             length
         };
 

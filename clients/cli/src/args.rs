@@ -81,8 +81,8 @@ pub enum Commands {
         /// The asset to lock.
         asset: Pubkey,
 
-        /// Path to the authority keypair file. Defaults to the signer.
-        authority_keypair_path: Option<PathBuf>,
+        /// Path to the signer keypair file. Defaults to the config keypair.
+        signer_keypair_path: Option<PathBuf>,
     },
     /// Revoke a delegate from an asset.
     Revoke {
@@ -111,7 +111,7 @@ pub enum Commands {
         /// The asset to unlock.
         asset: Pubkey,
 
-        /// Path to the authority keypair file. Defaults to the signer.
-        authority_keypair_path: Option<PathBuf>,
+        /// Path to the signer keypair file. Defaults to the config keypair.
+        signer_keypair_path: Option<PathBuf>,
     },
 }

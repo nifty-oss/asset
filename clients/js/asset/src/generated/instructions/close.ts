@@ -31,7 +31,7 @@ export type CloseInstructionAccounts = {
   /** The unitialized buffer account */
   buffer: Signer;
   /** The account receiving refunded rent */
-  destination: PublicKey | Pda;
+  recipient: PublicKey | Pda;
 };
 
 // Data.
@@ -69,10 +69,10 @@ export function close(
       isWritable: true as boolean,
       value: input.buffer ?? null,
     },
-    destination: {
+    recipient: {
       index: 1,
       isWritable: true as boolean,
-      value: input.destination ?? null,
+      value: input.recipient ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
 

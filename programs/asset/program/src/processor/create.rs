@@ -1,5 +1,5 @@
 use nifty_asset_types::{
-    extensions::ExtensionType,
+    extensions::{on_create, ExtensionType},
     podded::ZeroCopy,
     state::{Asset, Discriminator, Standard},
 };
@@ -17,6 +17,16 @@ use crate::{
     require,
 };
 
+/// Creates a new asset.
+///
+/// ### Accounts:
+///
+///   0. `[writable, signer]` asset
+///   1. `[signer]` authority
+///   2. `[]` owner
+///   3. `[writable, optional]` group
+///   4. `[writable, signer, optional]` payer
+///   5. `[optional]` system_program
 pub fn process_create(
     program_id: &Pubkey,
     ctx: Context<CreateAccounts>,
@@ -85,17 +95,31 @@ pub fn process_create(
             AssetError::InvalidAccountLength,
             "asset"
         );
+
+        let data = &mut (*ctx.accounts.asset.data).borrow_mut();
+
+        // make sure that the asset is not already initialized since the
+        // account might have been created adding extensions
+        require!(
+            data[0] == Discriminator::Uninitialized.into(),
+            AssetError::AlreadyInitialized,
+            "asset"
+        );
+
+        // validates that the last extension is complete
+        if let Some((extension, offset)) = Asset::last_extension(data) {
+            let extension_type = extension.extension_type();
+            let length = extension.length() as usize;
+
+            // validates the last extension found on the account
+            on_create(extension_type, &mut data[offset..offset + length]).map_err(|error| {
+                msg!("[ERROR] {}", error);
+                AssetError::ExtensionDataInvalid
+            })?;
+        }
     }
 
     let mut data = (*ctx.accounts.asset.data).borrow_mut();
-    // make sure that the asset is not already initialized since the
-    // account might have been created adding extensions
-    require!(
-        data[0] == Discriminator::Uninitialized.into(),
-        AssetError::AlreadyInitialized,
-        "asset"
-    );
-
     let asset = Asset::load_mut(&mut data);
 
     asset.discriminator = Discriminator::Asset;
@@ -111,7 +135,7 @@ pub fn process_create(
         .any(|extension| extension == &ExtensionType::Manager);
 
     // make sure that a managed asset is created with the manager
-    // extension; and vice versa, a non-subscription asset is created
+    // extension; and vice versa, a non-managed asset is created
     // without the manager extension
     require!(
         matches!(args.standard, Standard::Managed) == has_manager,
