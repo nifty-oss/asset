@@ -31,12 +31,14 @@ pub fn process_close(program_id: &Pubkey, ctx: Context<CloseAccounts>) -> Progra
 
     let data = (*ctx.accounts.buffer.data).borrow();
 
-    // make sure that the asset is uninitialized
-    require!(
-        data[0] == Discriminator::Uninitialized.into(),
-        AssetError::AlreadyInitialized,
-        "buffer"
-    );
+    if !data.is_empty() {
+        // make sure that the asset is uninitialized
+        require!(
+            data[0] == Discriminator::Uninitialized.into(),
+            AssetError::AlreadyInitialized,
+            "buffer"
+        );
+    }
 
     drop(data);
 

@@ -57,8 +57,8 @@ pub fn process_update(
     let mut account_data = (*ctx.accounts.asset.data).borrow_mut();
 
     require!(
-        account_data[0] == Discriminator::Asset.into(),
-        ProgramError::UninitializedAccount,
+        account_data.len() >= Asset::LEN && account_data[0] == Discriminator::Asset.into(),
+        AssetError::Uninitialized,
         "asset"
     );
 

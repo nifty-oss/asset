@@ -39,9 +39,9 @@ pub fn process_burn(program_id: &Pubkey, ctx: Context<BurnAccounts>) -> ProgramR
 
     // Must be an initialized asset.
     require!(
-        data[0] == Discriminator::Asset.into(),
+        data.len() >= Asset::LEN && data[0] == Discriminator::Asset.into(),
         AssetError::Uninitialized,
-        "unitialized asset"
+        "asset"
     );
 
     let (asset, extensions) = data.split_at(Asset::LEN);

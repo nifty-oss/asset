@@ -50,9 +50,9 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
 
     // Must be an initialized asset.
     require!(
-        data[0] == Discriminator::Asset.into(),
+        data.len() >= Asset::LEN && data[0] == Discriminator::Asset.into(),
         AssetError::Uninitialized,
-        "unitialized asset"
+        "asset"
     );
 
     // First we check if the asset itself has the royalties extension, and validate the constraint.

@@ -43,17 +43,17 @@ pub fn process_ungroup(program_id: &Pubkey, ctx: Context<UngroupAccounts>) -> Pr
     let mut asset_data = (*ctx.accounts.asset.data).borrow_mut();
 
     require!(
-        asset_data[0] == Discriminator::Asset.into(),
-        ProgramError::UninitializedAccount,
+        asset_data.len() >= Asset::LEN && asset_data[0] == Discriminator::Asset.into(),
+        AssetError::Uninitialized,
         "asset"
     );
 
     let mut group_data = (*ctx.accounts.group.data).borrow_mut();
 
     require!(
-        group_data[0] == Discriminator::Asset.into(),
-        ProgramError::UninitializedAccount,
-        "group"
+        group_data.len() >= Asset::LEN && group_data[0] == Discriminator::Asset.into(),
+        AssetError::Uninitialized,
+        "asset"
     );
 
     // authority must match the group's authority

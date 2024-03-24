@@ -56,13 +56,14 @@ pub(crate) fn process_write(
         "asset"
     );
 
+    let asset_data = (*ctx.accounts.asset.data).borrow();
+
     require!(
-        !ctx.accounts.asset.data_is_empty(),
+        asset_data.len() >= Asset::LEN,
         AssetError::InvalidAccountLength,
         "asset"
     );
 
-    let asset_data = (*ctx.accounts.asset.data).borrow();
     // make sure that the asset is not already initialized
     require!(
         asset_data[0] == Discriminator::Uninitialized.into(),

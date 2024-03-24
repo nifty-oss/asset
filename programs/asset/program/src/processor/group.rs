@@ -43,16 +43,16 @@ pub fn process_group(program_id: &Pubkey, ctx: Context<GroupAccounts>) -> Progra
     let mut asset_data = (*ctx.accounts.asset.data).borrow_mut();
 
     require!(
-        asset_data[0] == Discriminator::Asset.into(),
-        ProgramError::UninitializedAccount,
+        asset_data.len() >= Asset::LEN && asset_data[0] == Discriminator::Asset.into(),
+        AssetError::Uninitialized,
         "asset"
     );
 
     let mut group_data = (*ctx.accounts.group.data).borrow_mut();
 
     require!(
-        group_data[0] == Discriminator::Asset.into(),
-        ProgramError::UninitializedAccount,
+        group_data.len() >= Asset::LEN && group_data[0] == Discriminator::Asset.into(),
+        AssetError::Uninitialized,
         "group"
     );
 
