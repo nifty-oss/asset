@@ -12,6 +12,7 @@ export * from './burn';
 export * from './close';
 export * from './create';
 export * from './group';
+export * from './handover';
 export * from './lock';
 export * from './revoke';
 export * from './transfer';

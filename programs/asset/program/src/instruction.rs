@@ -100,6 +100,12 @@ pub enum Instruction {
     #[account(1, writable, name="group", desc = "Asset account of the group")]
     #[account(2, signer, name="authority", desc = "The authority of the assets")]
     Ungroup,
+
+    /// Handover an asset to a new authority.
+    #[account(0, writable, name="asset", desc = "Asset account")]
+    #[account(1, signer, name="authority", desc = "The authority of the asset")]
+    #[account(2, signer, name="new_authority", desc = "The new authority of the asset")]
+    Handover,
 }
 
 #[repr(C)]
