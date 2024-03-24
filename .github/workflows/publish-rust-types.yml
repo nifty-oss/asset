@@ -3,14 +3,6 @@ name: Publish Rust Types
 on:
   workflow_dispatch:
     inputs:
-      types:
-        description: Types
-        required: true
-        default: asset
-        type: choice
-        options:
-          - asset
-          - bridge
       level:
         description: Level
         required: true
@@ -50,7 +42,7 @@ jobs:
       uses: ./.github/workflows/test-js-client.yml
       secrets: inherit
       with:
-        client_matrix: "[\"${{ inputs.client }}\"]"
+        client_matrix: "[\"asset\"]"
 
   test_rust_client:
     name: Rust client
@@ -58,7 +50,7 @@ jobs:
     uses: ./.github/workflows/test-rust-client.yml
     secrets: inherit
     with:
-      client_matrix: "[\"${{ inputs.client }}\"]"
+      client_matrix: "[\"asset\"]"
 
   publish_crate:
     name: Rust Types / Publish Crate
