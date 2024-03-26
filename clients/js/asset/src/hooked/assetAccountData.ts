@@ -56,10 +56,13 @@ export const getAssetAccountDataSerializer = (): Serializer<
         finalOffset
       );
       const type = header.kind as ExtensionType;
-      const [extension] = getExtensionSerializerFromType(type).deserialize(
-        buffer.subarray(headerOffset, headerOffset + header.length)
-      );
-      extensions.push({ ...extension, type } as TypedExtension);
+
+      if (ExtensionType[type]) {
+        const [extension] = getExtensionSerializerFromType(type).deserialize(
+          buffer.subarray(headerOffset, headerOffset + header.length)
+        );
+        extensions.push({ ...extension, type } as TypedExtension);
+      }
 
       finalOffset = header.boundary;
     }
