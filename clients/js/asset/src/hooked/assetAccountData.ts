@@ -57,7 +57,7 @@ export const getAssetAccountDataSerializer = (): Serializer<
       );
       const type = header.kind as ExtensionType;
 
-      if (type) {
+      if (ExtensionType[type]) {
         const [extension] = getExtensionSerializerFromType(type).deserialize(
           buffer.subarray(headerOffset, headerOffset + header.length)
         );
