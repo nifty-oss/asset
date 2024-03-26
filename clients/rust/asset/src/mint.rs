@@ -304,7 +304,7 @@ pub enum MintError {
     InvalidExtensionData(String),
 }
 
-const MAX_IX_DATA_SIZE: usize = 925;
+pub const MAX_IX_DATA_SIZE: usize = 925;
 
 /// Returns a vector of instructions to fully mint an asset, including with extensions.
 /// The instructions are returned in the order they should be executed.

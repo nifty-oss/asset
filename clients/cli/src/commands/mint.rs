@@ -1,6 +1,8 @@
 use std::fs::File;
 
-use nifty_asset::{AssetArgs, AssetFile, ExtensionArgs, MintAccounts, MintIxArgs};
+use nifty_asset::{
+    AssetArgs, AssetFile, ExtensionArgs, MintAccounts, MintIxArgs, MAX_IX_DATA_SIZE,
+};
 
 use super::*;
 
@@ -36,13 +38,22 @@ pub async fn handle_mint(args: MintArgs) -> Result<()> {
         mutable: asset_data.mutable,
     };
 
+    let data_size: usize = asset_data
+        .extensions
+        .iter()
+        .map(|extension| extension.value.clone().into_data().len())
+        .sum();
+
+    println!("data_size: {}", data_size);
+    let chunked = data_size > MAX_IX_DATA_SIZE;
+
     let extension_args = asset_data
         .extensions
         .iter()
         .map(|extension| ExtensionArgs {
             extension_type: extension.extension_type.clone(),
             data: extension.value.clone().into_data(),
-            chunked: true,
+            chunked,
         })
         .collect::<Vec<ExtensionArgs>>();
 
@@ -52,9 +63,16 @@ pub async fn handle_mint(args: MintArgs) -> Result<()> {
         extension_args,
     })?;
 
-    for instruction in instructions {
-        let sig = send_and_confirm_tx(&config.client, &[&authority_sk, &asset_sk], &[instruction])?;
+    // Optimize this later
+    if data_size < 500 {
+        let sig = send_and_confirm_tx(&config.client, &[&authority_sk, &asset_sk], &instructions)?;
         println!("sig: {}", sig);
+    } else {
+        for instruction in instructions {
+            let sig =
+                send_and_confirm_tx(&config.client, &[&authority_sk, &asset_sk], &[instruction])?;
+            println!("sig: {}", sig);
+        }
     }
 
     println!("Mint asset: {}", asset);
