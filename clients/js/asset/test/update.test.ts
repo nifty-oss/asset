@@ -1,4 +1,3 @@
-import { getSplSystemProgramId } from '@metaplex-foundation/mpl-toolbox';
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
@@ -279,7 +278,6 @@ test('it can extend the length of an extension', async (t) => {
   await update(umi, {
     asset: asset.publicKey,
     payer: umi.identity,
-    systemProgram: getSplSystemProgramId(umi),
     extension: attributes([
       { traitType: 'Type', value: 'Dark' },
       { traitType: 'Clothes', value: 'Purple Shirt' },

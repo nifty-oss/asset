@@ -1,10 +1,10 @@
-import { getSplSystemProgramId } from '@metaplex-foundation/mpl-toolbox';
 import {
   Context,
   OptionOrNullable,
   TransactionBuilder,
   none,
 } from '@metaplex-foundation/umi';
+import { SYSTEM_PROGRAM_ID } from '.';
 import { TypedExtension, getExtensionSerializerFromType } from './extensions';
 import { ExtensionInputArgs } from './generated';
 import {
@@ -36,7 +36,7 @@ export function update(
 
   return baseUpdate(context, {
     ...input,
-    systemProgram: getSplSystemProgramId(context),
+    systemProgram: SYSTEM_PROGRAM_ID,
     extension,
   });
 }

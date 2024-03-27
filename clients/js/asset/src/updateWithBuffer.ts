@@ -4,15 +4,15 @@ import {
   generateSigner,
   transactionBuilderGroup,
 } from '@metaplex-foundation/umi';
-import { getSplSystemProgramId } from '@metaplex-foundation/mpl-toolbox';
+import { SYSTEM_PROGRAM_ID } from '.';
 import { TypedExtension, getExtensionSerializerFromType } from './extensions';
 import { allocate } from './generated';
-import { DEFAULT_CHUNK_SIZE, write } from './write';
 import {
   UpdateInstructionAccounts,
   UpdateInstructionArgs,
   update,
 } from './generated/instructions/update';
+import { DEFAULT_CHUNK_SIZE, write } from './write';
 
 export function updateWithBuffer(
   context: Pick<
@@ -53,7 +53,7 @@ export function updateWithBuffer(
         update(context, {
           ...input,
           buffer: buffer.publicKey,
-          systemProgram: getSplSystemProgramId(context),
+          systemProgram: SYSTEM_PROGRAM_ID,
           extension: {
             extensionType: input.extension.type,
             length: data.length,
