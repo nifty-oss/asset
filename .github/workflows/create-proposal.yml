@@ -1,4 +1,4 @@
-name: Deploy Program
+name: Create Proposal
 
 on:
   workflow_dispatch:
@@ -19,12 +19,7 @@ on:
         options:
           - devnet
           - mainnet-beta
-      version_program:
-        description: Version program
-        required: true
-        default: false
-        type: boolean
-      level:
+      bump:
         description: Level
         required: true
         default: patch
@@ -67,9 +62,9 @@ jobs:
     with:
       client_matrix: '["${{ inputs.program }}"]'
 
-  deploy_program:
-    name: Program / Deploy
-    runs-on: buildjet-8vcpu-ubuntu-2204
+  create_proposal:
+    name: Program / Proposal
+    runs-on: ubuntu-latest
     needs: [test_programs, test_js, test_rust]
     permissions:
       contents: write
@@ -93,17 +88,17 @@ jobs:
           version: ${{ env.SOLANA_VERSION }}
           cache: ${{ env.CACHE }}
 
-      - name: Install cargo-release
-        uses: nifty-oss/actions/install-cargo-release@v1
-        with:
-          cache: ${{ env.CACHE }}
-
       - name: Set RPC
         run: |
           if [ "${{ inputs.cluster }}" == "devnet" ]; then
             echo RPC=${{ secrets.DEVNET_RPC }} >> $GITHUB_ENV
-          else
+            echo MINT_TYPE="council" >> $GITHUB_ENV
+          elif [ "${{ inputs.cluster }}" == "mainnet-beta" ]; then
             echo RPC=${{ secrets.MAINNET_RPC }} >> $GITHUB_ENV
+            echo MINT_TYPE="member" >> $GITHUB_ENV
+          else
+            echo "Invalid cluster"
+            exit 1
           fi
 
       - name: Determine program version
@@ -115,14 +110,14 @@ jobs:
           PATCH=`echo ${VERSION} | cut -d. -f3`
 
           if [ "${{ inputs.level }}" == "major" ]; then
-             MAJOR=$((MAJOR + 1))
-             MINOR=0
-             PATCH=0
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
           elif [ "${{ inputs.level }}" == "minor" ]; then
-             MINOR=$((MINOR + 1))
-             PATCH=0
+              MINOR=$((MINOR + 1))
+              PATCH=0
           else
-             PATCH=$((PATCH + 1))
+              PATCH=$((PATCH + 1))
           fi
 
           PROGRAM_VERSION="${MAJOR}.${MINOR}.${PATCH}"
@@ -139,45 +134,35 @@ jobs:
         with:
           name: program-builds
 
-      - name: Deploy Program
+      - name: Create proposal
         run: |
           echo "Deploying ${{ inputs.program }} to ${{ inputs.cluster }}"
+          echo "Creating program buffer..."
 
           echo ${{ secrets.NIFTY_DEPLOYER_KEY }} > ./deployer-key.json 
 
-          if [ "${{ inputs.program }}" == "asset" ]; then
-            echo ${{ secrets.ASSET_KEY }} > ./program-id.json
-            echo WORKING_DIR="./programs/${{ inputs.program }}/program" >> $GITHUB_ENV
-          else
-            echo ${{ secrets.BRIDGE_KEY }} > ./program-id.json
-            echo WORKING_DIR="./programs/${{ inputs.program }}" >> $GITHUB_ENV
-          fi
+          solana config set -k ./deployer-key.json > /dev/null 2>&1
+          solana config set --url ${{ env.RPC }} > /dev/null 2>&1
 
-          solana -v program deploy ./programs/.bin/${{ inputs.program }}_program.so \
-            -u ${{ env.RPC }} \
-            --program-id ./program-id.json \
-            -k ./deployer-key.json
-            
-          rm ./deployer-key.json
-          rm ./program-id.json
+          BUFFER=$(solana program write-buffer ./programs/.bin/${{ env.PROGRAM_NAME }}.so | awk '{print $2}')
+          echo "Buffer: $BUFFER"
+          solana program set-buffer-authority --new-buffer-authority ${{ env.NIFTY_DEPLOYER_KEY }} $BUFFER
 
-      - name: Version program
-        working-directory: ${{ env.WORKING_DIR }}
-        if: github.event.inputs.version_program == 'true'
-        run: |
-          git stash
-          git config user.name "${{ env.COMMIT_USER_NAME }}"
-          git config user.email "${{ env.COMMIT_USER_EMAIL }}"
+          rm deployer-key.json
 
-          cargo login ${{ secrets.CRATES_TOKEN }}
-          cargo release ${{ env.PROGRAM_VERSION }} --no-confirm --no-push --no-tag --no-publish --execute
+        #GIT_TAG="proposal(v${{ env.PROGRAM_VERSION }}@${{ inputs.cluster }})"
+        #DELETE_TAG=`git tag | grep '${GIT_TAG}' | wc -l | awk '{print $1}'`
+        #
+        #if [ ${DELETE_TAG} -gt 1 ]; then
+        #  git push --delete origin -d $GIT_TAG 2> /dev/null
+        #  echo "Removed git tag: '$GIT_TAG'"
+        #fi
 
-          git reset --soft HEAD~1
-          git stash pop
+      #- name: Tag the proposal commit
+      #  run: |
+      #    echo "Tagging the proposal for nifty-${{ inputs.program }} to ${{ inputs.cluster }}"
 
-      - name: Commit and tag new version
-        uses: stefanzweifel/git-auto-commit-action@v4
-        if: github.event.inputs.version_program == 'true' && github.event.inputs.cluster == 'mainnet-beta'
-        with:
-          commit_message: Deploy nifty-${{ inputs.program }} program v${{ env.PROGRAM_VERSION }}
-          tagging_message: nifty-${{ inputs.program }}@v${{ env.PROGRAM_VERSION }}
+      #    GIT_TAG="proposal(nifty-${{ inputs.program }}@v${{ env.PROGRAM_VERSION }}-${{ inputs.cluster }})"
+
+      #    git tag $GIT_TAG
+      #    git push origin $GIT_TAG
