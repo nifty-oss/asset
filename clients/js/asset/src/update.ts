@@ -1,9 +1,9 @@
-import { getSplSystemProgramId } from '@metaplex-foundation/mpl-toolbox';
 import {
   Context,
   OptionOrNullable,
   TransactionBuilder,
   none,
+  publicKey,
 } from '@metaplex-foundation/umi';
 import { TypedExtension, getExtensionSerializerFromType } from './extensions';
 import { ExtensionInputArgs } from './generated';
@@ -12,6 +12,7 @@ import {
   UpdateInstructionArgs,
   update as baseUpdate,
 } from './generated/instructions/update';
+import { SystemProgram } from '@solana/web3.js';
 
 export function update(
   context: Pick<
@@ -36,7 +37,7 @@ export function update(
 
   return baseUpdate(context, {
     ...input,
-    systemProgram: getSplSystemProgramId(context),
+    systemProgram: publicKey(SystemProgram.programId.toBase58()),
     extension,
   });
 }
