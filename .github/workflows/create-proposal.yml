@@ -137,7 +137,7 @@ jobs:
       - name: Create proposal
         working-directory: ./programs/.bin
         run: |
-          echo "Deploying ${{ inputs.program }} to ${{ inputs.cluster }}"
+          echo "Deploying nifty-${{ inputs.program }} to ${{ inputs.cluster }}"
           echo "Creating program buffer..."
 
           echo ${{ secrets.NIFTY_DEPLOYER_KEY }} > ./deployer-key.json 
@@ -145,7 +145,7 @@ jobs:
           solana config set -k ./deployer-key.json > /dev/null 2>&1
           solana config set --url ${{ env.RPC }} > /dev/null 2>&1
 
-          BUFFER=$(solana program write-buffer ./programs/.bin/${{ env.PROGRAM_NAME }}_program.so | awk '{print $2}')
+          BUFFER=$(solana program write-buffer ./programs/.bin/${{ inputs.program }}_program.so | awk '{print $2}')
           echo "Buffer: $BUFFER"
           solana program set-buffer-authority --new-buffer-authority ${{ env.NIFTY_DEPLOYER_KEY }} $BUFFER
 
