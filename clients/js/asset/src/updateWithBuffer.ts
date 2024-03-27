@@ -2,18 +2,17 @@ import {
   Context,
   TransactionBuilderGroup,
   generateSigner,
-  publicKey,
   transactionBuilderGroup,
 } from '@metaplex-foundation/umi';
+import { SYSTEM_PROGRAM_ID } from '.';
 import { TypedExtension, getExtensionSerializerFromType } from './extensions';
 import { allocate } from './generated';
-import { DEFAULT_CHUNK_SIZE, write } from './write';
 import {
   UpdateInstructionAccounts,
   UpdateInstructionArgs,
   update,
 } from './generated/instructions/update';
-import { SystemProgram } from '@solana/web3.js';
+import { DEFAULT_CHUNK_SIZE, write } from './write';
 
 export function updateWithBuffer(
   context: Pick<
@@ -54,7 +53,7 @@ export function updateWithBuffer(
         update(context, {
           ...input,
           buffer: buffer.publicKey,
-          systemProgram: publicKey(SystemProgram.programId.toBase58()),
+          systemProgram: SYSTEM_PROGRAM_ID,
           extension: {
             extensionType: input.extension.type,
             length: data.length,

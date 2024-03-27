@@ -3,8 +3,8 @@ import {
   OptionOrNullable,
   TransactionBuilder,
   none,
-  publicKey,
 } from '@metaplex-foundation/umi';
+import { SYSTEM_PROGRAM_ID } from '.';
 import { TypedExtension, getExtensionSerializerFromType } from './extensions';
 import { ExtensionInputArgs } from './generated';
 import {
@@ -12,7 +12,6 @@ import {
   UpdateInstructionArgs,
   update as baseUpdate,
 } from './generated/instructions/update';
-import { SystemProgram } from '@solana/web3.js';
 
 export function update(
   context: Pick<
@@ -37,7 +36,7 @@ export function update(
 
   return baseUpdate(context, {
     ...input,
-    systemProgram: publicKey(SystemProgram.programId.toBase58()),
+    systemProgram: SYSTEM_PROGRAM_ID,
     extension,
   });
 }
