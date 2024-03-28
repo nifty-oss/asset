@@ -21,7 +21,7 @@ use solana_security_txt::security_txt;
 security_txt! {
     // Required fields
     name: "Nifty Asset",
-    project_url: "http://nifty-oss.org",
+    project_url: "https://nifty-oss.org",
     contacts: "email:maintainers@nifty-oss.org,link:https://twitter.com/nifty_oss,link:https://discord.gg/Ctf52swtH3",
     policy: "https://github.com/nifty-oss/asset/blob/main/SECURITY.md",
 
