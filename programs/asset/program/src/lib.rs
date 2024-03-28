@@ -14,4 +14,19 @@ pub mod utils;
 
 pub use solana_program;
 
+#[cfg(not(feature = "no-entrypoint"))]
+use solana_security_txt::security_txt;
+
+#[cfg(not(feature = "no-entrypoint"))]
+security_txt! {
+    // Required fields
+    name: "Nifty Asset",
+    project_url: "http://nifty-oss.org",
+    contacts: "email:maintainers@nifty-oss.org,link:https://twitter.com/nifty_oss,link:https://discord.gg/Ctf52swtH3",
+    policy: "https://github.com/nifty-oss/asset/blob/main/SECURITY.md",
+
+    // Optional Fields
+    source_code: "https://github.com/nifty-oss/asset"
+}
+
 solana_program::declare_id!("AssetGtQBTSgm5s91d1RAQod5JmaZiJDxqsgtqrZud73");
