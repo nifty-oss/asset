@@ -2255,7 +2255,7 @@ dependencies = [
 
 [[package]]
 name = "nifty-asset"
-version = "0.0.1-alpha.3"
+version = "0.1.0"
 dependencies = [
  "assert_matches",
  "borsh 0.10.3",
