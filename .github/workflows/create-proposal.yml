@@ -92,14 +92,10 @@ jobs:
         run: |
           if [ "${{ inputs.cluster }}" == "devnet" ]; then
             echo RPC=${{ secrets.DEVNET_RPC }} >> $GITHUB_ENV
-            echo MINT_TYPE="council" >> $GITHUB_ENV
-          elif [ "${{ inputs.cluster }}" == "mainnet-beta" ]; then
-            echo RPC=${{ secrets.MAINNET_RPC }} >> $GITHUB_ENV
-            echo MINT_TYPE="member" >> $GITHUB_ENV
           else
-            echo "Invalid cluster"
-            exit 1
+            echo RPC=${{ secrets.MAINNET_RPC }} >> $GITHUB_ENV
           fi
+  
 
       - name: Determine program version
         run: |
@@ -146,7 +142,7 @@ jobs:
 
           BUFFER=$(solana program write-buffer ./programs/.bin/${{ inputs.program }}_program.so | awk '{print $2}')
           echo "Buffer: $BUFFER"
-          solana program set-buffer-authority --new-buffer-authority ${{ env.NIFTY_DEPLOYER_KEY }} $BUFFER
+          solana program set-buffer-authority --new-buffer-authority ${{ secrets.NIFTY_AUTHORITY_KEY }} $BUFFER
 
           rm deployer-key.json
 

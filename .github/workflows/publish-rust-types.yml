@@ -52,10 +52,18 @@ jobs:
     with:
       client_matrix: "[\"asset\"]"
 
+  test_programs:
+    name: Programs
+    needs: build_programs
+    uses: ./.github/workflows/test-programs.yml
+    secrets: inherit
+    with:
+      program_matrix: "[\"asset\"]"
+
   publish_crate:
     name: Rust Types / Publish Crate
     runs-on: buildjet-8vcpu-ubuntu-2204
-    needs: [test_js, test_rust_client]
+    needs: [test_js, test_rust_client, test_programs]
     permissions:
       contents: write
     steps:
