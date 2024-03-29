@@ -55,7 +55,7 @@ pub fn process_instruction<'a>(
         // check whether the instruction is allowed to proceed
         if matches!(
             instruction,
-            Instruction::Allocate(_)
+            Instruction::Approve(_)
                 | Instruction::Burn
                 | Instruction::Lock
                 | Instruction::Revoke(_)
