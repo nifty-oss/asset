@@ -82,7 +82,7 @@ jobs:
 
       - name: Bump Program Version
         run: |
-          IDL_NAME="`echo "${{ inputs.program }}" | tr - _`"
+          IDL_NAME="`echo "${{ inputs.program }}_program" | tr - _`"
           VERSION=`jq '.version' ./idls/${IDL_NAME}.json | sed 's/"//g'`
 
           MAJOR=`echo ${VERSION} | cut -d. -f1`
@@ -114,7 +114,7 @@ jobs:
         run: |
           PROGRAM_DIR="${{ inputs.program }}"
           if [ "${PROGRAM_DIR}" == "asset" ]; then
-            PROGRAM_DIR="asset/program"
+            PROGRAM_DIR="${{ inputs.program }}/program"
           fi
           cd $PROGRAM_DIR
 
