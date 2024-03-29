@@ -159,8 +159,7 @@ macro_rules! allocate_update_data_length {
 macro_rules! allocate_and_write {
     ( $program:expr, $asset:expr, $payer:expr, $system_program:expr, $extension_type:expr, $data:expr, $signers_seeds:expr ) => {{
         const CPI_LIMIT: usize = 1280;
-        const ACCOUNT_META_SIZE: usize = 34; // 32 bytes for pubkey + 1 byte for is_signer + 1 byte for is_writable
-
+        const ACCOUNT_METAS_SIZE: usize = 102; // 3 X (32 bytes for pubkey + 1 byte for is_signer + 1 byte for is_writable)
         let total_data_len = $data.len();
         // (1) discriminator
         // (1) extension type
@@ -169,16 +168,13 @@ macro_rules! allocate_and_write {
         // (4) data length
         // total = 11
         const ALLOCATE_HEADER: usize = 11;
+        let data_len = std::cmp::min(total_data_len, CPI_LIMIT - ALLOCATE_HEADER - ACCOUNT_METAS_SIZE);
 
         let accounts = vec![
             solana_program::instruction::AccountMeta::new(*$asset.key, true),
             solana_program::instruction::AccountMeta::new(*$payer.key, true),
             solana_program::instruction::AccountMeta::new_readonly(*$system_program.key, false),
         ];
-        let account_metas_size = accounts.len() * ACCOUNT_META_SIZE; 
-
-        let data_len = std::cmp::min(total_data_len, CPI_LIMIT - ALLOCATE_HEADER - account_metas_size);
-
 
         let account_infos = vec![
             $program.clone(),
@@ -212,7 +208,7 @@ macro_rules! allocate_and_write {
             // (1) overwrite
             // total = 2
             const WRITE_HEADER: usize = 2;
-            let data_len = std::cmp::min(total_data_len - offset, CPI_LIMIT - WRITE_HEADER - account_metas_size);
+            let data_len = std::cmp::min(total_data_len - offset, CPI_LIMIT - WRITE_HEADER - ACCOUNT_METAS_SIZE);
 
             instruction.data.push(12); // write discriminator
             instruction.data.push(0); // overwrite (false)
