@@ -171,9 +171,9 @@ macro_rules! allocate_and_write {
         let data_len = std::cmp::min(total_data_len, CPI_LIMIT - ALLOCATE_HEADER - ACCOUNT_METAS_SIZE);
 
         let accounts = vec![
-            solana_program::instruction::AccountMeta::new(*$asset.key, true),
-            solana_program::instruction::AccountMeta::new(*$payer.key, true),
-            solana_program::instruction::AccountMeta::new_readonly(*$system_program.key, false),
+            $crate::solana_program::instruction::AccountMeta::new(*$asset.key, true),
+            $crate::solana_program::instruction::AccountMeta::new(*$payer.key, true),
+            $crate::solana_program::instruction::AccountMeta::new_readonly(*$system_program.key, false),
         ];
 
         let account_infos = vec![
@@ -191,13 +191,13 @@ macro_rules! allocate_and_write {
         instruction_data.extend_from_slice(&u32::to_le_bytes(data_len as u32));
         instruction_data.extend_from_slice(&$data[..data_len]);
 
-        let mut instruction = solana_program::instruction::Instruction {
+        let mut instruction = $crate::solana_program::instruction::Instruction {
             program_id: nifty_asset::ID,
             accounts,
             data: instruction_data,
         };
 
-        solana_program::program::invoke_signed(&instruction, &account_infos, $signers_seeds)?;
+        $crate::solana_program::program::invoke_signed(&instruction, &account_infos, $signers_seeds)?;
 
         let mut total = data_len;
 
@@ -219,7 +219,7 @@ macro_rules! allocate_and_write {
                 .data
                 .extend_from_slice(&$data[offset..offset + data_len]);
 
-            solana_program::program::invoke_signed(&instruction, &account_infos, $signers_seeds)?;
+            $crate::solana_program::program::invoke_signed(&instruction, &account_infos, $signers_seeds)?;
 
             total += data_len;
         }
