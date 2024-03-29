@@ -159,14 +159,15 @@ macro_rules! allocate_update_data_length {
 macro_rules! allocate_and_write {
     ( $program:expr, $asset:expr, $payer:expr, $system_program:expr, $extension_type:expr, $data:expr, $signers_seeds:expr ) => {{
         const CPI_LIMIT: usize = 1280;
-
+        let total_data_len = $data.len();
         // (1) discriminator
         // (1) extension type
         // (4) length
         // (1) option
         // (4) data length
         // total = 11
-        let data_len = std::cmp::min($data.len(), CPI_LIMIT - 11);
+        const ALLOCATE_HEADER: usize = 11;
+        let data_len = std::cmp::min(total_data_len, CPI_LIMIT - ALLOCATE_HEADER);
 
         let accounts = vec![
             solana_program::instruction::AccountMeta::new(*$asset.key, true),
@@ -184,7 +185,7 @@ macro_rules! allocate_and_write {
         let mut instruction_data = Vec::with_capacity(CPI_LIMIT);
         instruction_data.push(4); // allocate discriminator
         instruction_data.push($extension_type as u8);
-        instruction_data.extend_from_slice(&u32::to_le_bytes($data.len() as u32));
+        instruction_data.extend_from_slice(&u32::to_le_bytes(total_data_len as u32));
         instruction_data.push(1);
         instruction_data.extend_from_slice(&u32::to_le_bytes(data_len as u32));
         instruction_data.extend_from_slice(&$data[..data_len]);
@@ -199,16 +200,17 @@ macro_rules! allocate_and_write {
 
         let mut total = data_len;
 
-        while total < $data.len() {
+        while total < total_data_len {
             instruction.data.clear();
             let offset = total;
             // (1) discriminator
             // (1) overwrite
             // total = 2
-            let data_len = std::cmp::min($data.len() - offset, CPI_LIMIT - 2);
+            const WRITE_HEADER: usize = 2;
+            let data_len = std::cmp::min(total_data_len - offset, CPI_LIMIT - WRITE_HEADER);
 
             instruction.data.push(12); // write discriminator
-            instruction.data.push(0); // no overwrite
+            instruction.data.push(0); // overwrite (false)
             instruction
                 .data
                 .extend_from_slice(&u32::to_le_bytes(data_len as u32));
