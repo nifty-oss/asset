@@ -52,8 +52,15 @@ pub fn process_instruction<'a>(
         .map_err(|_| ProgramError::InvalidInstructionData)?;
 
     if let Some(account) = is_locked(program_id, accounts) {
-        // if we are not unlocking the asset, then we block the instruction
-        if !matches!(instruction, Instruction::Unlock) {
+        // check whether the instruction is allowed to proceed
+        if matches!(
+            instruction,
+            Instruction::Approve(_)
+                | Instruction::Burn
+                | Instruction::Lock
+                | Instruction::Revoke(_)
+                | Instruction::Transfer
+        ) {
             return err!(AssetError::LockedAsset, "Asset \"{}\" is locked", account);
         }
     }
