@@ -81,7 +81,7 @@ impl<'a, 'b> AllocateCpiAccounts<'a, 'b> {
 ///
 /// 1. `extension_type` - the type ([`ExtensionType`]) of the extension.
 /// 2. `length` - expression representing the length of the extension data.
-/// 3. `data` - (optional) the extension data as a byte slice.
+/// 3. `data` - (optional) expression representing the extension data as a byte slice.
 #[macro_export]
 macro_rules! allocate_instruction_data {
     ( $extension_type:expr, $length:expr, $data:expr ) => {{
@@ -139,5 +139,99 @@ macro_rules! allocate_update_data_length {
 
         $data[length_index..length_index + std::mem::size_of::<u32>()].copy_from_slice(&u32::to_le_bytes($length as u32));
         $data[data_length_index..data_length_index + std::mem::size_of::<u32>()].copy_from_slice(&u32::to_le_bytes($length as u32));
+    }};
+}
+
+/// Convenience macro to invoke `Allocate` and `Write` instructions.
+///
+/// The macro will generate the sufficient invokes to allocated and write all the extension data.
+///
+/// # Arguments
+///
+/// 1. `program` - expression represeting the reference to the nifty asset program account info
+/// 2. `asset` - expression representing the reference to the asset account info
+/// 3. `payer` - expression representing the reference to the payer account info
+/// 4. `system_program` - expression representing the reference to the system program account info
+/// 5. `extension_type` - the type ([`ExtensionType`]) of the extension.
+/// 6. `data` - expression representing the extension data as a byte slice.
+/// 7. `signers_seeds` - (optional) expression representing the reference to the signers seeds
+#[macro_export]
+macro_rules! allocate_and_write {
+    ( $program:expr, $asset:expr, $payer:expr, $system_program:expr, $extension_type:expr, $data:expr, $signers_seeds:expr ) => {{
+        const CPI_LIMIT: usize = 1280;
+        let total_data_len = $data.len();
+        // (1) discriminator
+        // (1) extension type
+        // (4) length
+        // (1) option
+        // (4) data length
+        // total = 11
+        const ALLOCATE_HEADER: usize = 11;
+        let data_len = std::cmp::min(total_data_len, CPI_LIMIT - ALLOCATE_HEADER);
+
+        let accounts = vec![
+            solana_program::instruction::AccountMeta::new(*$asset.key, true),
+            solana_program::instruction::AccountMeta::new(*$payer.key, true),
+            solana_program::instruction::AccountMeta::new_readonly(*$system_program.key, false),
+        ];
+
+        let account_infos = vec![
+            $program.clone(),
+            $asset.clone(),
+            $payer.clone(),
+            $system_program.clone(),
+        ];
+
+        let mut instruction_data = Vec::with_capacity(CPI_LIMIT);
+        instruction_data.push(4); // allocate discriminator
+        instruction_data.push($extension_type as u8);
+        instruction_data.extend_from_slice(&u32::to_le_bytes(total_data_len as u32));
+        instruction_data.push(1);
+        instruction_data.extend_from_slice(&u32::to_le_bytes(data_len as u32));
+        instruction_data.extend_from_slice(&$data[..data_len]);
+
+        let mut instruction = solana_program::instruction::Instruction {
+            program_id: nifty_asset::ID,
+            accounts,
+            data: instruction_data,
+        };
+
+        solana_program::program::invoke_signed(&instruction, &account_infos, $signers_seeds)?;
+
+        let mut total = data_len;
+
+        while total < total_data_len {
+            instruction.data.clear();
+            let offset = total;
+            // (1) discriminator
+            // (1) overwrite
+            // total = 2
+            const WRITE_HEADER: usize = 2;
+            let data_len = std::cmp::min(total_data_len - offset, CPI_LIMIT - WRITE_HEADER);
+
+            instruction.data.push(12); // write discriminator
+            instruction.data.push(0); // overwrite (false)
+            instruction
+                .data
+                .extend_from_slice(&u32::to_le_bytes(data_len as u32));
+            instruction
+                .data
+                .extend_from_slice(&$data[offset..offset + data_len]);
+
+            solana_program::program::invoke_signed(&instruction, &account_infos, $signers_seeds)?;
+
+            total += data_len;
+        }
+    }};
+    ( $program:expr, $asset:expr, $payer:expr, $system_program:expr, $extension_type:expr, $data:expr ) => {{
+        allocate_and_write!(
+            $program,
+            $asset,
+            $payer,
+            $system_program,
+            $extension_type,
+            $data,
+            &[]
+        );
     }};
 }
