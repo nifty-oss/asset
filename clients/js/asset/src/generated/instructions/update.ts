@@ -45,6 +45,8 @@ export type UpdateInstructionAccounts = {
   authority?: Signer;
   /** Extension (asset) buffer account */
   buffer?: PublicKey | Pda;
+  /** The asset defining the group, if applicable */
+  groupAsset?: PublicKey | Pda;
   /** The account paying for the storage fees */
   payer?: Signer;
   /** The system program */
@@ -120,13 +122,18 @@ export function update(
       isWritable: true as boolean,
       value: input.buffer ?? null,
     },
-    payer: {
+    groupAsset: {
       index: 3,
+      isWritable: false as boolean,
+      value: input.groupAsset ?? null,
+    },
+    payer: {
+      index: 4,
       isWritable: true as boolean,
       value: input.payer ?? null,
     },
     systemProgram: {
-      index: 4,
+      index: 5,
       isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },

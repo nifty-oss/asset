@@ -408,6 +408,15 @@
           ]
         },
         {
+          "name": "groupAsset",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The asset defining the group, if applicable"
+          ]
+        },
+        {
           "name": "payer",
           "isMut": true,
           "isSigner": true,

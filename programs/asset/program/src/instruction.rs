@@ -74,8 +74,9 @@ pub enum Instruction {
     #[account(0, writable, name="asset", desc = "Asset account")]
     #[account(1, signer, name="authority", desc = "The authority of the asset")]
     #[account(2, optional, writable, name="buffer", desc = "Extension (asset) buffer account")]
-    #[account(3, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
-    #[account(4, optional, name="system_program", desc = "The system program")]
+    #[account(3, optional, name="group_asset", desc = "The asset defining the group, if applicable")]
+    #[account(4, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
+    #[account(5, optional, name="system_program", desc = "The system program")]
     Update(UpdateInput),
 
     /// Verifies a creator.
