@@ -182,8 +182,7 @@ macro_rules! allocate_and_write {
         ];
 
         let mut instruction_data = Vec::with_capacity(CPI_LIMIT);
-        // allocate discriminator
-        instruction_data.push(4);
+        instruction_data.push(4); // allocate discriminator
         instruction_data.push($extension_type as u8);
         instruction_data.extend_from_slice(&u32::to_le_bytes($data.len() as u32));
         instruction_data.push(1);
