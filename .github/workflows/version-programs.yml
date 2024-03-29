@@ -126,8 +126,8 @@ jobs:
           git reset --soft HEAD~1
           git stash pop
 
-      #- name: Commit and tag new version
-      #  uses: stefanzweifel/git-auto-commit-action@v4
-      #  with:
-      #    commit_message: "chore: ${{ inputs.program }} version ${{ env.PROGRAM_VERSION }}"
-      #    tagging_message: ${{ inputs.program }}@v${{ env.PROGRAM_VERSION }}
+      - name: Commit and tag new version
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "chore: ${{ inputs.program }} program version ${{ env.PROGRAM_VERSION }}"
+          tagging_message: ${{ inputs.program }}_program@v${{ env.PROGRAM_VERSION }}
