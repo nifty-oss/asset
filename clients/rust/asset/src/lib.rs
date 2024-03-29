@@ -8,7 +8,13 @@ pub use generated::*;
 pub use hooked::*;
 pub use mint::*;
 
+// Re-export for downstream crates.
+pub mod solana_program {
+    pub use solana_program::*;
+}
+
 // Re-export nifty_asset_types for convenience
+
 pub mod constraints {
     pub use nifty_asset_types::constraints::*;
 }
