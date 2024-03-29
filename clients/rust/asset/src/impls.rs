@@ -159,7 +159,7 @@ macro_rules! allocate_update_data_length {
 macro_rules! allocate_and_write {
     ( $program:expr, $asset:expr, $payer:expr, $system_program:expr, $extension_type:expr, $data:expr, $signers_seeds:expr ) => {{
         const CPI_LIMIT: usize = 1280;
-        const ACCOUNT_METAS_SIZE: usize = 102; // 3 X (32 bytes for pubkey + 1 byte for is_signer + 1 byte for is_writable)
+        const ACCOUNT_METAS_SIZE: usize = 106; // 3 X (32 bytes for pubkey + 1 byte for is_signer + 1 byte for is_writable) + 4 bytes for Vec
         let total_data_len = $data.len();
         // (1) discriminator
         // (1) extension type
