@@ -79,7 +79,7 @@ impl<'a, 'b> AllocateCpiAccounts<'a, 'b> {
 ///
 /// # Arguments
 ///
-/// 1. `extension_type` - the type ([`ExtensionType`]) of the extension.
+/// 1. `extension_type` - the type (`ExtensionType`) of the extension.
 /// 2. `length` - expression representing the length of the extension data.
 /// 3. `data` - (optional) expression representing the extension data as a byte slice.
 #[macro_export]
@@ -127,6 +127,11 @@ macro_rules! allocate_instruction_data {
 }
 
 /// Updates the length of the extension data in the `Allocate` instruction data.
+///
+/// # Arguments
+///
+/// 1. `length` - expression representing the length of the extension data.
+/// 2. `data` - expression representing the extension data as a byte slice.
 #[macro_export]
 macro_rules! allocate_update_data_length {
     ( $length:expr, $data:expr ) => {{
@@ -144,17 +149,17 @@ macro_rules! allocate_update_data_length {
 
 /// Convenience macro to invoke `Allocate` and `Write` instructions.
 ///
-/// The macro will generate the sufficient invokes to allocated and write all the extension data.
+/// The macro will generate the sufficient invokes to allocate and write all the extension data.
 ///
 /// # Arguments
 ///
-/// 1. `program` - expression represeting the reference to the nifty asset program account info
-/// 2. `asset` - expression representing the reference to the asset account info
-/// 3. `payer` - expression representing the reference to the payer account info
-/// 4. `system_program` - expression representing the reference to the system program account info
-/// 5. `extension_type` - the type ([`ExtensionType`]) of the extension.
+/// 1. `program` - expression representing a reference to the nifty asset program account info.
+/// 2. `asset` - expression representing a reference to the asset account info.
+/// 3. `payer` - expression representing a reference to the payer account info.
+/// 4. `system_program` - expression representing a reference to the system program account info.
+/// 5. `extension_type` - the type (`ExtensionType`) of the extension.
 /// 6. `data` - expression representing the extension data as a byte slice.
-/// 7. `signers_seeds` - (optional) expression representing the reference to the signers seeds
+/// 7. `signers_seeds` - (optional) expression representing a reference to the signers seeds.
 #[macro_export]
 macro_rules! allocate_and_write {
     ( $program:expr, $asset:expr, $payer:expr, $system_program:expr, $extension_type:expr, $data:expr, $signers_seeds:expr ) => {{

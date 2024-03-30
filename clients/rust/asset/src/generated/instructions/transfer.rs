@@ -17,7 +17,7 @@ pub struct Transfer {
     /// The recipient of the asset
     pub recipient: solana_program::pubkey::Pubkey,
     /// The asset defining the group, if applicable
-    pub group_asset: Option<solana_program::pubkey::Pubkey>,
+    pub group: Option<solana_program::pubkey::Pubkey>,
 }
 
 impl Transfer {
@@ -41,10 +41,9 @@ impl Transfer {
             self.recipient,
             false,
         ));
-        if let Some(group_asset) = self.group_asset {
+        if let Some(group) = self.group {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                group_asset,
-                false,
+                group, false,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -81,13 +80,13 @@ impl TransferInstructionData {
 ///   0. `[writable]` asset
 ///   1. `[signer]` signer
 ///   2. `[]` recipient
-///   3. `[optional]` group_asset
+///   3. `[optional]` group
 #[derive(Default)]
 pub struct TransferBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
     signer: Option<solana_program::pubkey::Pubkey>,
     recipient: Option<solana_program::pubkey::Pubkey>,
-    group_asset: Option<solana_program::pubkey::Pubkey>,
+    group: Option<solana_program::pubkey::Pubkey>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -116,11 +115,8 @@ impl TransferBuilder {
     /// `[optional account]`
     /// The asset defining the group, if applicable
     #[inline(always)]
-    pub fn group_asset(
-        &mut self,
-        group_asset: Option<solana_program::pubkey::Pubkey>,
-    ) -> &mut Self {
-        self.group_asset = group_asset;
+    pub fn group(&mut self, group: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
+        self.group = group;
         self
     }
     /// Add an aditional account to the instruction.
@@ -147,7 +143,7 @@ impl TransferBuilder {
             asset: self.asset.expect("asset is not set"),
             signer: self.signer.expect("signer is not set"),
             recipient: self.recipient.expect("recipient is not set"),
-            group_asset: self.group_asset,
+            group: self.group,
         };
 
         accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
@@ -163,7 +159,7 @@ pub struct TransferCpiAccounts<'a, 'b> {
     /// The recipient of the asset
     pub recipient: &'b solana_program::account_info::AccountInfo<'a>,
     /// The asset defining the group, if applicable
-    pub group_asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    pub group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
 /// `transfer` CPI instruction.
@@ -177,7 +173,7 @@ pub struct TransferCpi<'a, 'b> {
     /// The recipient of the asset
     pub recipient: &'b solana_program::account_info::AccountInfo<'a>,
     /// The asset defining the group, if applicable
-    pub group_asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    pub group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
 
 impl<'a, 'b> TransferCpi<'a, 'b> {
@@ -190,7 +186,7 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
             asset: accounts.asset,
             signer: accounts.signer,
             recipient: accounts.recipient,
-            group_asset: accounts.group_asset,
+            group: accounts.group,
         }
     }
     #[inline(always)]
@@ -239,10 +235,9 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
             *self.recipient.key,
             false,
         ));
-        if let Some(group_asset) = self.group_asset {
+        if let Some(group) = self.group {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                *group_asset.key,
-                false,
+                *group.key, false,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -269,8 +264,8 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
         account_infos.push(self.asset.clone());
         account_infos.push(self.signer.clone());
         account_infos.push(self.recipient.clone());
-        if let Some(group_asset) = self.group_asset {
-            account_infos.push(group_asset.clone());
+        if let Some(group) = self.group {
+            account_infos.push(group.clone());
         }
         remaining_accounts
             .iter()
@@ -291,7 +286,7 @@ impl<'a, 'b> TransferCpi<'a, 'b> {
 ///   0. `[writable]` asset
 ///   1. `[signer]` signer
 ///   2. `[]` recipient
-///   3. `[optional]` group_asset
+///   3. `[optional]` group
 pub struct TransferCpiBuilder<'a, 'b> {
     instruction: Box<TransferCpiBuilderInstruction<'a, 'b>>,
 }
@@ -303,7 +298,7 @@ impl<'a, 'b> TransferCpiBuilder<'a, 'b> {
             asset: None,
             signer: None,
             recipient: None,
-            group_asset: None,
+            group: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -335,11 +330,11 @@ impl<'a, 'b> TransferCpiBuilder<'a, 'b> {
     /// `[optional account]`
     /// The asset defining the group, if applicable
     #[inline(always)]
-    pub fn group_asset(
+    pub fn group(
         &mut self,
-        group_asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+        group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
-        self.instruction.group_asset = group_asset;
+        self.instruction.group = group;
         self
     }
     /// Add an additional account to the instruction.
@@ -392,7 +387,7 @@ impl<'a, 'b> TransferCpiBuilder<'a, 'b> {
 
             recipient: self.instruction.recipient.expect("recipient is not set"),
 
-            group_asset: self.instruction.group_asset,
+            group: self.instruction.group,
         };
         instruction.invoke_signed_with_remaining_accounts(
             signers_seeds,
@@ -406,7 +401,7 @@ struct TransferCpiBuilderInstruction<'a, 'b> {
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     signer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     recipient: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    group_asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

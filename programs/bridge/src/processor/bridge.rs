@@ -175,7 +175,7 @@ pub fn process_bridge(program_id: &Pubkey, ctx: Context<BridgeAccounts>) -> Prog
     asset_transfer_cpi
         .asset(ctx.accounts.asset)
         .recipient(transfer_accounts.source)
-        .group_asset(ctx.accounts.group_asset)
+        .group(ctx.accounts.group_asset)
         .signer(transfer_accounts.destination);
 
     // this is the state that the vault will be in after the cpi call

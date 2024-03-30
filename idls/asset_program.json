@@ -312,7 +312,7 @@
           ]
         },
         {
-          "name": "groupAsset",
+          "name": "group",
           "isMut": false,
           "isSigner": false,
           "isOptional": true,
@@ -405,6 +405,15 @@
           "isOptional": true,
           "docs": [
             "Extension (asset) buffer account"
+          ]
+        },
+        {
+          "name": "group",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The asset defining the group, if applicable"
           ]
         },
         {
