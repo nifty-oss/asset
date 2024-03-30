@@ -35,7 +35,7 @@ export type TransferInstructionAccounts = {
   /** The recipient of the asset */
   recipient: PublicKey | Pda;
   /** The asset defining the group, if applicable */
-  groupAsset?: PublicKey | Pda;
+  group?: PublicKey | Pda;
 };
 
 // Data.
@@ -87,10 +87,10 @@ export function transfer(
       isWritable: false as boolean,
       value: input.recipient ?? null,
     },
-    groupAsset: {
+    group: {
       index: 3,
       isWritable: false as boolean,
-      value: input.groupAsset ?? null,
+      value: input.group ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
 

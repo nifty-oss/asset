@@ -18,7 +18,7 @@ pub struct Update {
     /// Extension (asset) buffer account
     pub buffer: Option<solana_program::pubkey::Pubkey>,
     /// The asset defining the group, if applicable
-    pub group_asset: Option<solana_program::pubkey::Pubkey>,
+    pub group: Option<solana_program::pubkey::Pubkey>,
     /// The account paying for the storage fees
     pub payer: Option<solana_program::pubkey::Pubkey>,
     /// The system program
@@ -54,10 +54,9 @@ impl Update {
                 false,
             ));
         }
-        if let Some(group_asset) = self.group_asset {
+        if let Some(group) = self.group {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                group_asset,
-                false,
+                group, false,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -123,7 +122,7 @@ pub struct UpdateInstructionArgs {
 ///   0. `[writable]` asset
 ///   1. `[signer]` authority
 ///   2. `[writable, optional]` buffer
-///   3. `[optional]` group_asset
+///   3. `[optional]` group
 ///   4. `[writable, signer, optional]` payer
 ///   5. `[optional]` system_program
 #[derive(Default)]
@@ -131,7 +130,7 @@ pub struct UpdateBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
     authority: Option<solana_program::pubkey::Pubkey>,
     buffer: Option<solana_program::pubkey::Pubkey>,
-    group_asset: Option<solana_program::pubkey::Pubkey>,
+    group: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     name: Option<String>,
@@ -166,11 +165,8 @@ impl UpdateBuilder {
     /// `[optional account]`
     /// The asset defining the group, if applicable
     #[inline(always)]
-    pub fn group_asset(
-        &mut self,
-        group_asset: Option<solana_program::pubkey::Pubkey>,
-    ) -> &mut Self {
-        self.group_asset = group_asset;
+    pub fn group(&mut self, group: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
+        self.group = group;
         self
     }
     /// `[optional account]`
@@ -232,7 +228,7 @@ impl UpdateBuilder {
             asset: self.asset.expect("asset is not set"),
             authority: self.authority.expect("authority is not set"),
             buffer: self.buffer,
-            group_asset: self.group_asset,
+            group: self.group,
             payer: self.payer,
             system_program: self.system_program,
         };
@@ -255,7 +251,7 @@ pub struct UpdateCpiAccounts<'a, 'b> {
     /// Extension (asset) buffer account
     pub buffer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The asset defining the group, if applicable
-    pub group_asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    pub group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
@@ -273,7 +269,7 @@ pub struct UpdateCpi<'a, 'b> {
     /// Extension (asset) buffer account
     pub buffer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The asset defining the group, if applicable
-    pub group_asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    pub group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
@@ -293,7 +289,7 @@ impl<'a, 'b> UpdateCpi<'a, 'b> {
             asset: accounts.asset,
             authority: accounts.authority,
             buffer: accounts.buffer,
-            group_asset: accounts.group_asset,
+            group: accounts.group,
             payer: accounts.payer,
             system_program: accounts.system_program,
             __args: args,
@@ -352,10 +348,9 @@ impl<'a, 'b> UpdateCpi<'a, 'b> {
                 false,
             ));
         }
-        if let Some(group_asset) = self.group_asset {
+        if let Some(group) = self.group {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-                *group_asset.key,
-                false,
+                *group.key, false,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -407,8 +402,8 @@ impl<'a, 'b> UpdateCpi<'a, 'b> {
         if let Some(buffer) = self.buffer {
             account_infos.push(buffer.clone());
         }
-        if let Some(group_asset) = self.group_asset {
-            account_infos.push(group_asset.clone());
+        if let Some(group) = self.group {
+            account_infos.push(group.clone());
         }
         if let Some(payer) = self.payer {
             account_infos.push(payer.clone());
@@ -435,7 +430,7 @@ impl<'a, 'b> UpdateCpi<'a, 'b> {
 ///   0. `[writable]` asset
 ///   1. `[signer]` authority
 ///   2. `[writable, optional]` buffer
-///   3. `[optional]` group_asset
+///   3. `[optional]` group
 ///   4. `[writable, signer, optional]` payer
 ///   5. `[optional]` system_program
 pub struct UpdateCpiBuilder<'a, 'b> {
@@ -449,7 +444,7 @@ impl<'a, 'b> UpdateCpiBuilder<'a, 'b> {
             asset: None,
             authority: None,
             buffer: None,
-            group_asset: None,
+            group: None,
             payer: None,
             system_program: None,
             name: None,
@@ -487,11 +482,11 @@ impl<'a, 'b> UpdateCpiBuilder<'a, 'b> {
     /// `[optional account]`
     /// The asset defining the group, if applicable
     #[inline(always)]
-    pub fn group_asset(
+    pub fn group(
         &mut self,
-        group_asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+        group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
-        self.instruction.group_asset = group_asset;
+        self.instruction.group = group;
         self
     }
     /// `[optional account]`
@@ -587,7 +582,7 @@ impl<'a, 'b> UpdateCpiBuilder<'a, 'b> {
 
             buffer: self.instruction.buffer,
 
-            group_asset: self.instruction.group_asset,
+            group: self.instruction.group,
 
             payer: self.instruction.payer,
 
@@ -606,7 +601,7 @@ struct UpdateCpiBuilderInstruction<'a, 'b> {
     asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     buffer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    group_asset: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     name: Option<String>,

@@ -98,12 +98,12 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
         if group.is_some() && !royalties_checked {
             // We need group asset account to be provided.
             require!(
-                ctx.accounts.group_asset.is_some(),
+                ctx.accounts.group.is_some(),
                 ProgramError::NotEnoughAccountKeys,
                 "asset is part of a group but no group account was provided"
             );
 
-            let group_asset_info = ctx.accounts.group_asset.unwrap();
+            let group_asset_info = ctx.accounts.group.unwrap();
 
             // Group asset account must be owned by the program.
             require!(

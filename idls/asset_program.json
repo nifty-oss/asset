@@ -312,7 +312,7 @@
           ]
         },
         {
-          "name": "groupAsset",
+          "name": "group",
           "isMut": false,
           "isSigner": false,
           "isOptional": true,
@@ -408,7 +408,7 @@
           ]
         },
         {
-          "name": "groupAsset",
+          "name": "group",
           "isMut": false,
           "isSigner": false,
           "isOptional": true,
