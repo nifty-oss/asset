@@ -114,8 +114,12 @@ impl Extension {
     pub fn get<'a, T: ExtensionData<'a>>(data: &'a [u8]) -> Option<T> {
         let mut cursor = 0;
 
-        while cursor < data.len() {
+        while (cursor + Extension::LEN) < data.len() {
             let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
+
+            if extension.extension_type() == ExtensionType::None {
+                return None;
+            }
 
             match extension.try_extension_type() {
                 Ok(t) if t == T::TYPE => {
