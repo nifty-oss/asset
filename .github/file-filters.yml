@@ -63,24 +63,9 @@ rust_clients: &rust_clients
   - *asset_rust_client
   - *bridge_rust_client
 
-# CLIs.
-
-cli_common: &cli_common
-  - *asset_program
-  - *asset_rust_client
-
-rust_cli: &rust_cli
-  - *cli_common
-  - ".github/workflows/build-rust-cli.yml"
-  - "clients/cli/**"
-
-cli_clients: &cli_clients
-  - *rust_cli
-
 # Any.
 
 any: &any
   - *programs
   - *js_clients
   - *rust_clients
-  - *cli_clients

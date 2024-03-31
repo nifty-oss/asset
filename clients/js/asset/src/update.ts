@@ -4,7 +4,6 @@ import {
   TransactionBuilder,
   none,
 } from '@metaplex-foundation/umi';
-import { SYSTEM_PROGRAM_ID } from '.';
 import { TypedExtension, getExtensionSerializerFromType } from './extensions';
 import { ExtensionInputArgs } from './generated';
 import {
@@ -36,7 +35,6 @@ export function update(
 
   return baseUpdate(context, {
     ...input,
-    systemProgram: SYSTEM_PROGRAM_ID,
     extension,
   });
 }

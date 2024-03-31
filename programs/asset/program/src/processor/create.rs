@@ -1,5 +1,5 @@
 use nifty_asset_types::{
-    extensions::{on_create, ExtensionType},
+    extensions::{on_create, Extension, ExtensionType},
     podded::ZeroCopy,
     state::{Asset, Discriminator, Standard},
 };
@@ -11,8 +11,8 @@ use solana_program::{
 use crate::{
     error::AssetError,
     instruction::{
-        accounts::{Context, CreateAccounts, GroupAccounts},
-        MetadataInput,
+        accounts::{AllocateAccounts, Context, CreateAccounts, GroupAccounts},
+        AllocateInput, MetadataInput,
     },
     require,
 };
@@ -22,7 +22,7 @@ use crate::{
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` asset
-///   1. `[signer]` authority
+///   1. `[optional_signer]` authority
 ///   2. `[]` owner
 ///   3. `[writable, optional]` group
 ///   4. `[writable, signer, optional]` payer
@@ -73,12 +73,31 @@ pub fn process_create(
             "system_program"
         );
 
+        let space = Asset::LEN
+            + if let Some(extensions) = &args.extensions {
+                let mut total = 0;
+
+                for extension in extensions {
+                    total += std::alloc::Layout::from_size_align(
+                        extension.length as usize + Extension::LEN,
+                        std::mem::size_of::<u64>(),
+                    )
+                    .map_err(|_| AssetError::InvalidAlignment)?
+                    .pad_to_align()
+                    .size();
+                }
+
+                total
+            } else {
+                0
+            };
+
         invoke(
             &system_instruction::create_account(
                 payer.key,
                 ctx.accounts.asset.key,
-                Rent::get()?.minimum_balance(Asset::LEN),
-                Asset::LEN as u64,
+                Rent::get()?.minimum_balance(space),
+                (space) as u64,
                 program_id,
             ),
             &[payer.clone(), ctx.accounts.asset.clone()],
@@ -119,6 +138,27 @@ pub fn process_create(
         }
     }
 
+    // process extensions (if there are any)
+
+    if let Some(mut extensions) = args.extensions {
+        while !extensions.is_empty() {
+            super::allocate::process_allocate(
+                program_id,
+                Context {
+                    accounts: AllocateAccounts {
+                        asset: ctx.accounts.asset,
+                        payer: ctx.accounts.payer,
+                        system_program: ctx.accounts.system_program,
+                    },
+                    remaining_accounts: ctx.remaining_accounts,
+                },
+                AllocateInput {
+                    extension: extensions.swap_remove(0),
+                },
+            )?;
+        }
+    }
+
     let mut data = (*ctx.accounts.asset.data).borrow_mut();
     let asset = Asset::load_mut(&mut data);
 
@@ -154,16 +194,15 @@ pub fn process_create(
     // process the group (if there is one)
 
     if let Some(group) = ctx.accounts.group {
-        let accounts = GroupAccounts {
-            authority: ctx.accounts.authority,
-            asset: ctx.accounts.asset,
-            group,
-        };
         msg!("Setting group");
         super::group::process_group(
             program_id,
             Context {
-                accounts,
+                accounts: GroupAccounts {
+                    authority: ctx.accounts.authority,
+                    asset: ctx.accounts.asset,
+                    group,
+                },
                 remaining_accounts: ctx.remaining_accounts,
             },
         )?;

@@ -11,7 +11,7 @@ const kinobi = k.createFromIdls([path.join(idlDir, "asset_program.json")]);
 // Update programs.
 kinobi.update(
   k.updateProgramsVisitor({
-    assetProgram: { name: "asset" }
+    assetProgram: { name: "asset" },
   })
 );
 
@@ -32,42 +32,42 @@ kinobi.update(
               data: k.structTypeNode([
                 k.structFieldTypeNode({
                   name: "discriminator",
-                  type: k.definedTypeLinkNode("Discriminator")
+                  type: k.definedTypeLinkNode("Discriminator"),
                 }),
                 k.structFieldTypeNode({
                   name: "state",
-                  type: k.definedTypeLinkNode("State")
+                  type: k.definedTypeLinkNode("State"),
                 }),
                 k.structFieldTypeNode({
                   name: "standard",
-                  type: k.definedTypeLinkNode("Standard")
+                  type: k.definedTypeLinkNode("Standard"),
                 }),
                 k.structFieldTypeNode({
                   name: "mutable",
-                  type: k.booleanTypeNode()
+                  type: k.booleanTypeNode(),
                 }),
                 k.structFieldTypeNode({
                   name: "owner",
-                  type: k.publicKeyTypeNode()
+                  type: k.publicKeyTypeNode(),
                 }),
                 k.structFieldTypeNode({
                   name: "group",
-                  type: k.definedTypeLinkNode("nullablePublicKey", "hooked")
+                  type: k.definedTypeLinkNode("nullablePublicKey", "hooked"),
                 }),
                 k.structFieldTypeNode({
                   name: "authority",
-                  type: k.publicKeyTypeNode()
+                  type: k.publicKeyTypeNode(),
                 }),
                 k.structFieldTypeNode({
                   name: "delegate",
-                  type: k.definedTypeLinkNode("Delegate")
+                  type: k.definedTypeLinkNode("Delegate"),
                 }),
                 k.structFieldTypeNode({
                   name: "name",
-                  type: k.stringTypeNode({ size: k.fixedSizeNode(35) })
-                })
-              ])
-            })
+                  type: k.stringTypeNode({ size: k.fixedSizeNode(35) }),
+                }),
+              ]),
+            }),
           ],
           definedTypes: [
             ...node.definedTypes,
@@ -76,8 +76,8 @@ kinobi.update(
               name: "discriminator",
               type: {
                 kind: "enum",
-                variants: [{ name: "Uninitialized" }, { name: "Asset" }]
-              }
+                variants: [{ name: "Uninitialized" }, { name: "Asset" }],
+              },
             }),
             // standard
             k.definedTypeNodeFromIdl({
@@ -87,17 +87,17 @@ kinobi.update(
                 variants: [
                   { name: "NonFungible" },
                   { name: "Managed" },
-                  { name: "Soulbound" }
-                ]
-              }
+                  { name: "Soulbound" },
+                ],
+              },
             }),
             // state
             k.definedTypeNodeFromIdl({
               name: "state",
               type: {
                 kind: "enum",
-                variants: [{ name: "Unlocked" }, { name: "Locked" }]
-              }
+                variants: [{ name: "Unlocked" }, { name: "Locked" }],
+              },
             }),
             // delegate role
             k.definedTypeNodeFromIdl({
@@ -108,9 +108,9 @@ kinobi.update(
                   { name: "None" },
                   { name: "Transfer" },
                   { name: "Lock" },
-                  { name: "Burn" }
-                ]
-              }
+                  { name: "Burn" },
+                ],
+              },
             }),
             // extension type
             k.definedTypeNodeFromIdl({
@@ -126,9 +126,9 @@ kinobi.update(
                   { name: "Metadata" },
                   { name: "Grouping" },
                   { name: "Royalties" },
-                  { name: "Manager" }
-                ]
-              }
+                  { name: "Manager" },
+                ],
+              },
             }),
             // delegate
             k.definedTypeNode({
@@ -136,13 +136,13 @@ kinobi.update(
               type: k.structTypeNode([
                 k.structFieldTypeNode({
                   name: "address",
-                  type: k.definedTypeLinkNode("nullablePublicKey", "hooked")
+                  type: k.definedTypeLinkNode("nullablePublicKey", "hooked"),
                 }),
                 k.structFieldTypeNode({
                   name: "roles",
-                  type: k.definedTypeLinkNode("delegateRoles", "hooked")
-                })
-              ])
+                  type: k.definedTypeLinkNode("delegateRoles", "hooked"),
+                }),
+              ]),
             }),
             // extension header
             k.definedTypeNode({
@@ -150,22 +150,22 @@ kinobi.update(
               type: k.structTypeNode([
                 k.structFieldTypeNode({
                   name: "kind",
-                  type: k.numberTypeNode("u32")
+                  type: k.numberTypeNode("u32"),
                 }),
                 k.structFieldTypeNode({
                   name: "length",
-                  type: k.numberTypeNode("u32")
+                  type: k.numberTypeNode("u32"),
                 }),
                 k.structFieldTypeNode({
                   name: "boundary",
-                  type: k.numberTypeNode("u32")
+                  type: k.numberTypeNode("u32"),
                 }),
                 k.structFieldTypeNode({
                   name: "padding",
-                  type: k.numberTypeNode("u32")
-                })
+                  type: k.numberTypeNode("u32"),
+                }),
               ]),
-              internal: true
+              internal: true,
             }),
             // attributes
             k.definedTypeNode({
@@ -176,9 +176,9 @@ kinobi.update(
                   type: k.arrayTypeNode(
                     k.definedTypeLinkNode("trait"),
                     k.remainderSizeNode()
-                  )
-                })
-              ])
+                  ),
+                }),
+              ]),
             }),
             // trait
             k.definedTypeNode({
@@ -187,16 +187,16 @@ kinobi.update(
                 k.structFieldTypeNode({
                   name: "traitType",
                   type: k.stringTypeNode({
-                    size: k.prefixedSizeNode(k.numberTypeNode("u8"))
-                  })
+                    size: k.prefixedSizeNode(k.numberTypeNode("u8")),
+                  }),
                 }),
                 k.structFieldTypeNode({
                   name: "value",
                   type: k.stringTypeNode({
-                    size: k.prefixedSizeNode(k.numberTypeNode("u8"))
-                  })
-                })
-              ])
+                    size: k.prefixedSizeNode(k.numberTypeNode("u8")),
+                  }),
+                }),
+              ]),
             }),
             // blob
             k.definedTypeNode({
@@ -205,17 +205,17 @@ kinobi.update(
                 k.structFieldTypeNode({
                   name: "contentType",
                   type: k.stringTypeNode({
-                    size: k.prefixedSizeNode(k.numberTypeNode("u8"))
-                  })
+                    size: k.prefixedSizeNode(k.numberTypeNode("u8")),
+                  }),
                 }),
                 k.structFieldTypeNode({
                   name: "data",
                   type: k.arrayTypeNode(
                     k.numberTypeNode("u8"),
                     k.remainderSizeNode()
-                  )
-                })
-              ])
+                  ),
+                }),
+              ]),
             }),
             // links
             k.definedTypeNode({
@@ -226,9 +226,9 @@ kinobi.update(
                   type: k.arrayTypeNode(
                     k.definedTypeLinkNode("link"),
                     k.remainderSizeNode()
-                  )
-                })
-              ])
+                  ),
+                }),
+              ]),
             }),
             // link
             k.definedTypeNode({
@@ -237,16 +237,16 @@ kinobi.update(
                 k.structFieldTypeNode({
                   name: "name",
                   type: k.stringTypeNode({
-                    size: k.prefixedSizeNode(k.numberTypeNode("u8"))
-                  })
+                    size: k.prefixedSizeNode(k.numberTypeNode("u8")),
+                  }),
                 }),
                 k.structFieldTypeNode({
                   name: "uri",
                   type: k.stringTypeNode({
-                    size: k.prefixedSizeNode(k.numberTypeNode("u8"))
-                  })
-                })
-              ])
+                    size: k.prefixedSizeNode(k.numberTypeNode("u8")),
+                  }),
+                }),
+              ]),
             }),
             // creators
             k.definedTypeNode({
@@ -257,9 +257,9 @@ kinobi.update(
                   type: k.arrayTypeNode(
                     k.definedTypeLinkNode("creator"),
                     k.remainderSizeNode()
-                  )
-                })
-              ])
+                  ),
+                }),
+              ]),
             }),
             // creator
             k.definedTypeNode({
@@ -267,17 +267,17 @@ kinobi.update(
               type: k.structTypeNode([
                 k.structFieldTypeNode({
                   name: "address",
-                  type: k.publicKeyTypeNode()
+                  type: k.publicKeyTypeNode(),
                 }),
                 k.structFieldTypeNode({
                   name: "verified",
-                  type: k.booleanTypeNode()
+                  type: k.booleanTypeNode(),
                 }),
                 k.structFieldTypeNode({
                   name: "share",
-                  type: k.numberTypeNode("u8")
-                })
-              ])
+                  type: k.numberTypeNode("u8"),
+                }),
+              ]),
             }),
             // metadata
             k.definedTypeNode({
@@ -286,22 +286,22 @@ kinobi.update(
                 k.structFieldTypeNode({
                   name: "symbol",
                   type: k.stringTypeNode({
-                    size: k.prefixedSizeNode(k.numberTypeNode("u8"))
-                  })
+                    size: k.prefixedSizeNode(k.numberTypeNode("u8")),
+                  }),
                 }),
                 k.structFieldTypeNode({
                   name: "description",
                   type: k.stringTypeNode({
-                    size: k.prefixedSizeNode(k.numberTypeNode("u8"))
-                  })
+                    size: k.prefixedSizeNode(k.numberTypeNode("u8")),
+                  }),
                 }),
                 k.structFieldTypeNode({
                   name: "uri",
                   type: k.stringTypeNode({
-                    size: k.prefixedSizeNode(k.numberTypeNode("u8"))
-                  })
-                })
-              ])
+                    size: k.prefixedSizeNode(k.numberTypeNode("u8")),
+                  }),
+                }),
+              ]),
             }),
             // grouping
             k.definedTypeNode({
@@ -309,13 +309,13 @@ kinobi.update(
               type: k.structTypeNode([
                 k.structFieldTypeNode({
                   name: "size",
-                  type: k.numberTypeNode("u64")
+                  type: k.numberTypeNode("u64"),
                 }),
                 k.structFieldTypeNode({
                   name: "maxSize",
-                  type: k.numberTypeNode("u64")
-                })
-              ])
+                  type: k.numberTypeNode("u64"),
+                }),
+              ]),
             }),
             // manager
             k.definedTypeNode({
@@ -323,20 +323,33 @@ kinobi.update(
               type: k.structTypeNode([
                 k.structFieldTypeNode({
                   name: "delegate",
-                  type: k.definedTypeLinkNode("delegate")
-                })
-              ])
-            })
-          ]
+                  type: k.definedTypeLinkNode("delegate"),
+                }),
+              ]),
+            }),
+          ],
         };
-      }
-    }
+      },
+    },
   ])
 );
 
 // Update instructions.
 kinobi.update(
   k.updateInstructionsVisitor({
+    allocate: {
+      accounts: {
+        systemProgram: {
+          defaultValue: k.conditionalValueNode({
+            condition: k.accountValueNode("payer"),
+            ifTrue: k.publicKeyValueNode(
+              "11111111111111111111111111111111",
+              "systemProgram"
+            ),
+          }),
+        },
+      },
+    },
     create: {
       accounts: {
         owner: { defaultValue: k.identityValueNode() },
@@ -346,12 +359,17 @@ kinobi.update(
             ifTrue: k.publicKeyValueNode(
               "11111111111111111111111111111111",
               "systemProgram"
-            )
-          })
-        }
-      }
+            ),
+          }),
+        },
+      },
+      arguments: {
+        extensions: {
+          defaultValue: k.noneValueNode(),
+        },
+      },
     },
-    allocate: {
+    update: {
       accounts: {
         systemProgram: {
           defaultValue: k.conditionalValueNode({
@@ -359,11 +377,11 @@ kinobi.update(
             ifTrue: k.publicKeyValueNode(
               "11111111111111111111111111111111",
               "systemProgram"
-            )
-          })
-        }
-      }
-    }
+            ),
+          }),
+        },
+      },
+    },
   })
 );
 
@@ -376,9 +394,9 @@ kinobi.update(
         k.assertIsNode(node, ["instructionNode", "instructionArgumentNode"]);
         return {
           ...node,
-          defaultValue: k.enumValueNode("Standard", "NonFungible")
+          defaultValue: k.enumValueNode("Standard", "NonFungible"),
         };
-      }
+      },
     },
     {
       select: "[instructionNode|instructionArgumentNode]mutable",
@@ -386,9 +404,9 @@ kinobi.update(
         k.assertIsNode(node, ["instructionNode", "instructionArgumentNode"]);
         return {
           ...node,
-          defaultValue: k.booleanValueNode(true)
+          defaultValue: k.booleanValueNode(true),
         };
-      }
+      },
     },
     {
       select: (node) => {
@@ -404,21 +422,21 @@ kinobi.update(
         return {
           ...node,
           defaultValueStrategy: "optional",
-          defaultValue: k.noneValueNode()
+          defaultValue: k.noneValueNode(),
         };
-      }
-    }
+      },
+    },
   ])
 );
 
 // Set ShankAccount discriminator.
 const key = (name) => ({
   field: "discriminator",
-  value: k.enumValueNode("Discriminator", name)
+  value: k.enumValueNode("Discriminator", name),
 });
 kinobi.update(
   new k.setAccountDiscriminatorFromFieldVisitor({
-    Asset: key("Asset")
+    Asset: key("Asset"),
   })
 );
 
@@ -433,13 +451,13 @@ kinobi.accept(
         "asset",
         ".prettierrc.json"
       )),
-      internalNodes: ["update", "write"],
+      internalNodes: ["create", "update", "write"],
       customAccountData: [
         {
           name: "asset",
-          extract: true
-        }
-      ]
+          extract: true,
+        },
+      ],
     }
   )
 );
@@ -450,7 +468,7 @@ kinobi.accept(
     path.join(clientDir, "rust", "asset", "src", "generated"),
     {
       formatCode: true,
-      crateFolder: path.join(clientDir, "rust", "asset")
+      crateFolder: path.join(clientDir, "rust", "asset"),
     }
   )
 );

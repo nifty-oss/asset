@@ -5,6 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::generated::types::ExtensionInput;
 use crate::generated::types::Standard;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
@@ -106,6 +107,7 @@ pub struct CreateInstructionArgs {
     pub name: String,
     pub standard: Standard,
     pub mutable: bool,
+    pub extensions: Option<Vec<ExtensionInput>>,
 }
 
 /// Instruction builder for `Create`.
@@ -129,6 +131,7 @@ pub struct CreateBuilder {
     name: Option<String>,
     standard: Option<Standard>,
     mutable: Option<bool>,
+    extensions: Option<Vec<ExtensionInput>>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -199,6 +202,12 @@ impl CreateBuilder {
         self.mutable = Some(mutable);
         self
     }
+    /// `[optional argument]`
+    #[inline(always)]
+    pub fn extensions(&mut self, extensions: Vec<ExtensionInput>) -> &mut Self {
+        self.extensions = Some(extensions);
+        self
+    }
     /// Add an aditional account to the instruction.
     #[inline(always)]
     pub fn add_remaining_account(
@@ -231,6 +240,7 @@ impl CreateBuilder {
             name: self.name.clone().expect("name is not set"),
             standard: self.standard.clone().unwrap_or(Standard::NonFungible),
             mutable: self.mutable.clone().unwrap_or(true),
+            extensions: self.extensions.clone(),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -436,6 +446,7 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
             name: None,
             standard: None,
             mutable: None,
+            extensions: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -509,6 +520,12 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
         self.instruction.mutable = Some(mutable);
         self
     }
+    /// `[optional argument]`
+    #[inline(always)]
+    pub fn extensions(&mut self, extensions: Vec<ExtensionInput>) -> &mut Self {
+        self.instruction.extensions = Some(extensions);
+        self
+    }
     /// Add an additional account to the instruction.
     #[inline(always)]
     pub fn add_remaining_account(
@@ -558,6 +575,7 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
                 .clone()
                 .unwrap_or(Standard::NonFungible),
             mutable: self.instruction.mutable.clone().unwrap_or(true),
+            extensions: self.instruction.extensions.clone(),
         };
         let instruction = CreateCpi {
             __program: self.instruction.__program,
@@ -593,6 +611,7 @@ struct CreateCpiBuilderInstruction<'a, 'b> {
     name: Option<String>,
     standard: Option<Standard>,
     mutable: Option<bool>,
+    extensions: Option<Vec<ExtensionInput>>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

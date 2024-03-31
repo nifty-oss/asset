@@ -8,16 +8,21 @@
 
 import {
   Context,
+  Option,
+  OptionOrNullable,
   Pda,
   PublicKey,
   Signer,
   TransactionBuilder,
+  none,
   transactionBuilder,
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
+  array,
   bool,
   mapSerializer,
+  option,
   string,
   struct,
   u8,
@@ -27,7 +32,14 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
-import { Standard, StandardArgs, getStandardSerializer } from '../types';
+import {
+  ExtensionInput,
+  ExtensionInputArgs,
+  Standard,
+  StandardArgs,
+  getExtensionInputSerializer,
+  getStandardSerializer,
+} from '../types';
 
 // Accounts.
 export type CreateInstructionAccounts = {
@@ -51,12 +63,14 @@ export type CreateInstructionData = {
   name: string;
   standard: Standard;
   mutable: boolean;
+  extensions: Option<Array<ExtensionInput>>;
 };
 
 export type CreateInstructionDataArgs = {
   name: string;
   standard?: StandardArgs;
   mutable?: boolean;
+  extensions?: OptionOrNullable<Array<ExtensionInputArgs>>;
 };
 
 export function getCreateInstructionDataSerializer(): Serializer<
@@ -70,6 +84,7 @@ export function getCreateInstructionDataSerializer(): Serializer<
         ['name', string()],
         ['standard', getStandardSerializer()],
         ['mutable', bool()],
+        ['extensions', option(array(getExtensionInputSerializer()))],
       ],
       { description: 'CreateInstructionData' }
     ),
@@ -78,6 +93,7 @@ export function getCreateInstructionDataSerializer(): Serializer<
       discriminator: 2,
       standard: value.standard ?? Standard.NonFungible,
       mutable: value.mutable ?? true,
+      extensions: value.extensions ?? none(),
     })
   ) as Serializer<CreateInstructionDataArgs, CreateInstructionData>;
 }

@@ -86,38 +86,29 @@ test('it can create a new asset with multiple extensions', async (t) => {
   const asset = generateSigner(umi);
   const owner = generateSigner(umi);
 
-  // And we initialize an attributes extension.
-  await initialize(umi, {
-    asset,
-    payer: umi.identity,
-    extension: attributes([
-      { traitType: 'Attributes Count', value: '2' },
-      { traitType: 'Type', value: 'Dark' },
-      { traitType: 'Clothes', value: 'Purple Shirt' },
-      { traitType: 'Ears', value: 'None' },
-      { traitType: 'Mouth', value: 'None' },
-      { traitType: 'Eyes', value: 'None' },
-      { traitType: 'Hat', value: 'Blue Cap' },
-    ]),
-  }).sendAndConfirm(umi);
-
-  // And we initialize a links extension.
-  await initialize(umi, {
-    asset,
-    payer: umi.identity,
-    extension: links([
-      {
-        name: 'metadata',
-        uri: 'https://arweave.net/ebBV1qEYt65AKmM2J5wH_Vg-gjBa9YcwSYWFVt0rw9w',
-      },
-    ]),
-  }).sendAndConfirm(umi);
-
-  // When we create a new asset.
+  // When we create a new asset with multiple extensions.
   await create(umi, {
     asset,
     owner: owner.publicKey,
+    payer: umi.identity,
     name: 'Digital Asset',
+    extensions: [
+      attributes([
+        { traitType: 'Attributes Count', value: '2' },
+        { traitType: 'Type', value: 'Dark' },
+        { traitType: 'Clothes', value: 'Purple Shirt' },
+        { traitType: 'Ears', value: 'None' },
+        { traitType: 'Mouth', value: 'None' },
+        { traitType: 'Eyes', value: 'None' },
+        { traitType: 'Hat', value: 'Blue Cap' },
+      ]),
+      links([
+        {
+          name: 'metadata',
+          uri: 'https://arweave.net/ebBV1qEYt65AKmM2J5wH_Vg-gjBa9YcwSYWFVt0rw9w',
+        },
+      ]),
+    ],
   }).sendAndConfirm(umi);
 
   // Then an asset was created with the correct data.

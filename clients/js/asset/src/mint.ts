@@ -8,7 +8,7 @@ import {
   CreateInstructionAccounts,
   CreateInstructionArgs,
   create,
-} from './generated';
+} from './generated/instructions/create';
 import { initialize } from './initialize';
 
 export function mint(
@@ -17,12 +17,14 @@ export function mint(
     'eddsa' | 'identity' | 'payer' | 'programs' | 'transactions'
   >,
   input: CreateInstructionAccounts &
-    CreateInstructionArgs & { extensions?: TypedExtension[] }
+    Omit<CreateInstructionArgs, 'extensions'> & {
+      extensions?: TypedExtension[];
+    }
 ): TransactionBuilderGroup {
   let builder = transactionBuilderGroup();
 
   if (input.extensions) {
-    input.extensions.forEach((extension) => {
+    input.extensions.forEach((extension: TypedExtension) => {
       builder = builder.append(
         initialize(context, {
           ...input,
@@ -31,6 +33,7 @@ export function mint(
       );
     });
   }
-
-  return builder.append(create(context, input));
+  // drop extensions from input
+  const { extensions, ...remaining } = input;
+  return builder.append(create(context, remaining));
 }
