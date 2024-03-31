@@ -42,51 +42,8 @@ pub fn process_allocate(
 
     // offset on the account data where the new extension will be written; this will
     // include any padding required to maintain the 8-bytes alignment
-    let offset = if ctx.accounts.asset.data_is_empty() {
-        let payer = {
-            require!(
-                ctx.accounts.payer.is_some(),
-                ProgramError::NotEnoughAccountKeys,
-                "payer"
-            );
-
-            ctx.accounts.payer.unwrap()
-        };
-
-        require!(
-            payer.is_signer,
-            ProgramError::MissingRequiredSignature,
-            "payer"
-        );
-
-        let system_program = {
-            require!(
-                ctx.accounts.system_program.is_some(),
-                ProgramError::NotEnoughAccountKeys,
-                "system_program"
-            );
-
-            ctx.accounts.system_program.unwrap()
-        };
-
-        require!(
-            system_program.key == &system_program::ID,
-            ProgramError::IncorrectProgramId,
-            "system_program"
-        );
-
-        invoke(
-            &system_instruction::create_account(
-                payer.key,
-                ctx.accounts.asset.key,
-                Rent::get()?.minimum_balance(Asset::LEN),
-                Asset::LEN as u64,
-                program_id,
-            ),
-            &[payer.clone(), ctx.accounts.asset.clone()],
-        )?;
-
-        Asset::LEN
+    let (exists, offset) = if ctx.accounts.asset.data_is_empty() {
+        (false, Asset::LEN)
     } else {
         require!(
             ctx.accounts.asset.owner == program_id,
@@ -101,39 +58,40 @@ pub fn process_allocate(
         );
 
         let data = (*ctx.accounts.asset.data).borrow();
-        // if there is an extension on the account, need to make sure it has all
-        // its data written before initializing a new one
-        if let Some((extension, offset)) = Asset::last_extension(&data) {
-            require!(
-                extension.length() as usize + offset <= data.len(),
-                AssetError::IncompleteExtensionData,
-                "incomplete [{:?}] extension data",
-                extension.extension_type()
-            );
 
-            extension.boundary() as usize
-        } else {
-            Asset::LEN
-        }
+        // make sure that the asset is not already initialized
+        require!(
+            data[0] == Discriminator::Uninitialized.into(),
+            AssetError::AlreadyInitialized,
+            "asset"
+        );
+        // and the account does not have the extension
+        require!(
+            !Asset::contains(args.extension.extension_type, &data),
+            AssetError::AlreadyInitialized,
+            "extension [{:?}] already initialized",
+            args.extension.extension_type
+        );
+
+        (
+            // the account exists
+            true,
+            // if there is an extension on the account, need to make sure it has all
+            // its data written before initializing a new one
+            if let Some((extension, offset)) = Asset::last_extension(&data) {
+                require!(
+                    extension.length() as usize + offset <= data.len(),
+                    AssetError::IncompleteExtensionData,
+                    "incomplete [{:?}] extension data",
+                    extension.extension_type()
+                );
+
+                extension.boundary() as usize
+            } else {
+                Asset::LEN
+            },
+        )
     };
-
-    let data = (*ctx.accounts.asset.data).borrow();
-    // make sure that the asset is not already initialized
-    require!(
-        data[0] == Discriminator::Uninitialized.into(),
-        AssetError::AlreadyInitialized,
-        "asset"
-    );
-    // and the account does not have the extension
-    require!(
-        !Asset::contains(args.extension.extension_type, &data),
-        AssetError::AlreadyInitialized,
-        "extension [{:?}] already initialized",
-        args.extension.extension_type
-    );
-
-    // drop the reference to resize the account
-    drop(data);
 
     // initialize the extension
 
@@ -150,7 +108,7 @@ pub fn process_allocate(
         (args.extension.length, &[])
     };
 
-    save_extension_data(&ctx, &args.extension, offset, data)?;
+    save_extension_data(&ctx, &args.extension, exists, offset, data)?;
 
     if length > 0 {
         msg!(
@@ -184,9 +142,57 @@ pub fn process_allocate(
     Ok(())
 }
 
+#[inline(always)]
+fn create_account(ctx: &Context<AllocateAccounts>, space: usize) -> ProgramResult {
+    let payer = {
+        require!(
+            ctx.accounts.payer.is_some(),
+            ProgramError::NotEnoughAccountKeys,
+            "payer"
+        );
+
+        ctx.accounts.payer.unwrap()
+    };
+
+    require!(
+        payer.is_signer,
+        ProgramError::MissingRequiredSignature,
+        "payer"
+    );
+
+    let system_program = {
+        require!(
+            ctx.accounts.system_program.is_some(),
+            ProgramError::NotEnoughAccountKeys,
+            "system_program"
+        );
+
+        ctx.accounts.system_program.unwrap()
+    };
+
+    require!(
+        system_program.key == &system_program::ID,
+        ProgramError::IncorrectProgramId,
+        "system_program"
+    );
+
+    invoke(
+        &system_instruction::create_account(
+            payer.key,
+            ctx.accounts.asset.key,
+            Rent::get()?.minimum_balance(space),
+            space as u64,
+            &crate::ID,
+        ),
+        &[payer.clone(), ctx.accounts.asset.clone()],
+    )
+}
+
+#[inline(always)]
 fn save_extension_data(
     ctx: &Context<AllocateAccounts>,
     args: &crate::instruction::ExtensionInput,
+    exists: bool,
     offset: usize,
     data: &[u8],
 ) -> ProgramResult {
@@ -211,7 +217,9 @@ fn save_extension_data(
         (offset + Extension::LEN + data.len(), true)
     };
 
-    if extended > ctx.accounts.asset.data_len() || partial {
+    if !exists {
+        create_account(ctx, extended)?;
+    } else if extended > ctx.accounts.asset.data_len() || partial {
         resize(
             extended,
             ctx.accounts.asset,
