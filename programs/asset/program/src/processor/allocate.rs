@@ -219,7 +219,9 @@ fn save_extension_data(
 
     if !exists {
         create_account(ctx, extended)?;
-    } else if extended > ctx.accounts.asset.data_len() || partial {
+    } else if extended > ctx.accounts.asset.data_len()
+        || (partial && extended < ctx.accounts.asset.data_len())
+    {
         resize(
             extended,
             ctx.accounts.asset,
