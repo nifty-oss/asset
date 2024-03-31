@@ -1,5 +1,5 @@
 use nifty_asset_types::{
-    extensions::{on_create, ExtensionType},
+    extensions::{on_create, Extension, ExtensionType},
     podded::ZeroCopy,
     state::{Asset, Discriminator, Standard},
 };
@@ -11,8 +11,8 @@ use solana_program::{
 use crate::{
     error::AssetError,
     instruction::{
-        accounts::{Context, CreateAccounts, GroupAccounts},
-        MetadataInput,
+        accounts::{AllocateAccounts, Context, CreateAccounts, GroupAccounts},
+        AllocateInput, MetadataInput,
     },
     require,
 };
@@ -73,12 +73,31 @@ pub fn process_create(
             "system_program"
         );
 
+        let space = Asset::LEN
+            + if let Some(extensions) = &args.extensions {
+                let mut total = 0;
+
+                for extension in extensions {
+                    total += std::alloc::Layout::from_size_align(
+                        extension.length as usize + Extension::LEN,
+                        std::mem::size_of::<u64>(),
+                    )
+                    .map_err(|_| AssetError::InvalidAlignment)?
+                    .pad_to_align()
+                    .size();
+                }
+
+                total
+            } else {
+                0
+            };
+
         invoke(
             &system_instruction::create_account(
                 payer.key,
                 ctx.accounts.asset.key,
-                Rent::get()?.minimum_balance(Asset::LEN),
-                Asset::LEN as u64,
+                Rent::get()?.minimum_balance(space),
+                (space) as u64,
                 program_id,
             ),
             &[payer.clone(), ctx.accounts.asset.clone()],
@@ -116,6 +135,27 @@ pub fn process_create(
                 msg!("[ERROR] {}", error);
                 AssetError::ExtensionDataInvalid
             })?;
+        }
+    }
+
+    // process extensions (if there are any)
+
+    if let Some(mut extensions) = args.extensions {
+        while !extensions.is_empty() {
+            super::allocate::process_allocate(
+                program_id,
+                Context {
+                    accounts: AllocateAccounts {
+                        asset: ctx.accounts.asset,
+                        payer: ctx.accounts.payer,
+                        system_program: ctx.accounts.system_program,
+                    },
+                    remaining_accounts: ctx.remaining_accounts,
+                },
+                AllocateInput {
+                    extension: extensions.swap_remove(0),
+                },
+            )?;
         }
     }
 

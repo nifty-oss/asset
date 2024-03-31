@@ -11,7 +11,10 @@ use solana_program::{
 
 use crate::{
     error::AssetError,
-    instruction::accounts::{AllocateAccounts, Context},
+    instruction::{
+        accounts::{AllocateAccounts, Context},
+        AllocateInput,
+    },
     processor::resize,
     require,
 };
@@ -27,7 +30,7 @@ use crate::{
 pub fn process_allocate(
     program_id: &Pubkey,
     ctx: Context<AllocateAccounts>,
-    args: crate::instruction::AllocateInput,
+    args: AllocateInput,
 ) -> ProgramResult {
     // account validation
 
@@ -195,15 +198,20 @@ fn save_extension_data(
     .map_err(|_| AssetError::InvalidAlignment)?
     .pad_to_align()
     .size();
-    // if the instruction data length is the same as the extension length,
-    // then we can use the extension boundary as the account length
-    let extended = if args.length == data.len() as u32 {
-        boundary
+    // there are two aspects to consider when resizing the account:
+    //
+    //   1. if the instruction data length is the same as the extension length,
+    //      then we can use the extension boundary as the account length
+    //
+    //   2. when we are expecting more data, we need to make sure the account
+    //      does not have any padding (extra bytes)
+    let (extended, partial) = if args.length == data.len() as u32 {
+        (boundary, false)
     } else {
-        offset + Extension::LEN + data.len()
+        (offset + Extension::LEN + data.len(), true)
     };
 
-    if extended > ctx.accounts.asset.data_len() {
+    if extended > ctx.accounts.asset.data_len() || partial {
         resize(
             extended,
             ctx.accounts.asset,
