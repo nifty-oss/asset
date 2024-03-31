@@ -103,7 +103,10 @@ pub fn process_create(
 
             require!(
                 !collection_data.is_empty()
-                    && collection_data[0] == nifty_asset::state::Discriminator::Asset.into(),
+                    && collection_data[0]
+                        == <nifty_asset::state::Discriminator as std::convert::Into<u8>>::into(
+                            nifty_asset::state::Discriminator::Asset
+                        ),
                 ProgramError::UninitializedAccount,
                 "collection"
             );
