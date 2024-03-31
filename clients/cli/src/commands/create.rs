@@ -27,6 +27,7 @@ pub fn handle_create(args: CreateArgs) -> Result<()> {
         name: args.name,
         standard: Standard::NonFungible,
         mutable: !args.immutable,
+        extensions: None,
     };
 
     let ix = Create {
