@@ -361,6 +361,7 @@ pub fn mint(args: MintIxArgs) -> Result<Vec<Instruction>, MintError> {
         name: args.asset_args.name,
         standard: args.asset_args.standard,
         mutable: args.asset_args.mutable,
+        extensions: None,
     };
 
     instructions.push(

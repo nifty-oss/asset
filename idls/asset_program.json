@@ -691,6 +691,16 @@
           {
             "name": "mutable",
             "type": "bool"
+          },
+          {
+            "name": "extensions",
+            "type": {
+              "option": {
+                "vec": {
+                  "defined": "ExtensionInput"
+                }
+              }
+            }
           }
         ]
       }
