@@ -22,7 +22,7 @@ use crate::{
 /// ### Accounts:
 ///
 ///   0. `[writable, signer]` asset
-///   1. `[signer]` authority
+///   1. `[optional_signer]` authority
 ///   2. `[]` owner
 ///   3. `[writable, optional]` group
 ///   4. `[writable, signer, optional]` payer
