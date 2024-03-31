@@ -194,16 +194,15 @@ pub fn process_create(
     // process the group (if there is one)
 
     if let Some(group) = ctx.accounts.group {
-        let accounts = GroupAccounts {
-            authority: ctx.accounts.authority,
-            asset: ctx.accounts.asset,
-            group,
-        };
         msg!("Setting group");
         super::group::process_group(
             program_id,
             Context {
-                accounts,
+                accounts: GroupAccounts {
+                    authority: ctx.accounts.authority,
+                    asset: ctx.accounts.asset,
+                    group,
+                },
                 remaining_accounts: ctx.remaining_accounts,
             },
         )?;
