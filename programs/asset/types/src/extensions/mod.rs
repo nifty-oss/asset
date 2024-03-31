@@ -34,7 +34,7 @@ pub use royalties::*;
 use borsh::{BorshDeserialize, BorshSerialize};
 use bytemuck::{Pod, Zeroable};
 use podded::ZeroCopy;
-use std::ops::Deref;
+use std::{fmt::Debug, ops::Deref};
 
 use crate::error::Error;
 
@@ -43,7 +43,7 @@ use crate::error::Error;
 /// This information is added at the start of each extension data and it is used to determine
 /// the type of extension and the length of the extension data.
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Default, Pod, Zeroable)]
+#[derive(Clone, Copy, Default, Pod, Zeroable)]
 pub struct Extension {
     /// Data section.
     ///   0. type
@@ -114,7 +114,7 @@ impl Extension {
     pub fn get<'a, T: ExtensionData<'a>>(data: &'a [u8]) -> Option<T> {
         let mut cursor = 0;
 
-        while (cursor + Extension::LEN) < data.len() {
+        while (cursor + Extension::LEN) <= data.len() {
             let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
 
             if extension.extension_type() == ExtensionType::None {
@@ -132,6 +132,16 @@ impl Extension {
         }
 
         None
+    }
+}
+
+impl Debug for Extension {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Extension")
+            .field("type", &self.extension_type())
+            .field("length", &self.length())
+            .field("boundary", &self.boundary())
+            .finish()
     }
 }
 

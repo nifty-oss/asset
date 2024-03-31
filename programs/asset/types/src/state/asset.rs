@@ -78,7 +78,7 @@ impl Asset {
     pub fn contains(extension_type: ExtensionType, data: &[u8]) -> bool {
         let mut cursor = Asset::LEN;
 
-        while (cursor + Extension::LEN) < data.len() {
+        while (cursor + Extension::LEN) <= data.len() {
             let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
 
             if extension.extension_type() == ExtensionType::None {
@@ -101,7 +101,7 @@ impl Asset {
     pub fn get<'a, T: ExtensionData<'a>>(data: &'a [u8]) -> Option<T> {
         let mut cursor = Asset::LEN;
 
-        while (cursor + Extension::LEN) < data.len() {
+        while (cursor + Extension::LEN) <= data.len() {
             let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
 
             if extension.extension_type() == ExtensionType::None {
@@ -128,7 +128,7 @@ impl Asset {
     pub fn get_mut<'a, T: ExtensionDataMut<'a>>(data: &'a mut [u8]) -> Option<T> {
         let mut cursor = Asset::LEN;
 
-        while (cursor + Extension::LEN) < data.len() {
+        while (cursor + Extension::LEN) <= data.len() {
             let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
 
             if extension.extension_type() == ExtensionType::None {
@@ -160,7 +160,7 @@ impl Asset {
         let mut cursor = Asset::LEN;
         let mut extensions = Vec::new();
 
-        while (cursor + Extension::LEN) < data.len() {
+        while (cursor + Extension::LEN) <= data.len() {
             let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
 
             if extension.extension_type() == ExtensionType::None {
@@ -183,7 +183,7 @@ impl Asset {
     /// offset of the extension data. If the account does not contain any extension,
     /// `None` is returned.
     pub fn first_extension(data: &[u8]) -> Option<(&Extension, usize)> {
-        if Asset::LEN < data.len() {
+        if (Asset::LEN + Extension::LEN) <= data.len() {
             return Some((
                 Extension::load(&data[Asset::LEN..]),
                 Asset::LEN + Extension::LEN,
@@ -202,7 +202,7 @@ impl Asset {
         let mut cursor = Asset::LEN;
         let mut last = None;
 
-        while (cursor + Extension::LEN) < data.len() {
+        while (cursor + Extension::LEN) <= data.len() {
             let extension = Extension::load(&data[cursor..]);
 
             if extension.extension_type() == ExtensionType::None {
@@ -227,7 +227,7 @@ impl Asset {
     ) -> Option<(&Extension, usize)> {
         let mut cursor = Asset::LEN;
 
-        while (cursor + Extension::LEN) < data.len() {
+        while (cursor + Extension::LEN) <= data.len() {
             let extension = Extension::load(&data[cursor..]);
 
             if extension.extension_type() == ExtensionType::None {
