@@ -157,7 +157,7 @@ kinobi.update(
   ])
 );
 
-kinobi.accept(k.consoleLogVisitor(k.getDebugStringVisitor({ indent: true })));
+//kinobi.accept(k.consoleLogVisitor(k.getDebugStringVisitor({ indent: true })));
 
 // Render Rust.
 kinobi.accept(
