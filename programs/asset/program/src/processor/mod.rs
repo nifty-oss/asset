@@ -161,35 +161,39 @@ fn validate_access<'a>(
     /// Index of the asset state byte.
     const STANDARD_INDEX: usize = 2;
 
-    let mut locked = None;
+    // we only check the first account of each instruction for `Proxied` assets,
+    // since this is the "active" asset on the instruction
+    if let Some(account_info) = accounts.first() {
+        let data = account_info.data.borrow();
+
+        if account_info.owner == program_id
+            && !account_info.data_is_empty()
+            && data[STANDARD_INDEX] == Standard::Proxied.into()
+        {
+            require!(
+                account_info.is_signer,
+                ProgramError::MissingRequiredSignature,
+                "proxied asset \"{}\" is not a signer",
+                account_info.key
+            );
+        }
+    }
 
     for account_info in accounts {
         // only considers accounts owned by the program and non-empty
         if account_info.owner == program_id && !account_info.data_is_empty() {
             let data = account_info.data.borrow();
-            if data[DISCRIMINATOR_INDEX] == Discriminator::Asset.into() {
-                if data[STATE_INDEX] == State::Locked.into() {
-                    // any locked asset can be used to determine if the
-                    // instruction is allowed
-                    locked = Some(account_info.key);
-                } else if data[STANDARD_INDEX] == Standard::Proxied.into() {
-                    // TODO: we probably only need to check on the first account
-                    // since all instructions have the aset on that positio; curently
-                    // this will not work for instructions that take a group and the
-                    // group is a 'Proxied' asset (unless both are from the same program,
-                    // which might be a reasonable assumption)
-                    require!(
-                        account_info.is_signer,
-                        ProgramError::MissingRequiredSignature,
-                        "proxied asset \"{}\" is not a signer",
-                        account_info.key
-                    );
-                }
+            if data[DISCRIMINATOR_INDEX] == Discriminator::Asset.into()
+                && data[STATE_INDEX] == State::Locked.into()
+            {
+                // any locked asset can be used to determine if the
+                // instruction is allowed
+                return Ok(Some(account_info.key));
             }
         }
     }
 
-    Ok(locked)
+    Ok(None)
 }
 
 #[inline(always)]

@@ -25,4 +25,8 @@ pub enum Error {
     /// 5 - Invalid extension type
     #[error("Invalid extension type: {0}")]
     InvalidExtensionType(u32),
+
+    /// 6 - Cannot modify proxy extension derivation data
+    #[error("Cannot modify proxy extension derivation data")]
+    CannotModifyDerivationData,
 }

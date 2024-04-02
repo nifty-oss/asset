@@ -2,7 +2,7 @@ use borsh::BorshDeserialize;
 use nifty_asset_interface::{
     accounts::TransferAccounts,
     extensions::{Proxy, ProxyBuilder},
-    instructions::{AllocateCpiBuilder, CreateCpiBuilder, TransferCpiBuilder},
+    instructions::{CreateCpiBuilder, TransferCpiBuilder},
     state::Asset,
     types::{ExtensionInput, ExtensionType, Standard},
     Interface,
@@ -70,18 +70,12 @@ fn process_create(program_id: &Pubkey, ctx: Context<CreateAccounts>) -> ProgramR
     let signer = [ctx.accounts.stub.key.as_ref(), &[bump]];
 
     let mut proxy = ProxyBuilder::default();
-    proxy.set(program_id, &ctx.accounts.stub.key.to_bytes(), bump);
-
-    AllocateCpiBuilder::new(ctx.accounts.nifty_asset_program)
-        .asset(ctx.accounts.asset)
-        .payer(ctx.accounts.payer)
-        .system_program(ctx.accounts.system_program)
-        .extension(ExtensionInput {
-            extension_type: ExtensionType::Proxy,
-            length: proxy.len() as u32,
-            data: Some(proxy.data()),
-        })
-        .invoke_signed(&[&signer])?;
+    proxy.set(
+        program_id,
+        &ctx.accounts.stub.key.to_bytes(),
+        bump,
+        ctx.accounts.owner.key,
+    );
 
     CreateCpiBuilder::new(ctx.accounts.nifty_asset_program)
         .asset(ctx.accounts.asset)
@@ -91,6 +85,11 @@ fn process_create(program_id: &Pubkey, ctx: Context<CreateAccounts>) -> ProgramR
         .system_program(ctx.accounts.system_program)
         .name(String::from("Proxied"))
         .standard(Standard::Proxied)
+        .extensions(vec![ExtensionInput {
+            extension_type: ExtensionType::Proxy,
+            length: proxy.len() as u32,
+            data: Some(proxy.data()),
+        }])
         .invoke_signed(&[&signer])
 }
 
