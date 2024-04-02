@@ -1,11 +1,12 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use nifty_asset_types::{
-    extensions::ExtensionType,
-    state::{DelegateRole, Standard},
-};
-use shank::ShankContext;
+use shank::{ShankContext, ShankInstruction};
 
-#[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankContext)]
+pub use crate::generated::{
+    types::{DelegateRole, ExtensionType, Standard},
+    *,
+};
+
+#[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankInstruction, ShankContext)]
 #[rustfmt::skip]
 pub enum Interface {
     /// Closes an uninitialized asset (buffer) account.

@@ -1,14 +1,15 @@
 use borsh::BorshDeserialize;
-use nifty_asset::{
+use nifty_asset_interface::{
+    accounts::TransferAccounts,
     extensions::{Proxy, ProxyBuilder},
-    instructions::{AllocateCpiBuilder, CreateCpiBuilder, Transfer},
+    instructions::{AllocateCpiBuilder, CreateCpiBuilder, TransferCpiBuilder},
     state::Asset,
     types::{ExtensionInput, ExtensionType, Standard},
+    Interface,
 };
-use nifty_asset_interface::{accounts::TransferAccounts, Interface};
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program::invoke_signed,
-    program_error::ProgramError, pubkey::Pubkey,
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
+    pubkey::Pubkey,
 };
 
 use crate::instruction::{
@@ -111,42 +112,18 @@ fn process_transfer<'a>(
     let seeds = *proxy.seeds;
     let signer = [seeds.as_ref(), &[*proxy.bump]];
 
-    // no need to validate seeds, since the signer will fail if they are incorrect
-    /*
-    let derived_key = Pubkey::create_program_address(&signer, program_id)?;
-
-    require!(
-        derived_key == *ctx.accounts.asset.key,
-        ProgramError::InvalidSeeds,
-        "asset"
-    );
-    */
-
     drop(data);
 
     // CPI into the Nifty Asset program
-
-    let mut transfer_ix = Transfer {
-        asset: *ctx.accounts.asset.key,
-        signer: *ctx.accounts.signer.key,
-        recipient: *ctx.accounts.recipient.key,
-        group: None,
-    }
-    .instruction();
-    // make the asset account signer
-    transfer_ix.accounts.first_mut().unwrap().is_signer = true;
 
     let nifty_asset_program = ctx
         .remaining_accounts
         .first()
         .ok_or(ProgramError::NotEnoughAccountKeys)?;
 
-    let account_infos = [
-        ctx.accounts.asset.clone(),
-        ctx.accounts.signer.clone(),
-        ctx.accounts.recipient.clone(),
-        nifty_asset_program.clone(),
-    ];
-
-    invoke_signed(&transfer_ix, &account_infos, &[&signer])
+    TransferCpiBuilder::new(nifty_asset_program)
+        .asset(ctx.accounts.asset)
+        .signer(ctx.accounts.signer)
+        .recipient(ctx.accounts.recipient)
+        .invoke_signed(&[&signer])
 }

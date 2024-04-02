@@ -2696,9 +2696,7 @@ version = "0.0.0"
 dependencies = [
  "borsh 0.10.3",
  "bytemuck",
- "nifty-asset",
  "nifty-asset-interface",
- "nifty-asset-types",
  "num-derive 0.3.3",
  "num-traits",
  "podded",

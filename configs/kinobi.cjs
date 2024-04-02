@@ -4,3 +4,5 @@ require("./kinobi-asset.cjs");
 require("./kinobi-bridge.cjs");
 // proxy program
 require("./kinobi-proxy.cjs");
+// interface
+require("./kinobi-interface.cjs");
