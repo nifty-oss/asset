@@ -360,6 +360,19 @@ kinobi.update(
 // Update instructions.
 kinobi.update(
   k.updateInstructionsVisitor({
+    allocate: {
+      accounts: {
+        systemProgram: {
+          defaultValue: k.conditionalValueNode({
+            condition: k.accountValueNode("payer"),
+            ifTrue: k.publicKeyValueNode(
+              "11111111111111111111111111111111",
+              "systemProgram"
+            ),
+          }),
+        },
+      },
+    },
     create: {
       accounts: {
         owner: { defaultValue: k.identityValueNode() },
@@ -373,8 +386,13 @@ kinobi.update(
           }),
         },
       },
+      arguments: {
+        extensions: {
+          defaultValue: k.noneValueNode(),
+        },
+      },
     },
-    allocate: {
+    update: {
       accounts: {
         systemProgram: {
           defaultValue: k.conditionalValueNode({
@@ -456,7 +474,7 @@ kinobi.accept(
         "asset",
         ".prettierrc.json"
       )),
-      internalNodes: ["transfer", "update", "write"],
+      internalNodes: ["create", "transfer", "update", "write"],
       customAccountData: [
         {
           name: "asset",

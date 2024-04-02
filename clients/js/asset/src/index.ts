@@ -1,6 +1,7 @@
 import { publicKey } from '@metaplex-foundation/umi';
 
 export * from './constraints';
+export * from './create';
 export * from './extensions';
 export * from './generated';
 export * from './hooked';

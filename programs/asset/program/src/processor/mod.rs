@@ -207,7 +207,7 @@ fn resize<'a>(
             .saturating_sub(if size == 0 { 0 } else { required });
 
         let payer = payer.ok_or_else(|| {
-            msg!("Missing payer account");
+            msg!("[ERROR] Missing payer account");
             ProgramError::NotEnoughAccountKeys
         })?;
 
@@ -229,12 +229,12 @@ fn resize<'a>(
             msg!("Funding {} lamports for account resize", delta);
 
             let payer = payer.ok_or_else(|| {
-                msg!("Missing payer account");
+                msg!("[ERROR] Missing payer account");
                 ProgramError::NotEnoughAccountKeys
             })?;
 
             let system_program = system_program.ok_or_else(|| {
-                msg!("Missing system program account");
+                msg!("[ERROR] Missing system program account");
                 ProgramError::NotEnoughAccountKeys
             })?;
 

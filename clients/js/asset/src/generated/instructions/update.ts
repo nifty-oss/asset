@@ -146,6 +146,15 @@ export function update(
   if (!resolvedAccounts.authority.value) {
     resolvedAccounts.authority.value = context.identity;
   }
+  if (!resolvedAccounts.systemProgram.value) {
+    if (resolvedAccounts.payer.value) {
+      resolvedAccounts.systemProgram.value = context.programs.getPublicKey(
+        'systemProgram',
+        '11111111111111111111111111111111'
+      );
+      resolvedAccounts.systemProgram.isWritable = false;
+    }
+  }
 
   // Accounts in order.
   const orderedAccounts: ResolvedAccount[] = Object.values(

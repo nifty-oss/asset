@@ -113,7 +113,6 @@ mod mint {
         let extension_args = vec![ExtensionArgs {
             extension_type: ExtensionType::Creators,
             data: value.into_data(),
-            chunked: true,
         }];
 
         let ix_args = MintIxArgs {
@@ -205,7 +204,6 @@ mod mint {
         let extension_args = vec![ExtensionArgs {
             extension_type: ExtensionType::Royalties,
             data: value.into_data(),
-            chunked: true,
         }];
 
         let ix_args = MintIxArgs {
@@ -285,7 +283,6 @@ mod mint {
         let extension_args = vec![ExtensionArgs {
             extension_type: ExtensionType::Royalties,
             data: value.into_data(),
-            chunked: true,
         }];
 
         let ix_args = MintIxArgs {

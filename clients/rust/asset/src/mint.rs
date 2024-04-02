@@ -46,7 +46,6 @@ pub struct AssetArgs {
 pub struct ExtensionArgs {
     pub extension_type: ExtensionType,
     pub data: Vec<u8>,
-    pub chunked: bool,
 }
 
 /// A type suitable for JSON serde de/serialization.
@@ -304,7 +303,15 @@ pub enum MintError {
     InvalidExtensionData(String),
 }
 
-const MAX_IX_DATA_SIZE: usize = 925;
+pub const MAX_TX_SIZE: usize = 1232;
+
+pub const ALLOCATE_TX_OVERHEAD: usize = 312;
+
+// Write only has 1 byte in the data input, instead of 6
+pub const WRITE_TX_OVERHEAD: usize = ALLOCATE_TX_OVERHEAD - 5;
+
+pub const MAX_ALLOCATE_DATA_SIZE: usize = MAX_TX_SIZE - ALLOCATE_TX_OVERHEAD;
+pub const MAX_WRITE_DATA_SIZE: usize = MAX_TX_SIZE - WRITE_TX_OVERHEAD;
 
 /// Returns a vector of instructions to fully mint an asset, including with extensions.
 /// The instructions are returned in the order they should be executed.
@@ -315,15 +322,16 @@ pub fn mint(args: MintIxArgs) -> Result<Vec<Instruction>, MintError> {
 
     // Extension allocation instructions.
     for extension in args.extension_args.iter() {
+        let extension_data_len = extension.data.len();
+
         let ix_args = AllocateInstructionArgs {
             extension: ExtensionInput {
                 extension_type: extension.extension_type.clone(),
                 length: extension.data.len() as u32,
-                data: if extension.chunked {
-                    None
-                } else {
-                    Some(extension.data.clone())
-                },
+                data: Some(
+                    extension.data[..std::cmp::min(extension_data_len, MAX_ALLOCATE_DATA_SIZE)]
+                        .to_vec(),
+                ),
             },
         };
 
@@ -336,9 +344,10 @@ pub fn mint(args: MintIxArgs) -> Result<Vec<Instruction>, MintError> {
             .instruction(ix_args),
         );
 
-        // Write data instructions.
-        if extension.chunked {
-            for chunk in extension.data.chunks(MAX_IX_DATA_SIZE) {
+        // Write data instructions if the data is larger than the max allocate data size.
+        if extension_data_len > MAX_ALLOCATE_DATA_SIZE {
+            // Start at the max allocate data size and write the rest of the data in chunks.
+            for chunk in extension.data[MAX_ALLOCATE_DATA_SIZE..].chunks(MAX_WRITE_DATA_SIZE) {
                 let ix_args = WriteInstructionArgs {
                     overwrite: false,
                     bytes: chunk.to_vec(),
@@ -361,6 +370,7 @@ pub fn mint(args: MintIxArgs) -> Result<Vec<Instruction>, MintError> {
         name: args.asset_args.name,
         standard: args.asset_args.standard,
         mutable: args.asset_args.mutable,
+        extensions: None,
     };
 
     instructions.push(
