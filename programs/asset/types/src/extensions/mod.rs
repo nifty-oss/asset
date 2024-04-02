@@ -20,6 +20,7 @@ mod grouping;
 mod links;
 mod manager;
 mod metadata;
+mod proxy;
 mod royalties;
 
 pub use attributes::*;
@@ -29,6 +30,7 @@ pub use grouping::*;
 pub use links::*;
 pub use manager::*;
 pub use metadata::*;
+pub use proxy::*;
 pub use royalties::*;
 
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -163,6 +165,7 @@ pub enum ExtensionType {
     Grouping,
     Royalties,
     Manager,
+    Proxy,
 }
 
 impl TryFrom<u32> for ExtensionType {
@@ -179,6 +182,7 @@ impl TryFrom<u32> for ExtensionType {
             6 => Ok(ExtensionType::Grouping),
             7 => Ok(ExtensionType::Royalties),
             8 => Ok(ExtensionType::Manager),
+            9 => Ok(ExtensionType::Proxy),
             _ => Err(Error::InvalidExtensionType(value)),
         }
     }
@@ -196,6 +200,7 @@ impl From<ExtensionType> for u32 {
             ExtensionType::Grouping => 6,
             ExtensionType::Royalties => 7,
             ExtensionType::Manager => 8,
+            ExtensionType::Proxy => 9,
         }
     }
 }
@@ -276,5 +281,6 @@ validate_extension_type!(
     (Links, LinksMut),
     (Metadata, MetadataMut),
     (Royalties, RoyaltiesMut),
-    (Manager, ManagerMut)
+    (Manager, ManagerMut),
+    (Proxy, ProxyMut)
 );

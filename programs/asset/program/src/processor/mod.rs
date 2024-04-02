@@ -16,7 +16,7 @@ mod verify;
 mod write;
 
 use borsh::BorshDeserialize;
-use nifty_asset_types::state::{Discriminator, State};
+use nifty_asset_types::state::{Discriminator, Standard, State};
 use solana_program::{
     account_info::AccountInfo,
     entrypoint::{ProgramResult, MAX_PERMITTED_DATA_INCREASE},
@@ -51,7 +51,7 @@ pub fn process_instruction<'a>(
     let instruction: Instruction = Instruction::try_from_slice(instruction_data)
         .map_err(|_| ProgramError::InvalidInstructionData)?;
 
-    if let Some(account) = is_locked(program_id, accounts) {
+    if let Some(account) = validate_access(program_id, accounts)? {
         // check whether the instruction is allowed to proceed
         if matches!(
             instruction,
@@ -133,27 +133,63 @@ pub fn process_instruction<'a>(
     }
 }
 
-/// Checks if the instruction's accounts contain a locked asset.
-fn is_locked<'a>(program_id: &Pubkey, accounts: &'a [AccountInfo]) -> Option<&'a Pubkey> {
+#[macro_export]
+macro_rules! require {
+    ( $constraint:expr, $error:expr, $message:expr ) => {
+        if !$constraint {
+            solana_program::msg!("Constraint failed: {}", $message);
+            return Err($error.into());
+        }
+    };
+    ( $constraint:expr, $error:expr, $message:literal, $($args:tt)+ ) => {
+        require!( $constraint, $error, format!($message, $($args)+) );
+    };
+}
+
+/// Checks if the instruction's accounts contain proxied and locked assets.
+///
+/// This function will return the key of the locked asset if one is found. An error
+/// is raised if a proxied asset is not a signer.
+fn validate_access<'a>(
+    program_id: &Pubkey,
+    accounts: &'a [AccountInfo],
+) -> Result<Option<&'a Pubkey>, ProgramError> {
     /// Index of the discriminator byte.
     const DISCRIMINATOR_INDEX: usize = 0;
-
     /// Index of the asset state byte.
     const STATE_INDEX: usize = 1;
+    /// Index of the asset state byte.
+    const STANDARD_INDEX: usize = 2;
+
+    let mut locked = None;
 
     for account_info in accounts {
         // only considers accounts owned by the program and non-empty
         if account_info.owner == program_id && !account_info.data_is_empty() {
             let data = account_info.data.borrow();
-            if (data[DISCRIMINATOR_INDEX] == Discriminator::Asset.into())
-                && (data[STATE_INDEX] == State::Locked.into())
-            {
-                return Some(account_info.key);
+            if data[DISCRIMINATOR_INDEX] == Discriminator::Asset.into() {
+                if data[STATE_INDEX] == State::Locked.into() {
+                    // any locked asset can be used to determine if the
+                    // instruction is allowed
+                    locked = Some(account_info.key);
+                } else if data[STANDARD_INDEX] == Standard::Proxied.into() {
+                    // TODO: we probably only need to check on the first account
+                    // since all instructions have the aset on that positio; curently
+                    // this will not work for instructions that take a group and the
+                    // group is a 'Proxied' asset (unless both are from the same program,
+                    // which might be a reasonable assumption)
+                    require!(
+                        account_info.is_signer,
+                        ProgramError::MissingRequiredSignature,
+                        "proxied asset \"{}\" is not a signer",
+                        account_info.key
+                    );
+                }
             }
         }
     }
 
-    None
+    Ok(locked)
 }
 
 #[inline(always)]
@@ -231,17 +267,4 @@ fn resize<'a>(
     account.realloc(size, false)?;
 
     Ok(())
-}
-
-#[macro_export]
-macro_rules! require {
-    ( $constraint:expr, $error:expr, $message:expr ) => {
-        if !$constraint {
-            solana_program::msg!("Constraint failed: {}", $message);
-            return Err($error.into());
-        }
-    };
-    ( $constraint:expr, $error:expr, $message:literal, $($args:tt)+ ) => {
-        require!( $constraint, $error, format!($message, $($args)+) );
-    };
 }

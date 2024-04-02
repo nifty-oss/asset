@@ -21,6 +21,11 @@ module.exports = {
         deployPath: getProgram("bridge_program.so"),
       },
       {
+        label: "Proxy",
+        programId: "Proxy11111111111111111111111111111111111111",
+        deployPath: getProgram("proxy_program.so"),
+      },
+      {
         label: "Token Metadata",
         programId: "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s",
         deployPath: getProgram("mpl_token_metadata.so"),

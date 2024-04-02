@@ -1,12 +1,13 @@
 import { publicKey } from '@metaplex-foundation/umi';
 
 export * from './constraints';
+export * from './extensions';
 export * from './generated';
 export * from './hooked';
 export * from './initialize';
-export * from './extensions';
 export * from './mint';
 export * from './plugin';
+export * from './transfer';
 export * from './update';
 export * from './updateWithBuffer';
 export * from './write';

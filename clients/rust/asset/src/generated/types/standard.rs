@@ -14,4 +14,5 @@ pub enum Standard {
     NonFungible,
     Managed,
     Soulbound,
+    Proxied,
 }

@@ -1,0 +1,98 @@
+{
+  "version": "0.0.0",
+  "name": "proxy_program",
+  "instructions": [
+    {
+      "name": "Create",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The proxied asset (seeds: `[stub]`)"
+          ]
+        },
+        {
+          "name": "stub",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The ephemeral stub to derive the address of the asset"
+          ]
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The owner of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "System program"
+          ]
+        },
+        {
+          "name": "niftyAssetProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Nifty Asset program"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 0
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "CreateArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "isCollection",
+            "type": "bool"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 0,
+      "name": "InvalidMint",
+      "msg": "Invalid mint account"
+    },
+    {
+      "code": 1,
+      "name": "InvalidAuthority",
+      "msg": "Invalid authority account"
+    }
+  ],
+  "metadata": {
+    "origin": "shank",
+    "address": "Proxy11111111111111111111111111111111111111",
+    "binaryVersion": "0.3.0",
+    "libVersion": "0.3.0"
+  }
+}

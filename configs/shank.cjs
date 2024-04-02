@@ -22,3 +22,12 @@ generateIdl({
   binaryInstallDir,
   programDir: path.join(programDir, "bridge"),
 });
+
+generateIdl({
+  generator: "shank",
+  programName: "proxy_program",
+  programId: "Proxy11111111111111111111111111111111111111",
+  idlDir,
+  binaryInstallDir,
+  programDir: path.join(programDir, "proxy"),
+});

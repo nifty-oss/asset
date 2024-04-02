@@ -20,4 +20,5 @@ pub enum ExtensionType {
     Grouping,
     Royalties,
     Manager,
+    Proxy,
 }

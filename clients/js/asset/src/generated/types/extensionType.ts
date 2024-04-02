@@ -18,6 +18,7 @@ export enum ExtensionType {
   Grouping,
   Royalties,
   Manager,
+  Proxy,
 }
 
 export type ExtensionTypeArgs = ExtensionType;

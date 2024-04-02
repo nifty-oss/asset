@@ -2148,6 +2148,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "nifty-asset-interface"
+version = "0.1.0"
+dependencies = [
+ "borsh 0.10.3",
+ "nifty-asset-types",
+ "shank",
+ "solana-program",
+]
+
+[[package]]
 name = "nifty-asset-types"
 version = "0.1.0"
 dependencies = [
@@ -2678,6 +2688,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2422ad645d89c99f8f3e6b88a9fdeca7fabeac836b1002371c4367c8f984aae"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "proxy-program"
+version = "0.0.0"
+dependencies = [
+ "borsh 0.10.3",
+ "bytemuck",
+ "nifty-asset",
+ "nifty-asset-interface",
+ "nifty-asset-types",
+ "num-derive 0.3.3",
+ "num-traits",
+ "podded",
+ "shank",
+ "solana-program",
+ "thiserror",
 ]
 
 [[package]]

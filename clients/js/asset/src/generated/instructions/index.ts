@@ -15,7 +15,6 @@ export * from './group';
 export * from './handover';
 export * from './lock';
 export * from './revoke';
-export * from './transfer';
 export * from './ungroup';
 export * from './unlock';
 export * from './unverify';

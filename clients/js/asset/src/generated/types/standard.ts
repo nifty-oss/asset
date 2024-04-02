@@ -12,6 +12,7 @@ export enum Standard {
   NonFungible,
   Managed,
   Soulbound,
+  Proxied,
 }
 
 export type StandardArgs = Standard;

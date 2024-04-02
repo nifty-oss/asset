@@ -22,6 +22,7 @@ export * from './link';
 export * from './links';
 export * from './manager';
 export * from './metadata';
+export * from './proxy';
 export * from './standard';
 export * from './state';
 export * from './trait';
