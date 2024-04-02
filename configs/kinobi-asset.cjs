@@ -474,7 +474,22 @@ kinobi.accept(
         "asset",
         ".prettierrc.json"
       )),
-      internalNodes: ["create", "transfer", "update", "write"],
+      internalNodes: [
+        "approve",
+        "burn",
+        "create",
+        "group",
+        "handover",
+        "lock",
+        "revoke",
+        "transfer",
+        "ungroup",
+        "unlock",
+        "unverify",
+        "update",
+        "verify",
+        "write",
+      ],
       customAccountData: [
         {
           name: "asset",
