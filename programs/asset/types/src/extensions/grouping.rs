@@ -137,14 +137,20 @@ impl Default for GroupingBuilder {
 }
 
 impl GroupingBuilder {
+    pub fn with_buffer(buffer: Vec<u8>) -> Self {
+        Self(buffer)
+    }
+
     /// Add a new attribute to the extension.
-    pub fn set_max_size(&mut self, max_size: Option<u64>) {
+    pub fn set_max_size(&mut self, max_size: Option<u64>) -> &mut Self {
         // setting the data replaces any existing data
         self.0.clear();
 
         self.0.extend_from_slice(&u64::to_le_bytes(0));
         self.0
             .extend_from_slice(&u64::to_le_bytes(max_size.unwrap_or(0)));
+
+        self
     }
 }
 

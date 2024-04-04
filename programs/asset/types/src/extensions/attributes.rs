@@ -156,8 +156,18 @@ impl<'a> TraitMut<'a> {
 pub struct AttributesBuilder(Vec<u8>);
 
 impl AttributesBuilder {
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self(Vec::with_capacity(capacity))
+    }
+
+    pub fn with_buffer(buffer: Vec<u8>) -> Self {
+        let mut s = Self(buffer);
+        s.0.clear();
+        s
+    }
+
     /// Add a new attribute to the extension.
-    pub fn add(&mut self, name: &str, value: &str) {
+    pub fn add(&mut self, name: &str, value: &str) -> &mut Self {
         // add the length of the name + prefix to the data buffer.
         let cursor = self.0.len();
         self.0.append(&mut vec![0u8; name.len() + 1]);
@@ -169,6 +179,8 @@ impl AttributesBuilder {
         self.0.append(&mut vec![0u8; value.len() + 1]);
         let mut value_str = U8PrefixStrMut::new(&mut self.0[cursor..]);
         value_str.copy_from_str(value);
+
+        self
     }
 }
 

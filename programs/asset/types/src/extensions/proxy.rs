@@ -114,13 +114,29 @@ impl Lifecycle for ProxyMut<'_> {
 pub struct ProxyBuilder(Vec<u8>);
 
 impl ProxyBuilder {
-    pub fn set(&mut self, program: &Pubkey, seeds: &[u8; 32], bump: u8, authority: &Pubkey) {
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self(Vec::with_capacity(capacity))
+    }
+
+    pub fn with_buffer(buffer: Vec<u8>) -> Self {
+        Self(buffer)
+    }
+
+    pub fn set(
+        &mut self,
+        program: &Pubkey,
+        seeds: &[u8; 32],
+        bump: u8,
+        authority: &Pubkey,
+    ) -> &mut Self {
         // setting the data replaces any existing data
         self.0.clear();
         self.0.extend_from_slice(program.as_ref());
         self.0.extend_from_slice(seeds);
         self.0.push(bump);
         self.0.extend_from_slice(authority.as_ref());
+
+        self
     }
 
     pub fn build(&self) -> Proxy {
