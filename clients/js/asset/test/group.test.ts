@@ -177,3 +177,68 @@ test('it cannot exceed max group size', async (t) => {
     ],
   });
 });
+
+test('it cannot replace the group of an asset', async (t) => {
+  // Given a Umi instance.
+  const umi = await createUmi();
+
+  // And we create a group asset.
+  const groupAsset = generateSigner(umi);
+  await mint(umi, {
+    asset: groupAsset,
+    payer: umi.identity,
+    name: 'Group',
+    extensions: [grouping(10)],
+  }).sendAndConfirm(umi);
+
+  t.like(await fetchAsset(umi, groupAsset.publicKey), <Asset>{
+    group: null,
+    extensions: [
+      {
+        type: ExtensionType.Grouping,
+        size: 0n,
+        maxSize: 10n,
+      },
+    ],
+  });
+
+  // And a "normal" asset.
+  const asset = generateSigner(umi);
+  await mint(umi, {
+    asset,
+    payer: umi.identity,
+    name: 'Asset',
+  }).sendAndConfirm(umi);
+
+  // And we add the asset to the group.
+  await group(umi, {
+    group: groupAsset.publicKey,
+    asset: asset.publicKey,
+  }).sendAndConfirm(umi);
+
+  // Then we create a second group asset.
+
+  // Then the group is set on the asset.
+  const secondGroup = generateSigner(umi);
+  await mint(umi, {
+    asset: secondGroup,
+    payer: umi.identity,
+    name: 'Group',
+    extensions: [grouping(10)],
+  }).sendAndConfirm(umi);
+
+  // When we try to add the assset to the second group.
+  const promise = group(umi, {
+    group: secondGroup.publicKey,
+    asset: asset.publicKey,
+  }).sendAndConfirm(umi);
+
+  // Then we expect an error.
+  await t.throwsAsync(promise, { message: /Asset is already in a group/ });
+
+  // And the group of the asset does not change.
+
+  t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
+    group: groupAsset.publicKey,
+  });
+});

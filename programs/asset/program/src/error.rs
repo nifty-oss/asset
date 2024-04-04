@@ -87,6 +87,10 @@ pub enum AssetError {
     /// 19 - Group is not empty
     #[error("Group is not empty")]
     GroupNotEmpty,
+
+    /// 20 - Asset is already in a group
+    #[error("Asset is already in a group")]
+    AlreadyInGroup,
 }
 
 impl PrintProgramError for AssetError {

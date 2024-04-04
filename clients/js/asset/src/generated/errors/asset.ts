@@ -262,6 +262,32 @@ export class AssertionFailureError extends ProgramError {
 codeToErrorMap.set(0x12, AssertionFailureError);
 nameToErrorMap.set('AssertionFailure', AssertionFailureError);
 
+/** GroupNotEmpty: Group is not empty */
+export class GroupNotEmptyError extends ProgramError {
+  override readonly name: string = 'GroupNotEmpty';
+
+  readonly code: number = 0x13; // 19
+
+  constructor(program: Program, cause?: Error) {
+    super('Group is not empty', program, cause);
+  }
+}
+codeToErrorMap.set(0x13, GroupNotEmptyError);
+nameToErrorMap.set('GroupNotEmpty', GroupNotEmptyError);
+
+/** AlreadyInGroup: Asset is already in a group */
+export class AlreadyInGroupError extends ProgramError {
+  override readonly name: string = 'AlreadyInGroup';
+
+  readonly code: number = 0x14; // 20
+
+  constructor(program: Program, cause?: Error) {
+    super('Asset is already in a group', program, cause);
+  }
+}
+codeToErrorMap.set(0x14, AlreadyInGroupError);
+nameToErrorMap.set('AlreadyInGroup', AlreadyInGroupError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

@@ -132,7 +132,7 @@ pub fn process_allocate(
             msg!("[ERROR] {}", error);
             AssetError::ExtensionDataInvalid
         })?;
-
+        #[cfg(feature = "logging")]
         msg!(
             "Extension [{:?}] initialized",
             args.extension.extension_type

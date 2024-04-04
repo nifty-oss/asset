@@ -66,6 +66,12 @@ pub fn process_group(program_id: &Pubkey, ctx: Context<GroupAccounts>) -> Progra
         "asset authority mismatch"
     );
 
+    require!(
+        asset.group.value().is_none(),
+        AssetError::AlreadyInGroup,
+        "asset"
+    );
+
     let group = Asset::load_mut(&mut group_data);
 
     require!(
