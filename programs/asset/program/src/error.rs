@@ -83,6 +83,10 @@ pub enum AssetError {
     /// 18 - Assertion Failure
     #[error("Assertion Failure")]
     AssertionFailure,
+
+    /// 19 - Group is not empty
+    #[error("Group is not empty")]
+    GroupNotEmpty,
 }
 
 impl PrintProgramError for AssetError {
