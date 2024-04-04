@@ -142,6 +142,9 @@ importers:
       '@metaplex-foundation/umi-bundle-tests':
         specifier: ^0.9.0
         version: 0.9.1(@metaplex-foundation/umi@0.9.1)(@solana/web3.js@1.89.1)
+      '@metaplex-foundation/umi-web3js-adapters':
+        specifier: ^0.9.1
+        version: 0.9.1(@metaplex-foundation/umi@0.9.1)(@solana/web3.js@1.89.1)
       '@nifty-oss/asset':
         specifier: workspace:*
         version: link:../asset

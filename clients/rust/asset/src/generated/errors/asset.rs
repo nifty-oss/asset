@@ -67,6 +67,12 @@ pub enum AssetError {
     /// 18 (0x12) - Assertion Failure
     #[error("Assertion Failure")]
     AssertionFailure,
+    /// 19 (0x13) - Group is not empty
+    #[error("Group is not empty")]
+    GroupNotEmpty,
+    /// 20 (0x14) - Asset is already in a group
+    #[error("Asset is already in a group")]
+    AlreadyInGroup,
 }
 
 impl solana_program::program_error::PrintProgramError for AssetError {

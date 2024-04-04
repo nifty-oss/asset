@@ -853,6 +853,16 @@
       "code": 18,
       "name": "AssertionFailure",
       "msg": "Assertion Failure"
+    },
+    {
+      "code": 19,
+      "name": "GroupNotEmpty",
+      "msg": "Group is not empty"
+    },
+    {
+      "code": 20,
+      "name": "AlreadyInGroup",
+      "msg": "Asset is already in a group"
     }
   ],
   "metadata": {

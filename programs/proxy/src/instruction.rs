@@ -16,5 +16,10 @@ pub enum Instruction {
     #[account(3, writable, signer, optional, name="payer", desc = "The account paying for the storage fees")]
     #[account(4, optional, name="system_program", desc = "System program")]
     #[account(5, name="nifty_asset_program", desc = "Nifty Asset program")]
-    Create,
+    Create(Metadata),
+}
+
+#[derive(BorshDeserialize, BorshSerialize, Clone, Debug)]
+pub struct Metadata {
+    pub name: String,
 }

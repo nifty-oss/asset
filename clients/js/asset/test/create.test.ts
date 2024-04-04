@@ -320,7 +320,7 @@ test('it cannot set a group on create with authority not a signer', async (t) =>
   await t.throwsAsync(promise, { message: /missing required signature/ });
 });
 
-test.only('it can create an asset with a collection', async (t) => {
+test('it can create an asset with a collection', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();
   const asset = generateSigner(umi);
@@ -349,6 +349,7 @@ test.only('it can create an asset with a collection', async (t) => {
         symbol: 'MAD',
         uri: 'https://madlads.s3.us-west-2.amazonaws.com/json/8420.json',
       }),
+      royalties(500),
       creators([
         {
           address: publicKey('5XvhfmRjwXkGp3jHGmaKpqeerNYjkuZZBYLVQYdeVcRv'),
@@ -359,11 +360,13 @@ test.only('it can create an asset with a collection', async (t) => {
           share: 100,
         },
       ]),
-      royalties(500),
     ],
   }).sendAndConfirm(umi);
 
   // Then an asset was created with the correct data.
+  //
+  // (the order of the extension is different since the program uses
+  // a swap remove procedure when processing the extensions)
   t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
     discriminator: Discriminator.Asset,
     state: State.Unlocked,
@@ -390,7 +393,7 @@ test.only('it can create an asset with a collection', async (t) => {
           },
         ],
       },
-      { type: ExtensionType.Royalties, basisPoints: 500, constraint: empty() },
+      { type: ExtensionType.Royalties, basisPoints: 500n, constraint: empty() },
     ],
   });
 });

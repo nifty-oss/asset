@@ -18,6 +18,7 @@ test('it can create a proxied asset', async (t) => {
     stub,
     owner: owner.publicKey,
     payer: umi.identity,
+    name: 'Proxied Asset',
   }).sendAndConfirm(umi);
 
   // Then an asset was created with the correct data.

@@ -56,7 +56,14 @@
           ]
         }
       ],
-      "args": [],
+      "args": [
+        {
+          "name": "metadata",
+          "type": {
+            "defined": "Metadata"
+          }
+        }
+      ],
       "discriminant": {
         "type": "u8",
         "value": 0
@@ -72,6 +79,18 @@
           {
             "name": "isCollection",
             "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Metadata",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
           }
         ]
       }
