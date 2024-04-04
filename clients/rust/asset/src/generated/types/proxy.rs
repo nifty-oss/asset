@@ -19,4 +19,9 @@ pub struct Proxy {
     pub program: Pubkey,
     pub seeds: [u8; 32],
     pub bump: u8,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
+    )]
+    pub authority: Pubkey,
 }

@@ -39,7 +39,7 @@ export type TypedExtension =
   | ({ type: ExtensionType.Grouping } & Grouping)
   | ({ type: ExtensionType.Royalties } & Royalties)
   | ({ type: ExtensionType.Manager } & Manager)
-  | ({ type: ExtensionType.Manager } & Proxy);
+  | ({ type: ExtensionType.Proxy } & Proxy);
 
 export const getExtensionSerializerFromType = <T extends TypedExtension>(
   type: ExtensionType
