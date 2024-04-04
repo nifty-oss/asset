@@ -348,6 +348,10 @@ kinobi.update(
                   name: "bump",
                   type: k.numberTypeNode("u8"),
                 }),
+                k.structFieldTypeNode({
+                  name: "authority",
+                  type: k.publicKeyTypeNode(),
+                }),
               ]),
             }),
           ],
