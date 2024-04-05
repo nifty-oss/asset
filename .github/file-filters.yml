@@ -19,9 +19,14 @@ bridge_program: &bridge_program
   - *program_common
   - "programs/bridge/**"
 
+proxy_program: &proxy_program
+  - *program_common
+  - "programs/proxy/**"
+
 programs: &programs
   - *asset_program
   - *bridge_program
+  - *proxy_program
 
 # Clients.
 
@@ -43,6 +48,11 @@ bridge_js_client: &bridge_js_client
   - ".github/workflows/test-js-client.yml"
   - "clients/js/bridge/**"
 
+proxy_js_client: &proxy_js_client
+  - *client_common
+  - ".github/workflows/test-js-client.yml"
+  - "clients/js/proxy/**"
+
 asset_rust_client: &asset_rust_client
   - *client_common
   - ".github/workflows/test-rust-client.yml"
@@ -58,6 +68,7 @@ bridge_rust_client: &bridge_rust_client
 js_clients: &js_clients
   - *asset_js_client
   - *bridge_js_client
+  - *proxy_js_client
 
 rust_clients: &rust_clients
   - *asset_rust_client
