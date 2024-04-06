@@ -1,5 +1,5 @@
 use nifty_asset_interface::{
-    extensions::{AttributesBuilder, ExtensionBuilder, ProxyBuilder},
+    extensions::{AttributesBuilder, BlobBuilder, ExtensionBuilder, ProxyBuilder},
     instructions::CreateCpiBuilder,
     types::ExtensionInput,
     ExtensionType, Standard,
@@ -20,7 +20,13 @@ pub fn process_create(
     ctx: Context<CreateAccounts>,
     metadata: Metadata,
 ) -> ProgramResult {
-    // proxy
+    // account validation
+
+    require!(
+        ctx.accounts.stub.is_signer,
+        ProgramError::MissingRequiredSignature,
+        "stub"
+    );
 
     let (derived_key, bump) =
         Pubkey::find_program_address(&[ctx.accounts.stub.key.as_ref()], program_id);
@@ -35,7 +41,7 @@ pub fn process_create(
 
     // initialize the extensions
 
-    let data = AttributesBuilder::with_capacity(40)
+    let data = AttributesBuilder::with_capacity(25)
         .add("transfers", &format!("{:>12}", 0))
         .data();
 
@@ -45,15 +51,17 @@ pub fn process_create(
         data: Some(data),
     };
 
-    let mut buffer = Vec::with_capacity(2000);
-    buffer.push(CONTENT_TYPE.len() as u8);
-    buffer.extend_from_slice(CONTENT_TYPE.as_bytes());
-    buffer.extend_from_slice(IMAGE.replace("{#RGB#}", "000,000,000").as_bytes());
+    let data = BlobBuilder::with_capacity(2000)
+        .set_data(
+            CONTENT_TYPE,
+            IMAGE.replace("{#RGB#}", "000,000,000").as_bytes(),
+        )
+        .data();
 
     let blob = ExtensionInput {
         extension_type: ExtensionType::Blob,
-        length: buffer.len() as u32,
-        data: Some(buffer),
+        length: data.len() as u32,
+        data: Some(data),
     };
 
     let data = ProxyBuilder::with_capacity(100)
@@ -75,7 +83,7 @@ pub fn process_create(
 
     CreateCpiBuilder::new(ctx.accounts.nifty_asset_program)
         .asset(ctx.accounts.asset)
-        .authority(ctx.accounts.asset, false)
+        .authority(ctx.accounts.asset, true) // <- keeps the authority so we can update the asset
         .owner(ctx.accounts.owner)
         .payer(ctx.accounts.payer)
         .system_program(ctx.accounts.system_program)

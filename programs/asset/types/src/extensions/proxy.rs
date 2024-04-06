@@ -7,7 +7,7 @@ use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Li
 
 /// Extension to define the proxy data of a proxied asset.
 ///
-/// Assets with a `Proxied` standard is controlled by the proxy
+/// Assets with a `Proxied` standard are controlled by the proxy
 /// program specified in this extension.
 ///
 /// This extension can only be used in `Proxied` asset accounts.
@@ -48,7 +48,10 @@ impl<'a> ExtensionData<'a> for Proxy<'a> {
     }
 
     fn length(&self) -> usize {
-        std::mem::size_of::<Pubkey>() + std::mem::size_of::<[u8; 32]>()
+        std::mem::size_of::<Pubkey>()         // program
+            + std::mem::size_of::<[u8; 32]>() // seeds
+            + std::mem::size_of::<u8>()       // bump
+            + std::mem::size_of::<Pubkey>() // authority
     }
 }
 

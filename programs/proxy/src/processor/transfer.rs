@@ -1,6 +1,6 @@
 use nifty_asset_interface::{
     accounts::TransferAccounts,
-    extensions::{Attributes, AttributesBuilder, ExtensionBuilder},
+    extensions::{Attributes, AttributesBuilder, BlobBuilder, ExtensionBuilder},
     instructions::{TransferCpiBuilder, UpdateCpiBuilder},
     state::Asset,
     types::ExtensionInput,
@@ -21,6 +21,8 @@ pub fn process_transfer<'a>(
     _program_id: &Pubkey,
     ctx: nifty_asset_interface::accounts::Context<'a, TransferAccounts<'a>>,
 ) -> ProgramResult {
+    // account validation happends on the CPI
+
     let data = (*ctx.accounts.asset.data).borrow();
     fetch_signer!(signer, nifty_asset_program, ctx, &data);
 
@@ -39,7 +41,7 @@ pub fn process_transfer<'a>(
 
     drop(data);
 
-    let data = AttributesBuilder::default()
+    let data = AttributesBuilder::with_capacity(25)
         .add("transfers", &format!("{:>12}", current + 1))
         .data();
 
@@ -66,17 +68,17 @@ pub fn process_transfer<'a>(
         .as_ref()[..3],
     );
 
-    let mut data = Vec::with_capacity(2000);
-    data.push(CONTENT_TYPE.len() as u8);
-    data.extend_from_slice(CONTENT_TYPE.as_bytes());
-    data.extend_from_slice(
-        IMAGE
-            .replace(
-                "{#RGB#}",
-                &format!("{:>3},{:>3},{:>3}", buffer[0], buffer[1], buffer[2]),
-            )
-            .as_bytes(),
-    );
+    let data = BlobBuilder::with_capacity(2000)
+        .set_data(
+            CONTENT_TYPE,
+            IMAGE
+                .replace(
+                    "{#RGB#}",
+                    &format!("{:>3},{:>3},{:>3}", buffer[0], buffer[1], buffer[2]),
+                )
+                .as_bytes(),
+        )
+        .data();
 
     UpdateCpiBuilder::new(nifty_asset_program)
         .asset(ctx.accounts.asset)

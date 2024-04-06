@@ -38,8 +38,8 @@ test('it cannot transfer a non-signer proxied asset', async (t) => {
   const asset = findProxiedAssetPda(umi, { stub: stub.publicKey });
   const recipient = generateSigner(umi).publicKey;
 
-  // When we try to transfer the proxied asset as a non-signer (not
-  // throuhg the proxy program).
+  // When we try to transfer the proxied asset as a non-signer (using
+  // nifty asset transfer without settting the proxy program)
   const promise = transfer(umi, {
     asset,
     signer: owner,
@@ -72,7 +72,8 @@ test('it can transfer a proxied asset through the proxy program', async (t) => {
   const proxy = getExtension(await fetchAsset(umi, asset), ExtensionType.Proxy);
   const recipient = generateSigner(umi).publicKey;
 
-  // When we transfer the proxied asset through the proxy program.
+  // When we transfer the proxied asset through the proxy program (using
+  // nifty asset transfer with the proxy program)
   await transfer(umi, {
     asset,
     signer: owner,
@@ -113,10 +114,10 @@ test('it can execute custom logic on transfer', async (t) => {
   const initial = attributes?.traits[0].value;
   t.true(parseInt(initial!) === 0);
 
-  // And we transfer the proxied asset through the proxy program.
   const recipient = generateSigner(umi).publicKey;
   const proxy = getExtension(asset, ExtensionType.Proxy);
-
+  // And we transfer the proxied asset through the proxy program (using
+  // nifty asset transfer with the proxy program)
   await transfer(umi, {
     asset: address,
     signer: owner,
@@ -151,8 +152,9 @@ test('it can transfer the proxy asset multiple times', async (t) => {
   );
   const address = findProxiedAssetPda(umi, { stub: stub.publicKey });
 
+  // we create a new proxied asset if needed; this allows running the test
+  // multiple times to see the number of transfers increase.
   if (!(await umi.rpc.accountExists(publicKey(address)))) {
-    // we create a new proxied asset if needed.
     await create(umi, {
       stub,
       owner: stub.publicKey,
@@ -161,7 +163,6 @@ test('it can transfer the proxy asset multiple times', async (t) => {
     }).sendAndConfirm(umi);
   }
 
-  // And we transfer the proxied asset through the proxy program.
   const recipient = generateSigner(umi);
   let asset = await fetchAsset(umi, address);
 
@@ -170,7 +171,8 @@ test('it can transfer the proxy asset multiple times', async (t) => {
   const initial = attributes?.traits[0].value;
 
   const proxy = getExtension(asset, ExtensionType.Proxy);
-
+  // And we transfer the proxied asset through the proxy program (using
+  // nifty asset transfer with the proxy program)
   await transfer(umi, {
     asset: address,
     signer: stub,
@@ -178,7 +180,7 @@ test('it can transfer the proxy asset multiple times', async (t) => {
     proxy: proxy?.program,
   }).sendAndConfirm(umi);
 
-  // When transfer it back to the fixed signer.
+  // When transfer it back to the fixed signer so we can run the test again.
   await transfer(umi, {
     asset: address,
     signer: recipient,
