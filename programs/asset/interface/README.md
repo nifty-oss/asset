@@ -1,14 +1,21 @@
-# <img width="250" alt="nifty-asset-types" src="https://github.com/nifty-oss/asset/assets/729235/53eb4f99-a491-4d28-affb-365f18100316"/>
+# <img width="325" alt="nifty-asset-types" src="https://github.com/nifty-oss/asset/assets/729235/cfa1923e-73a6-49e5-89ca-0cbe54cdb591"/>
 
-Types for Nifty Asset [program](https://github.com/nifty-oss/asset).
+Interface for Nifty Asset [program](https://github.com/nifty-oss/asset).
 
-The types defined in this crate are used to represent assets on-chain.
+The interface defined in this crate should be used to implement proxy programs extending Nifty Asset behaviour. It follows the [proxy pattern](https://nifty-oss.org/blog/proxy-pattern).
 
-- `constraints` - these are types to define constraints when manipulating assets. They
-can be used to restrict the accounts that can hold, receive or send assets.
+## Getting started
 
-- `extensions` - these are types that provide additional data that can be attached to an asset. They can be used to store more information about an asset on-chain or extends their behaviour.
+From your project folder:
 
-- `state` - these are the types represeting the account that store the state of an asset on-chain.
+```bash
+cargo add nifty-asset-interface
+```
 
-This crate is usually used as part of the [Nifty Asset SDK](https://crates.io/crates/nifty-asset).
+## Structure
+
+The SDK is divided into several modules:
+
+- `errors`: enums representing the program errors
+- `instructions`: structs to facilitate the creation of instructions on-chain
+- `types`: structs representing types used by the program
