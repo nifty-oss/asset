@@ -1,6 +1,6 @@
 [package]
 name = "nifty-asset-interface"
-version = "0.0.0"
+version = "0.1.0"
 description = "Interface for Nifty Asset program"
 authors = ["nifty-oss maintainers <maintainers@nifty-oss.org>"]
 repository = "https://github.com/nifty-oss/asset"
