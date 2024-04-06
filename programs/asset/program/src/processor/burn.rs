@@ -1,5 +1,5 @@
 use nifty_asset_types::{
-    extensions::{GroupingMut, Manager},
+    extensions::{Grouping, GroupingMut, Manager},
     podded::ZeroCopy,
     state::{Asset, DelegateRole, Discriminator},
 };
@@ -97,6 +97,15 @@ pub fn process_burn(program_id: &Pubkey, ctx: Context<BurnAccounts>) -> ProgramR
             .size
             .checked_sub(1)
             .ok_or(ProgramError::InvalidAccountData)?;
+    }
+
+    // if the asset itself is a group, we require it to be empty
+    if let Some(grouping) = Asset::get::<Grouping>(&data) {
+        require!(
+            *grouping.size == 0,
+            AssetError::GroupNotEmpty,
+            "asset represents a non-empty group"
+        );
     }
 
     // drop asset account reference

@@ -1,3 +1,4 @@
+const fs = require("fs");
 const path = require("path");
 const { generateIdl } = require("@metaplex-foundation/shank-js");
 
@@ -22,3 +23,24 @@ generateIdl({
   binaryInstallDir,
   programDir: path.join(programDir, "bridge"),
 });
+
+generateIdl({
+  generator: "shank",
+  programName: "proxy_program",
+  programId: "Proxy11111111111111111111111111111111111111",
+  idlDir,
+  binaryInstallDir,
+  programDir: path.join(programDir, "proxy"),
+});
+
+// interface (this is only used to generate the interface for the asset program)
+/*
+generateIdl({
+  generator: "shank",
+  programName: "nifty_asset_interface",
+  programId: "AssetGtQBTSgm5s91d1RAQod5JmaZiJDxqsgtqrZud73",
+  idlDir,
+  binaryInstallDir,
+  programDir: path.join(programDir, "asset", "interface"),
+});
+*/

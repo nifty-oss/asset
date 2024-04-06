@@ -150,8 +150,6 @@ impl ZeroCopy<'_, Creator> for Creator {}
 #[derive(Default)]
 pub struct CreatorsBuilder {
     /// The current number of creators.
-    ///
-    /// There is a maximum of 5 creators.
     count: u8,
 
     /// The extension data.
@@ -159,8 +157,24 @@ pub struct CreatorsBuilder {
 }
 
 impl CreatorsBuilder {
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self {
+            count: 0,
+            data: Vec::with_capacity(capacity),
+        }
+    }
+
+    pub fn with_buffer(buffer: Vec<u8>) -> Self {
+        let mut s = Self {
+            count: 0,
+            data: buffer,
+        };
+        s.data.clear();
+        s
+    }
+
     /// Add a new creator to the extension.
-    pub fn add(&mut self, addresss: &Pubkey, verified: bool, share: u8) {
+    pub fn add(&mut self, addresss: &Pubkey, verified: bool, share: u8) -> &mut Self {
         // extends the data buffer
         self.data
             .append(&mut vec![0u8; std::mem::size_of::<Creator>()]);
@@ -172,6 +186,8 @@ impl CreatorsBuilder {
         creator.share = share;
 
         self.count += 1;
+
+        self
     }
 }
 

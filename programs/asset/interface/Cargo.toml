@@ -1,0 +1,15 @@
+[package]
+name = "nifty-asset-interface"
+version = "0.1.0"
+description = "Interface for Nifty Asset program"
+authors = ["nifty-oss maintainers <maintainers@nifty-oss.org>"]
+repository = "https://github.com/nifty-oss/asset"
+edition = "2021"
+readme = "README.md"
+license = "Apache-2.0"
+
+[dependencies]
+borsh = "^0.10"
+nifty-asset-types = { path = "../types" }
+shank = "0.3.0"
+solana-program = "~1.16"

@@ -145,8 +145,18 @@ impl<'a> LinkMut<'a> {
 pub struct LinksBuilder(Vec<u8>);
 
 impl LinksBuilder {
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self(Vec::with_capacity(capacity))
+    }
+
+    pub fn with_buffer(buffer: Vec<u8>) -> Self {
+        let mut s = Self(buffer);
+        s.0.clear();
+        s
+    }
+
     /// Add a new attribute to the extension.
-    pub fn add(&mut self, name: &str, uri: &str) {
+    pub fn add(&mut self, name: &str, uri: &str) -> &mut Self {
         // add the length of the name + prefix to the data buffer.
         let cursor = self.0.len();
         self.0.append(&mut vec![0u8; name.len() + 1]);
@@ -158,6 +168,8 @@ impl LinksBuilder {
         self.0.append(&mut vec![0u8; uri.len() + 1]);
         let mut value_str = U8PrefixStrMut::new(&mut self.0[cursor..]);
         value_str.copy_from_str(uri);
+
+        self
     }
 }
 

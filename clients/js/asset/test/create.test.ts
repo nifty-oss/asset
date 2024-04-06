@@ -1,4 +1,4 @@
-import { generateSigner } from '@metaplex-foundation/umi';
+import { generateSigner, publicKey } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
   Asset,
@@ -8,10 +8,14 @@ import {
   State,
   attributes,
   create,
+  creators,
+  empty,
   fetchAsset,
   grouping,
   initialize,
   links,
+  metadata,
+  royalties,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -314,4 +318,82 @@ test('it cannot set a group on create with authority not a signer', async (t) =>
 
   // Then we expect an error.
   await t.throwsAsync(promise, { message: /missing required signature/ });
+});
+
+test('it can create an asset with a collection', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = generateSigner(umi);
+  const authority = generateSigner(umi);
+
+  // And we create a group asset.
+  const group = generateSigner(umi);
+  await create(umi, {
+    asset: group,
+    payer: umi.identity,
+    name: 'Mad Lads',
+    authority,
+    extensions: [grouping(10000)],
+  }).sendAndConfirm(umi);
+
+  // When we create a new asset with multiple extensions.
+  await create(umi, {
+    asset,
+    owner: umi.identity.publicKey,
+    payer: umi.identity,
+    authority,
+    name: 'Mad Lads #8420',
+    group: group.publicKey,
+    extensions: [
+      metadata({
+        symbol: 'MAD',
+        uri: 'https://madlads.s3.us-west-2.amazonaws.com/json/8420.json',
+      }),
+      royalties(500),
+      creators([
+        {
+          address: publicKey('5XvhfmRjwXkGp3jHGmaKpqeerNYjkuZZBYLVQYdeVcRv'),
+          share: 0,
+        },
+        {
+          address: publicKey('2RtGg6fsFiiF1EQzHqbd66AhW7R5bWeQGpTbv2UMkCdW'),
+          share: 100,
+        },
+      ]),
+    ],
+  }).sendAndConfirm(umi);
+
+  // Then an asset was created with the correct data.
+  //
+  // (the order of the extension is different since the program uses
+  // a swap remove procedure when processing the extensions)
+  t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
+    discriminator: Discriminator.Asset,
+    state: State.Unlocked,
+    standard: Standard.NonFungible,
+    owner: umi.identity.publicKey,
+    authority: authority.publicKey,
+    group: group.publicKey,
+    extensions: [
+      {
+        type: ExtensionType.Metadata,
+        symbol: 'MAD',
+        uri: 'https://madlads.s3.us-west-2.amazonaws.com/json/8420.json',
+      },
+      {
+        type: ExtensionType.Creators,
+        creators: [
+          {
+            address: publicKey('5XvhfmRjwXkGp3jHGmaKpqeerNYjkuZZBYLVQYdeVcRv'),
+            share: 0,
+          },
+          {
+            address: publicKey('2RtGg6fsFiiF1EQzHqbd66AhW7R5bWeQGpTbv2UMkCdW'),
+            share: 100,
+          },
+        ],
+      },
+      { type: ExtensionType.Royalties, basisPoints: 500n, constraint: empty() },
+    ],
+  });
 });

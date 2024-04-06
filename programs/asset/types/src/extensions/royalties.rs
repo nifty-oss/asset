@@ -56,12 +56,22 @@ impl Lifecycle for RoyaltiesMut<'_> {}
 pub struct RoyaltiesBuilder(Vec<u8>);
 
 impl RoyaltiesBuilder {
-    pub fn set(&mut self, basis_points: u64, constraint: &mut dyn ConstraintBuilder) {
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self(Vec::with_capacity(capacity))
+    }
+
+    pub fn with_buffer(buffer: Vec<u8>) -> Self {
+        Self(buffer)
+    }
+
+    pub fn set(&mut self, basis_points: u64, constraint: &mut dyn ConstraintBuilder) -> &mut Self {
         // setting the data replaces any existing data
         self.0.clear();
 
         self.0.extend_from_slice(&basis_points.to_le_bytes());
         self.0.extend_from_slice(&constraint.build());
+
+        self
     }
 }
 

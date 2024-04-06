@@ -1,5 +1,5 @@
 use nifty_asset_types::{
-    extensions::{on_create, Extension, ExtensionType},
+    extensions::{on_create, Extension, ExtensionType, Proxy},
     podded::ZeroCopy,
     state::{Asset, Discriminator, Standard},
 };
@@ -170,13 +170,14 @@ pub fn process_create(
     asset.name = args.name.into();
 
     let extensions = Asset::get_extensions(&data);
-    let has_manager = extensions
-        .iter()
-        .any(|extension| extension == &ExtensionType::Manager);
 
     // make sure that a managed asset is created with the manager
     // extension; and vice versa, a non-managed asset is created
     // without the manager extension
+    let has_manager = extensions
+        .iter()
+        .any(|extension| extension == &ExtensionType::Manager);
+
     require!(
         matches!(args.standard, Standard::Managed) == has_manager,
         AssetError::ExtensionDataInvalid,
@@ -184,6 +185,35 @@ pub fn process_create(
         args.standard,
         has_manager
     );
+
+    // validate the proxy extension if the asset is proxied; or assert
+    // that the extension is not present if the asset is not proxied
+    let proxy = Asset::get::<Proxy>(&data);
+
+    if matches!(args.standard, Standard::Proxied) {
+        require!(
+            proxy.is_some(),
+            AssetError::ExtensionDataInvalid,
+            "missing proxy extension"
+        );
+
+        let proxy = proxy.unwrap();
+
+        let derived_key =
+            Pubkey::create_program_address(&[proxy.seeds.as_ref(), &[*proxy.bump]], proxy.program)?;
+
+        require!(
+            derived_key == *ctx.accounts.asset.key,
+            ProgramError::InvalidSeeds,
+            "Proxied asset account does not match derived key"
+        );
+    } else {
+        require!(
+            proxy.is_none(),
+            AssetError::ExtensionDataInvalid,
+            "invalid standard for proxy extension"
+        );
+    }
 
     if !extensions.is_empty() {
         msg!("Asset created with {:?} extension(s)", extensions);

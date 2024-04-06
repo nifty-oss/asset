@@ -257,3 +257,86 @@ test('it cannot burn a grouped asset without group account', async (t) => {
     message: /insufficient account keys for instruction/,
   });
 });
+
+test('it cannot burn a non-empty group asset', async (t) => {
+  // Given a Umi instance.
+  const umi = await createUmi();
+
+  // And we create a group asset.
+  const groupAsset = generateSigner(umi);
+  await mint(umi, {
+    asset: groupAsset,
+    payer: umi.identity,
+    name: 'Group',
+    extensions: [grouping(10)],
+  }).sendAndConfirm(umi);
+
+  t.like(await fetchAsset(umi, groupAsset.publicKey), <Asset>{
+    group: null,
+    extensions: [
+      {
+        type: ExtensionType.Grouping,
+        size: 0n,
+        maxSize: 10n,
+      },
+    ],
+  });
+
+  // And a "normal" asset.
+  const asset = generateSigner(umi);
+  await mint(umi, {
+    asset,
+    payer: umi.identity,
+    name: 'Asset',
+    group: groupAsset.publicKey,
+  }).sendAndConfirm(umi);
+
+  t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
+    group: groupAsset.publicKey,
+  });
+
+  t.like(await fetchAsset(umi, groupAsset.publicKey), <Asset>{
+    group: null,
+    extensions: [
+      {
+        type: ExtensionType.Grouping,
+        size: 1n,
+        maxSize: 10n,
+      },
+    ],
+  });
+
+  // When we try to burn the group asset.
+  const promise = burn(umi, {
+    asset: groupAsset.publicKey,
+    signer: umi.identity,
+  }).sendAndConfirm(umi);
+
+  // Then we expect an error.
+  await t.throwsAsync(promise, {
+    message: /Group is not empty/,
+  });
+});
+
+test('it can burn an empty group asset', async (t) => {
+  // Given a Umi instance.
+  const umi = await createUmi();
+
+  // And we create a group asset.
+  const groupAsset = generateSigner(umi);
+  await mint(umi, {
+    asset: groupAsset,
+    payer: umi.identity,
+    name: 'Group',
+    extensions: [grouping(10)],
+  }).sendAndConfirm(umi);
+
+  // When we burn the empty group asset.
+  await burn(umi, {
+    asset: groupAsset.publicKey,
+    signer: umi.identity,
+  }).sendAndConfirm(umi);
+
+  // Then the group asset is gone.
+  t.false(await umi.rpc.accountExists(groupAsset.publicKey), 'asset exists');
+});

@@ -88,6 +88,7 @@ kinobi.update(
                   { name: "NonFungible" },
                   { name: "Managed" },
                   { name: "Soulbound" },
+                  { name: "Proxied" },
                 ],
               },
             }),
@@ -127,6 +128,7 @@ kinobi.update(
                   { name: "Grouping" },
                   { name: "Royalties" },
                   { name: "Manager" },
+                  { name: "Proxy" },
                 ],
               },
             }),
@@ -327,6 +329,31 @@ kinobi.update(
                 }),
               ]),
             }),
+            // proxy
+            k.definedTypeNode({
+              name: "proxy",
+              type: k.structTypeNode([
+                k.structFieldTypeNode({
+                  name: "program",
+                  type: k.publicKeyTypeNode(),
+                }),
+                k.structFieldTypeNode({
+                  name: "seeds",
+                  type: k.arrayTypeNode(
+                    k.numberTypeNode("u8"),
+                    k.fixedSizeNode(32)
+                  ),
+                }),
+                k.structFieldTypeNode({
+                  name: "bump",
+                  type: k.numberTypeNode("u8"),
+                }),
+                k.structFieldTypeNode({
+                  name: "authority",
+                  type: k.publicKeyTypeNode(),
+                }),
+              ]),
+            }),
           ],
         };
       },
@@ -451,7 +478,22 @@ kinobi.accept(
         "asset",
         ".prettierrc.json"
       )),
-      internalNodes: ["create", "update", "write"],
+      internalNodes: [
+        "approve",
+        "burn",
+        "create",
+        "group",
+        "handover",
+        "lock",
+        "revoke",
+        "transfer",
+        "ungroup",
+        "unlock",
+        "unverify",
+        "update",
+        "verify",
+        "write",
+      ],
       customAccountData: [
         {
           name: "asset",

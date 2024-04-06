@@ -58,8 +58,16 @@ impl Lifecycle for BlobMut<'_> {}
 pub struct BlobBuilder(Vec<u8>);
 
 impl BlobBuilder {
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self(Vec::with_capacity(capacity))
+    }
+
+    pub fn with_buffer(buffer: Vec<u8>) -> Self {
+        Self(buffer)
+    }
+
     /// Add a new attribute to the extension.
-    pub fn set_data(&mut self, content_type: &str, data: &[u8]) {
+    pub fn set_data(&mut self, content_type: &str, data: &[u8]) -> &mut Self {
         // setting the data replaces any existing data
         self.0.clear();
 
@@ -71,6 +79,8 @@ impl BlobBuilder {
 
         // add the data to the buffer
         self.0.extend_from_slice(data);
+
+        self
     }
 }
 

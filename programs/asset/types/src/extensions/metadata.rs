@@ -94,8 +94,21 @@ impl Lifecycle for MetadataMut<'_> {}
 pub struct MetadataBuilder(Vec<u8>);
 
 impl MetadataBuilder {
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self(Vec::with_capacity(capacity))
+    }
+
+    pub fn with_buffer(buffer: Vec<u8>) -> Self {
+        Self(buffer)
+    }
+
     /// Add a new attribute to the extension.
-    pub fn set(&mut self, symbol: Option<&str>, description: Option<&str>, uri: Option<&str>) {
+    pub fn set(
+        &mut self,
+        symbol: Option<&str>,
+        description: Option<&str>,
+        uri: Option<&str>,
+    ) -> &mut Self {
         // setting the data replaces any existing data
         self.0.clear();
 
@@ -131,6 +144,8 @@ impl MetadataBuilder {
         } else {
             self.0.append(&mut vec![0u8; 1]);
         }
+
+        self
     }
 }
 

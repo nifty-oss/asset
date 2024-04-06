@@ -13,7 +13,6 @@ import {
   ExtensionType,
   fetchAsset,
   group,
-  grouping,
   niftyAsset,
   pubkeyMatch,
   royalties,
@@ -182,7 +181,11 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
           },
         ],
       },
-      grouping(0, 1), // 1 item in the group
+      {
+        type: ExtensionType.Grouping,
+        size: 1n, // 1 item in the group
+        maxSize: 0n,
+      },
       royalties(basisPoints, constraint),
     ],
   });
@@ -245,7 +248,11 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
           },
         ],
       },
-      grouping(0, 1), // 1 item in the group
+      {
+        type: ExtensionType.Grouping,
+        size: 1n, // 1 item in the group
+        maxSize: 0n,
+      },
       royalties(basisPoints, newConstraint),
     ],
   });

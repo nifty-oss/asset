@@ -58,6 +58,9 @@ pub enum Standard {
 
     /// A unique non-transferable asset.
     Soulbound,
+
+    /// A unique proxied asset (an asset that is controlled by another program).
+    Proxied,
 }
 
 impl From<u8> for Standard {
@@ -66,6 +69,7 @@ impl From<u8> for Standard {
             0 => Standard::NonFungible,
             1 => Standard::Managed,
             2 => Standard::Soulbound,
+            3 => Standard::Proxied,
             _ => panic!("invalid standard value: {value}"),
         }
     }
@@ -77,6 +81,7 @@ impl From<Standard> for u8 {
             Standard::NonFungible => 0,
             Standard::Managed => 1,
             Standard::Soulbound => 2,
+            Standard::Proxied => 3,
         }
     }
 }

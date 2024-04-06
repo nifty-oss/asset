@@ -58,10 +58,19 @@ impl Lifecycle for ManagerMut<'_> {}
 pub struct ManagerBuilder(Vec<u8>);
 
 impl ManagerBuilder {
-    pub fn set(&mut self, delegate: &Delegate) {
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self(Vec::with_capacity(capacity))
+    }
+
+    pub fn with_buffer(buffer: Vec<u8>) -> Self {
+        Self(buffer)
+    }
+
+    pub fn set(&mut self, delegate: &Delegate) -> &mut Self {
         // setting the data replaces any existing data
         self.0.clear();
         self.0.extend_from_slice(bytes_of(delegate));
+        self
     }
 
     pub fn build(&self) -> Manager {

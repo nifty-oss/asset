@@ -1,0 +1,22 @@
+[package]
+name = "proxy-program"
+version = "0.0.0"
+authors = ["nifty-oss maintainers <maintainers@nifty-oss.org>"]
+edition = "2021"
+readme = "./README.md"
+license-file = "Apache-2.0"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+borsh = "^0.10"
+bytemuck = { version = "1.14.0", features = ["derive"] }
+nifty-asset-interface = { path = "../asset/interface" }
+num-derive = "^0.3"
+num-traits = "^0.2"
+podded = "0.5.0"
+shank = "0.3.0"
+solana-program = "~1.16"
+thiserror = "^1.0"
