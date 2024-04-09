@@ -2159,7 +2159,7 @@ dependencies = [
 
 [[package]]
 name = "nifty-asset-types"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "borsh 0.10.3",
  "bytemuck",
