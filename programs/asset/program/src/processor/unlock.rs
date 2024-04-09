@@ -6,7 +6,6 @@ use nifty_asset_types::{
 use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
-    err,
     error::AssetError,
     instruction::accounts::{Context, UnlockAccounts},
     require,
@@ -47,18 +46,22 @@ pub fn process_unlock(program_id: &Pubkey, ctx: Context<UnlockAccounts>) -> Prog
     let (asset, extensions) = data.split_at_mut(Asset::LEN);
     let asset = Asset::load_mut(asset);
 
-    if asset.delegate.value().is_some() {
-        assert_delegate(
+    // Validate the signer is the owner or the lock delegate.
+    //
+    // it can be the manager delegate; or if the asset has a delegate, the signer must
+    // be the delegate; otherwise, the signer must be the owner
+    let is_allowed = (asset.delegate.value().is_none() && asset.owner == *ctx.accounts.signer.key)
+        || assert_delegate(
             &[
                 asset.delegate.value(),
                 Extension::get::<Manager>(extensions).map(|s| s.delegate),
             ],
             ctx.accounts.signer.key,
             DelegateRole::Lock,
-        )?;
-    } else if asset.owner != *ctx.accounts.signer.key {
-        return err!(AssetError::InvalidAssetOwner);
-    }
+        )
+        .is_ok();
+
+    require!(is_allowed, AssetError::InvalidAssetOwner, "signer");
 
     asset.state = State::Unlocked;
 
