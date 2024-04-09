@@ -81,12 +81,9 @@ impl Asset {
         while (cursor + Extension::LEN) <= data.len() {
             let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
 
-            if extension.extension_type() == ExtensionType::None {
-                return false;
-            }
-
             match extension.try_extension_type() {
                 Ok(t) if t == extension_type => return true,
+                Ok(ExtensionType::None) => return false,
                 _ => cursor = extension.boundary() as usize,
             }
         }
@@ -104,16 +101,13 @@ impl Asset {
         while (cursor + Extension::LEN) <= data.len() {
             let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
 
-            if extension.extension_type() == ExtensionType::None {
-                return None;
-            }
-
             match extension.try_extension_type() {
                 Ok(t) if t == T::TYPE => {
                     let start = cursor + Extension::LEN;
                     let end = start + extension.length() as usize;
                     return Some(T::from_bytes(&data[start..end]));
                 }
+                Ok(ExtensionType::None) => return None,
                 _ => cursor = extension.boundary() as usize,
             }
         }
@@ -131,16 +125,13 @@ impl Asset {
         while (cursor + Extension::LEN) <= data.len() {
             let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
 
-            if extension.extension_type() == ExtensionType::None {
-                return None;
-            }
-
             match extension.try_extension_type() {
                 Ok(t) if t == T::TYPE => {
                     let start = cursor + Extension::LEN;
                     let end = start + extension.length() as usize;
                     return Some(T::from_bytes_mut(&mut data[start..end]));
                 }
+                Ok(ExtensionType::None) => return None,
                 _ => cursor = extension.boundary() as usize,
             }
         }
@@ -163,11 +154,10 @@ impl Asset {
         while (cursor + Extension::LEN) <= data.len() {
             let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
 
-            if extension.extension_type() == ExtensionType::None {
-                return extensions;
-            }
-
             if let Ok(t) = extension.try_extension_type() {
+                if matches!(t, ExtensionType::None) {
+                    return extensions;
+                }
                 extensions.push(t);
             }
 
@@ -205,7 +195,7 @@ impl Asset {
         while (cursor + Extension::LEN) <= data.len() {
             let extension = Extension::load(&data[cursor..]);
 
-            if extension.extension_type() == ExtensionType::None {
+            if let Ok(ExtensionType::None) = extension.try_extension_type() {
                 return last;
             }
 
@@ -230,12 +220,9 @@ impl Asset {
         while (cursor + Extension::LEN) <= data.len() {
             let extension = Extension::load(&data[cursor..]);
 
-            if extension.extension_type() == ExtensionType::None {
-                return None;
-            }
-
             match extension.try_extension_type() {
                 Ok(t) if t == extension_type => return Some((extension, cursor + Extension::LEN)),
+                Ok(ExtensionType::None) => return None,
                 _ => cursor = extension.boundary() as usize,
             }
         }
