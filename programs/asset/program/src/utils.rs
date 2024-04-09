@@ -36,16 +36,16 @@ pub fn assert_delegate(
         |result, delegate| {
             if let Some(delegate) = delegate {
                 require!(
+                    *delegate.address == *target,
+                    AssetError::InvalidDelegate,
+                    "invalid delegate"
+                );
+
+                require!(
                     delegate.is_active(role),
                     AssetError::DelegateRoleNotActive,
                     "missing \"{:?}\" role",
                     role
-                );
-
-                require!(
-                    *delegate.address == *target,
-                    AssetError::InvalidDelegate,
-                    "invalid delegate"
                 );
 
                 Ok(())
