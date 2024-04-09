@@ -45,23 +45,24 @@ pub fn process_unlock(program_id: &Pubkey, ctx: Context<UnlockAccounts>) -> Prog
 
     let (asset, extensions) = data.split_at_mut(Asset::LEN);
     let asset = Asset::load_mut(asset);
+    let manager = Extension::get::<Manager>(extensions).map(|s| s.delegate);
 
-    // Validate the signer is the owner or the lock delegate.
+    // Validate whether signer is the owner or a lock delegate.
     //
-    // it can be the manager delegate; or if the asset has a delegate, the signer must
-    // be the delegate; otherwise, the signer must be the owner
-    let is_allowed = (asset.delegate.value().is_none() && asset.owner == *ctx.accounts.signer.key)
-        || assert_delegate(
-            &[
-                asset.delegate.value(),
-                Extension::get::<Manager>(extensions).map(|s| s.delegate),
-            ],
+    // if the asset has a delegate, the signer must be the delegate or the manager
+    // delegate (if there is one)
+    if asset.delegate.value().is_some() {
+        assert_delegate(
+            &[asset.delegate.value(), manager],
             ctx.accounts.signer.key,
             DelegateRole::Lock,
-        )
-        .is_ok();
-
-    require!(is_allowed, AssetError::InvalidAssetOwner, "signer");
+        )?;
+    }
+    // otherwise, if the signer is not the owner, the signer must be the
+    // manager delegate
+    else if asset.owner != *ctx.accounts.signer.key {
+        assert_delegate(&[manager], ctx.accounts.signer.key, DelegateRole::Lock)?;
+    }
 
     asset.state = State::Unlocked;
 
