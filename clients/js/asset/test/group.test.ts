@@ -242,3 +242,41 @@ test('it cannot replace the group of an asset', async (t) => {
     group: groupAsset.publicKey,
   });
 });
+
+test('it can be grouped using a grouping delegate', async (t) => {
+  // Given a Umi instance.
+  const umi = await createUmi();
+
+  const delegate = generateSigner(umi);
+  const authority = generateSigner(umi).publicKey;
+
+  // And we create a group asset.
+  const groupAsset = generateSigner(umi);
+  await mint(umi, {
+    asset: groupAsset,
+    payer: umi.identity,
+    name: 'Group',
+    authority,
+    extensions: [grouping(10, delegate.publicKey)],
+  }).sendAndConfirm(umi);
+
+  // And a "normal" asset.
+  const asset = generateSigner(umi);
+  await mint(umi, {
+    asset,
+    payer: umi.identity,
+    authority,
+    name: 'Asset',
+  }).sendAndConfirm(umi);
+
+  // Then we can group the assets using a delegate signer
+  await group(umi, {
+    asset: asset.publicKey,
+    authority: delegate,
+    group: groupAsset.publicKey,
+  }).sendAndConfirm(umi);
+
+  t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
+    group: groupAsset.publicKey,
+  });
+});

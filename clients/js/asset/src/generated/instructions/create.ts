@@ -53,6 +53,8 @@ export type CreateInstructionAccounts = {
   group?: PublicKey | Pda;
   /** The account paying for the storage fees */
   payer?: Signer;
+  /** The delegate authority for minting assets into a group */
+  groupingDelegate?: Signer;
   /** The system program */
   systemProgram?: PublicKey | Pda;
 };
@@ -139,8 +141,13 @@ export function create(
       isWritable: true as boolean,
       value: input.payer ?? null,
     },
-    systemProgram: {
+    groupingDelegate: {
       index: 5,
+      isWritable: false as boolean,
+      value: input.groupingDelegate ?? null,
+    },
+    systemProgram: {
+      index: 6,
       isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },

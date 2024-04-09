@@ -28,7 +28,8 @@ pub enum Instruction {
     #[account(2, name="owner", desc = "The owner of the asset")]
     #[account(3, optional, writable, name="group", desc = "Asset account of the group")]
     #[account(4, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
-    #[account(5, optional, name="system_program", desc = "The system program")]
+    #[account(5, optional, signer, name="grouping_delegate", desc = "The delegate authority for minting assets into a group")]
+    #[account(6, optional, name="system_program", desc = "The system program")]
     Create(MetadataInput),
 
     /// Approves a delegate to manage an asset.

@@ -22,6 +22,8 @@ pub struct Create {
     pub group: Option<solana_program::pubkey::Pubkey>,
     /// The account paying for the storage fees
     pub payer: Option<solana_program::pubkey::Pubkey>,
+    /// The delegate authority for minting assets into a group
+    pub grouping_delegate: Option<solana_program::pubkey::Pubkey>,
     /// The system program
     pub system_program: Option<solana_program::pubkey::Pubkey>,
 }
@@ -39,7 +41,7 @@ impl Create {
         args: CreateInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(7 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.asset, true,
         ));
@@ -60,6 +62,17 @@ impl Create {
         }
         if let Some(payer) = self.payer {
             accounts.push(solana_program::instruction::AccountMeta::new(payer, true));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::ASSET_ID,
+                false,
+            ));
+        }
+        if let Some(grouping_delegate) = self.grouping_delegate {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                grouping_delegate,
+                true,
+            ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 crate::ASSET_ID,
@@ -119,7 +132,8 @@ pub struct CreateInstructionArgs {
 ///   2. `[]` owner
 ///   3. `[writable, optional]` group
 ///   4. `[writable, signer, optional]` payer
-///   5. `[optional]` system_program
+///   5. `[signer, optional]` grouping_delegate
+///   6. `[optional]` system_program
 #[derive(Default)]
 pub struct CreateBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
@@ -127,6 +141,7 @@ pub struct CreateBuilder {
     owner: Option<solana_program::pubkey::Pubkey>,
     group: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
+    grouping_delegate: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     name: Option<String>,
     standard: Option<Standard>,
@@ -173,6 +188,16 @@ impl CreateBuilder {
     #[inline(always)]
     pub fn payer(&mut self, payer: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
         self.payer = payer;
+        self
+    }
+    /// `[optional account]`
+    /// The delegate authority for minting assets into a group
+    #[inline(always)]
+    pub fn grouping_delegate(
+        &mut self,
+        grouping_delegate: Option<solana_program::pubkey::Pubkey>,
+    ) -> &mut Self {
+        self.grouping_delegate = grouping_delegate;
         self
     }
     /// `[optional account]`
@@ -234,6 +259,7 @@ impl CreateBuilder {
             owner: self.owner.expect("owner is not set"),
             group: self.group,
             payer: self.payer,
+            grouping_delegate: self.grouping_delegate,
             system_program: self.system_program,
         };
         let args = CreateInstructionArgs {
@@ -259,6 +285,8 @@ pub struct CreateCpiAccounts<'a, 'b> {
     pub group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// The delegate authority for minting assets into a group
+    pub grouping_delegate: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
 }
@@ -277,6 +305,8 @@ pub struct CreateCpi<'a, 'b> {
     pub group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// The delegate authority for minting assets into a group
+    pub grouping_delegate: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
     pub system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The arguments for the instruction.
@@ -296,6 +326,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
             owner: accounts.owner,
             group: accounts.group,
             payer: accounts.payer,
+            grouping_delegate: accounts.grouping_delegate,
             system_program: accounts.system_program,
             __args: args,
         }
@@ -333,7 +364,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(7 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.asset.key,
             true,
@@ -359,6 +390,17 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
         if let Some(payer) = self.payer {
             accounts.push(solana_program::instruction::AccountMeta::new(
                 *payer.key, true,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::ASSET_ID,
+                false,
+            ));
+        }
+        if let Some(grouping_delegate) = self.grouping_delegate {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                *grouping_delegate.key,
+                true,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -393,7 +435,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(6 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(7 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset.clone());
         account_infos.push(self.authority.0.clone());
@@ -403,6 +445,9 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
         }
         if let Some(payer) = self.payer {
             account_infos.push(payer.clone());
+        }
+        if let Some(grouping_delegate) = self.grouping_delegate {
+            account_infos.push(grouping_delegate.clone());
         }
         if let Some(system_program) = self.system_program {
             account_infos.push(system_program.clone());
@@ -428,7 +473,8 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
 ///   2. `[]` owner
 ///   3. `[writable, optional]` group
 ///   4. `[writable, signer, optional]` payer
-///   5. `[optional]` system_program
+///   5. `[signer, optional]` grouping_delegate
+///   6. `[optional]` system_program
 pub struct CreateCpiBuilder<'a, 'b> {
     instruction: Box<CreateCpiBuilderInstruction<'a, 'b>>,
 }
@@ -442,6 +488,7 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
             owner: None,
             group: None,
             payer: None,
+            grouping_delegate: None,
             system_program: None,
             name: None,
             standard: None,
@@ -491,6 +538,16 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
         payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
         self.instruction.payer = payer;
+        self
+    }
+    /// `[optional account]`
+    /// The delegate authority for minting assets into a group
+    #[inline(always)]
+    pub fn grouping_delegate(
+        &mut self,
+        grouping_delegate: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    ) -> &mut Self {
+        self.instruction.grouping_delegate = grouping_delegate;
         self
     }
     /// `[optional account]`
@@ -590,6 +647,8 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
 
             payer: self.instruction.payer,
 
+            grouping_delegate: self.instruction.grouping_delegate,
+
             system_program: self.instruction.system_program,
             __args: args,
         };
@@ -607,6 +666,7 @@ struct CreateCpiBuilderInstruction<'a, 'b> {
     owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    grouping_delegate: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     name: Option<String>,
     standard: Option<Standard>,

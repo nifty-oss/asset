@@ -320,6 +320,56 @@ test('it cannot set a group on create with authority not a signer', async (t) =>
   await t.throwsAsync(promise, { message: /missing required signature/ });
 });
 
+test('it set a group on create with authority as a delegate', async (t) => {
+  // Given a Umi instance and an authority signer.
+  const umi = await createUmi();
+  const authority = generateSigner(umi);
+  const delegate = generateSigner(umi);
+
+  // And we create a group asset.
+  const groupAsset = generateSigner(umi);
+  await initialize(umi, {
+    asset: groupAsset,
+    payer: umi.identity,
+    extension: grouping(10, delegate.publicKey),
+  }).sendAndConfirm(umi);
+
+  await create(umi, {
+    asset: groupAsset,
+    authority: authority.publicKey,
+    name: 'Group',
+    payer: umi.identity,
+  }).sendAndConfirm(umi);
+
+  t.like(await fetchAsset(umi, groupAsset.publicKey), <Asset>{
+    extensions: [
+      {
+        type: ExtensionType.Grouping,
+        size: 0n,
+        maxSize: 10n,
+        delegate: delegate.publicKey,
+      },
+    ],
+  });
+
+  // When we create an asset with a group with the delegate as a authority.
+  const asset = generateSigner(umi);
+  await create(umi, {
+    asset,
+    authority: authority.publicKey,
+    name: 'Asset',
+    group: groupAsset.publicKey,
+    groupingDelegate: delegate,
+    payer: umi.identity,
+  }).sendAndConfirm(umi);
+
+  // Then we expect the item to be minted into the collection retaining original authority.
+  t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
+    group: groupAsset.publicKey,
+    authority: authority.publicKey,
+  });
+});
+
 test('it can create an asset with a collection', async (t) => {
   // Given a Umi instance and a new signer.
   const umi = await createUmi();

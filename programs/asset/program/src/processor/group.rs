@@ -1,7 +1,7 @@
 use nifty_asset_types::{
-    extensions::GroupingMut,
+    extensions::{Grouping, GroupingMut},
     podded::{pod::PodOption, ZeroCopy},
-    state::{Asset, Discriminator},
+    state::{Asset, Discriminator, NullablePubkey},
 };
 use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pubkey::Pubkey};
 
@@ -61,28 +61,14 @@ pub fn process_group(program_id: &Pubkey, ctx: Context<GroupAccounts>) -> Progra
     let asset = Asset::load_mut(&mut asset_data);
 
     require!(
-        asset.authority == *ctx.accounts.authority.key,
-        AssetError::InvalidAuthority,
-        "asset authority mismatch"
-    );
-
-    require!(
         asset.group.value().is_none(),
         AssetError::AlreadyInGroup,
         "asset"
     );
 
-    let group = Asset::load_mut(&mut group_data);
-
-    require!(
-        group.authority == *ctx.accounts.authority.key,
-        AssetError::InvalidAuthority,
-        "group authority mismatch"
-    );
-
     // group size validation
-
-    let grouping = if let Some(grouping) = Asset::get_mut::<GroupingMut>(&mut group_data) {
+    let group = Asset::load(&group_data);
+    let grouping = if let Some(grouping) = Asset::get::<Grouping>(&group_data) {
         grouping
     } else {
         return err!(
@@ -90,6 +76,26 @@ pub fn process_group(program_id: &Pubkey, ctx: Context<GroupAccounts>) -> Progra
             "Missing required [Grouping] extension"
         );
     };
+
+    if let Some(delegate) = grouping.delegate.value() {
+        require!(
+            delegate == &NullablePubkey::new(*ctx.accounts.authority.key),
+            AssetError::InvalidAuthority,
+            "group delegate mismatch"
+        );
+    } else {
+        require!(
+            group.authority == *ctx.accounts.authority.key,
+            AssetError::InvalidAuthority,
+            "group authority mismatch"
+        );
+
+        require!(
+            asset.authority == *ctx.accounts.authority.key,
+            AssetError::InvalidAuthority,
+            "asset authority mismatch"
+        );
+    }
 
     if let Some(max_size) = grouping.max_size.value() {
         require!(
@@ -100,6 +106,8 @@ pub fn process_group(program_id: &Pubkey, ctx: Context<GroupAccounts>) -> Progra
     }
 
     // assign the group to asset and increment the group size
+    let grouping = Asset::get_mut::<GroupingMut>(&mut group_data).unwrap();
+    let asset = Asset::load_mut(&mut asset_data);
 
     asset.group = PodOption::new(ctx.accounts.group.key.into());
     *grouping.size += 1;

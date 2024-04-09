@@ -1,11 +1,12 @@
 use bytemuck::{Pod, Zeroable};
 use podded::pod::{Nullable, PodOption};
+use solana_program::pubkey::Pubkey;
 use std::{
     fmt::Debug,
     ops::{Deref, DerefMut},
 };
 
-use crate::error::Error;
+use crate::{error::Error, state::NullablePubkey};
 
 use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle};
 
@@ -24,21 +25,26 @@ pub struct Grouping<'a> {
     ///
     /// When the group is unlimited, this value is `0`.
     pub max_size: &'a PodOption<NullableU64>,
+
+    /// An optional delegate authorised to add assets to this group
+    pub delegate: &'a PodOption<NullablePubkey>,
 }
 
 impl<'a> ExtensionData<'a> for Grouping<'a> {
     const TYPE: ExtensionType = ExtensionType::Grouping;
 
     fn from_bytes(bytes: &'a [u8]) -> Self {
-        let (size, max_size) = bytes.split_at(std::mem::size_of::<u64>());
+        let (size, rest) = bytes.split_at(std::mem::size_of::<u64>());
+        let (max_size, delegate) = rest.split_at(std::mem::size_of::<u64>());
         Self {
             size: bytemuck::from_bytes(size),
             max_size: bytemuck::from_bytes(max_size),
+            delegate: bytemuck::from_bytes(delegate),
         }
     }
 
     fn length(&self) -> usize {
-        std::mem::size_of::<u64>() + std::mem::size_of::<u64>()
+        std::mem::size_of::<u64>() + std::mem::size_of::<u64>() + std::mem::size_of::<Pubkey>()
     }
 }
 
@@ -47,6 +53,7 @@ impl Debug for Grouping<'_> {
         f.debug_struct("Group")
             .field("size", &self.size)
             .field("max_size", &self.max_size.value())
+            .field("delegate", &self.delegate.value())
             .finish()
     }
 }
@@ -55,16 +62,20 @@ pub struct GroupingMut<'a> {
     pub size: &'a mut u64,
 
     pub max_size: &'a mut PodOption<NullableU64>,
+
+    pub delegate: &'a mut PodOption<NullablePubkey>,
 }
 
 impl<'a> ExtensionDataMut<'a> for GroupingMut<'a> {
     const TYPE: ExtensionType = ExtensionType::Grouping;
 
     fn from_bytes_mut(bytes: &'a mut [u8]) -> Self {
-        let (size, max_size) = bytes.split_at_mut(std::mem::size_of::<u64>());
+        let (size, rest) = bytes.split_at_mut(std::mem::size_of::<u64>());
+        let (max_size, delegate) = rest.split_at_mut(std::mem::size_of::<u64>());
         Self {
             size: bytemuck::from_bytes_mut(size),
             max_size: bytemuck::from_bytes_mut(max_size),
+            delegate: bytemuck::from_bytes_mut(delegate),
         }
     }
 }
@@ -132,7 +143,11 @@ pub struct GroupingBuilder(Vec<u8>);
 
 impl Default for GroupingBuilder {
     fn default() -> Self {
-        Self(vec![0; std::mem::size_of::<u64>() * 2])
+        Self(vec![
+            0;
+            (std::mem::size_of::<u64>() * 2)
+                + std::mem::size_of::<Pubkey>()
+        ])
     }
 }
 
@@ -149,6 +164,23 @@ impl GroupingBuilder {
         self.0.extend_from_slice(&u64::to_le_bytes(0));
         self.0
             .extend_from_slice(&u64::to_le_bytes(max_size.unwrap_or(0)));
+
+        self.0.extend_from_slice(&Pubkey::default().to_bytes());
+
+        self
+    }
+
+    /// Add a delegate.
+    pub fn set_delegate(&mut self, delegate: PodOption<NullablePubkey>) -> &mut Self {
+        let offset = std::mem::size_of::<u64>() * 2 as usize;
+
+        let slice: &mut [u8] = &mut self.0[offset..offset + std::mem::size_of::<Pubkey>()];
+        slice.copy_from_slice(
+            &delegate
+                .value()
+                .unwrap_or(&NullablePubkey::default())
+                .to_bytes(),
+        );
 
         self
     }
@@ -174,7 +206,13 @@ impl Deref for GroupingBuilder {
 
 #[cfg(test)]
 mod tests {
-    use crate::extensions::{ExtensionBuilder, GroupingBuilder};
+    use podded::pod::PodOption;
+    use solana_program::sysvar;
+
+    use crate::{
+        extensions::{ExtensionBuilder, GroupingBuilder},
+        state::NullablePubkey,
+    };
 
     #[test]
     fn test_set_max_size() {
@@ -196,5 +234,26 @@ mod tests {
 
         assert_eq!(*grouping.size, 0);
         assert!(grouping.max_size.value().is_none());
+        assert!(grouping.delegate.value().is_none());
+    }
+
+    #[test]
+    fn test_set_delegate() {
+        // set delegate to a pubkey
+        let mut builder = GroupingBuilder::default();
+        builder.set_delegate(PodOption::new(NullablePubkey::new(sysvar::ID)));
+        let grouping = builder.build();
+
+        assert!(grouping.delegate.value().is_some());
+        assert_eq!(
+            grouping.delegate.value().unwrap(),
+            &NullablePubkey::new(sysvar::ID)
+        );
+
+        // set delegate to None
+        builder.set_delegate(PodOption::new(NullablePubkey::default()));
+        let grouping = builder.build();
+
+        assert!(grouping.delegate.value().is_none());
     }
 }
