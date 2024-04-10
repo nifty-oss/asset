@@ -2,7 +2,14 @@ import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import { createUmi } from './_setup';
 import { create } from '../src';
-import { Discriminator, Standard, State, fetchAsset } from '@nifty-oss/asset';
+import {
+  Discriminator,
+  ExtensionType,
+  Standard,
+  State,
+  fetchAsset,
+  getExtension,
+} from '@nifty-oss/asset';
 import { findProxiedAssetPda } from '../src/pda';
 
 test('it can create a proxied asset', async (t) => {
@@ -22,12 +29,19 @@ test('it can create a proxied asset', async (t) => {
   }).sendAndConfirm(umi);
 
   // Then an asset was created with the correct data.
-  t.like(
-    await fetchAsset(umi, findProxiedAssetPda(umi, { stub: stub.publicKey })),
-    {
-      discriminator: Discriminator.Asset,
-      state: State.Unlocked,
-      standard: Standard.Proxied,
-    }
+  const asset = await fetchAsset(
+    umi,
+    findProxiedAssetPda(umi, { stub: stub.publicKey })
   );
+  t.like(asset, {
+    discriminator: Discriminator.Asset,
+    state: State.Unlocked,
+    standard: Standard.Proxied,
+  });
+
+  // And the asset has a proxy extension.
+  const proxy = getExtension(asset, ExtensionType.Proxy);
+  t.like(proxy, {
+    authority: owner.publicKey,
+  });
 });
