@@ -354,7 +354,7 @@ kinobi.update(
                 }),
                 k.structFieldTypeNode({
                   name: "authority",
-                  type: k.publicKeyTypeNode(),
+                  type: k.definedTypeLinkNode("nullablePublicKey", "hooked"),
                 }),
               ]),
             }),

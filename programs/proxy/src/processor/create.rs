@@ -69,7 +69,7 @@ pub fn process_create(
             program_id,
             &ctx.accounts.stub.key.to_bytes(),
             bump,
-            ctx.accounts.owner.key,
+            Some(ctx.accounts.owner.key),
         )
         .data();
 

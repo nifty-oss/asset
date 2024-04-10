@@ -29,7 +29,7 @@ pub fn process_instruction<'a>(
         return create::process_create(program_id, CreateAccounts::context(accounts)?, metadata);
     }
 
-    // if it is not an instruction from the `Proxy program`, we try to match it
+    // if it is not an instruction from the `Proxy`` program, we try to match it
     // on the Nifty Asset interface
 
     if let Ok(instruction) = Interface::try_from_slice(instruction_data) {

@@ -1,7 +1,8 @@
+use podded::pod::PodOption;
 use solana_program::pubkey::Pubkey;
 use std::{fmt::Debug, ops::Deref};
 
-use crate::error::Error;
+use crate::{error::Error, state::NullablePubkey};
 
 use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle};
 
@@ -22,7 +23,7 @@ pub struct Proxy<'a> {
     pub bump: &'a u8,
 
     /// Authority of the proxy extension.
-    pub authority: &'a Pubkey,
+    pub authority: &'a PodOption<NullablePubkey>,
 }
 
 impl<'a> ExtensionData<'a> for Proxy<'a> {
@@ -130,14 +131,19 @@ impl ProxyBuilder {
         program: &Pubkey,
         seeds: &[u8; 32],
         bump: u8,
-        authority: &Pubkey,
+        authority: Option<&Pubkey>,
     ) -> &mut Self {
         // setting the data replaces any existing data
         self.0.clear();
         self.0.extend_from_slice(program.as_ref());
         self.0.extend_from_slice(seeds);
         self.0.push(bump);
-        self.0.extend_from_slice(authority.as_ref());
+
+        if let Some(authority) = authority {
+            self.0.extend_from_slice(authority.as_ref());
+        } else {
+            self.0.extend_from_slice(Pubkey::default().as_ref());
+        }
 
         self
     }
@@ -171,19 +177,43 @@ impl Deref for ProxyBuilder {
 
 #[cfg(test)]
 mod tests {
+    use std::ops::Deref;
+
     use crate::extensions::{ExtensionData, Proxy, ProxyBuilder};
-    use solana_program::{pubkey::Pubkey, system_program};
+    use solana_program::system_program;
 
     #[test]
     fn test_set() {
-        // default delegate address
+        // default authority address
         let mut builder = ProxyBuilder::default();
-        builder.set(&system_program::ID, &[1u8; 32], 254, &Pubkey::default());
+        builder.set(&system_program::ID, &[1u8; 32], 254, None);
         let proxy = Proxy::from_bytes(&builder);
 
         assert_eq!(proxy.program, &system_program::ID);
         assert_eq!(proxy.seeds, &[1u8; 32]);
         assert_eq!(proxy.bump, &254);
-        assert_eq!(proxy.authority, &Pubkey::default());
+        assert!(proxy.authority.value().is_none());
+    }
+
+    #[test]
+    fn test_set_authority() {
+        // default authority address
+        let mut builder = ProxyBuilder::default();
+        builder.set(
+            &system_program::ID,
+            &[1u8; 32],
+            254,
+            Some(&solana_program::sysvar::ID),
+        );
+        let proxy = Proxy::from_bytes(&builder);
+
+        assert_eq!(proxy.program, &system_program::ID);
+        assert_eq!(proxy.seeds, &[1u8; 32]);
+        assert_eq!(proxy.bump, &254);
+        assert!(proxy.authority.value().is_some());
+
+        if let Some(authority) = proxy.authority.value() {
+            assert_eq!(authority.deref(), &solana_program::sysvar::ID);
+        }
     }
 }
