@@ -5,6 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::hooked::NullablePublicKey;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use solana_program::pubkey::Pubkey;
@@ -19,9 +20,5 @@ pub struct Proxy {
     pub program: Pubkey,
     pub seeds: [u8; 32],
     pub bump: u8,
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "serde_with::As::<serde_with::DisplayFromStr>")
-    )]
-    pub authority: Pubkey,
+    pub authority: NullablePublicKey,
 }

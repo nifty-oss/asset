@@ -157,7 +157,7 @@ impl GroupingBuilder {
     }
 
     /// Add a new attribute to the extension.
-    pub fn set(&mut self, max_size: Option<u64>, delegate: Option<Pubkey>) -> &mut Self {
+    pub fn set(&mut self, max_size: Option<u64>, delegate: Option<&Pubkey>) -> &mut Self {
         // setting the data replaces any existing data
         self.0.clear();
 
@@ -165,12 +165,11 @@ impl GroupingBuilder {
         self.0
             .extend_from_slice(&u64::to_le_bytes(max_size.unwrap_or(0)));
 
-        let delegate = if let Some(delegate) = delegate {
-            delegate.to_bytes()
+        if let Some(delegate) = delegate {
+            self.0.extend_from_slice(delegate.as_ref());
         } else {
-            Pubkey::default().to_bytes()
-        };
-        self.0.extend_from_slice(&delegate);
+            self.0.extend_from_slice(Pubkey::default().as_ref());
+        }
 
         self
     }
@@ -197,11 +196,9 @@ impl Deref for GroupingBuilder {
 #[cfg(test)]
 mod tests {
     use solana_program::sysvar;
+    use std::ops::Deref;
 
-    use crate::{
-        extensions::{ExtensionBuilder, GroupingBuilder},
-        state::NullablePubkey,
-    };
+    use crate::extensions::{ExtensionBuilder, GroupingBuilder};
 
     #[test]
     fn test_set_max_size() {
@@ -230,14 +227,14 @@ mod tests {
     fn test_set_delegate() {
         // set delegate to a pubkey
         let mut builder = GroupingBuilder::default();
-        builder.set(None, Some(sysvar::ID));
+        builder.set(None, Some(&sysvar::ID));
         let grouping = builder.build();
 
         assert!(grouping.delegate.value().is_some());
-        assert_eq!(
-            grouping.delegate.value().unwrap(),
-            &NullablePubkey::new(sysvar::ID)
-        );
+
+        if let Some(delegate) = grouping.delegate.value() {
+            assert_eq!(delegate.deref(), &sysvar::ID);
+        }
 
         // set delegate to None
         builder.set(None, None);

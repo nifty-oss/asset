@@ -1,8 +1,12 @@
 mod create;
 mod transfer;
+mod update;
 
 use borsh::BorshDeserialize;
-use nifty_asset_interface::{accounts::TransferAccounts, Interface};
+use nifty_asset_interface::{
+    accounts::{TransferAccounts, UpdateAccounts},
+    Interface,
+};
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
     pubkey::Pubkey,
@@ -29,16 +33,24 @@ pub fn process_instruction<'a>(
         return create::process_create(program_id, CreateAccounts::context(accounts)?, metadata);
     }
 
-    // if it is not an instruction from the `Proxy program`, we try to match it
+    // if it is not an instruction from the `Proxy` program, we try to match it
     // on the Nifty Asset interface
 
     if let Ok(instruction) = Interface::try_from_slice(instruction_data) {
         match instruction {
             Interface::Transfer => {
-                msg!("Interface: {:?}", instruction);
+                msg!("Interface: Transfer");
                 return transfer::process_transfer(
                     program_id,
                     TransferAccounts::context(accounts)?,
+                );
+            }
+            Interface::Update(input) => {
+                msg!("Interface: Update");
+                return update::process_update(
+                    program_id,
+                    UpdateAccounts::context(accounts)?,
+                    input,
                 );
             }
             _ => msg!("Unsupported interface instruction"),
@@ -62,8 +74,8 @@ macro_rules! require {
 }
 
 #[macro_export]
-macro_rules! fetch_signer {
-    ( $signer:ident, $nifty_asset_program:ident, $ctx:expr, $data:expr ) => {
+macro_rules! fetch_signer_and_authority {
+    ( $signer:ident, $authority:ident, $nifty_asset_program:ident, $ctx:expr, $data:expr ) => {
         // proxy
         let proxy = nifty_asset_interface::state::Asset::get::<
             nifty_asset_interface::extensions::Proxy,
@@ -78,6 +90,12 @@ macro_rules! fetch_signer {
 
         let seeds = *proxy.seeds;
         let $signer = [seeds.as_ref(), &[*proxy.bump]];
+
+        let $authority = if let Some(authority) = proxy.authority.value() {
+            Some(*authority)
+        } else {
+            None
+        };
 
         let $nifty_asset_program = $ctx
             .remaining_accounts
