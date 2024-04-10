@@ -375,3 +375,71 @@ test('it can increase the size of a group', async (t) => {
     ],
   });
 });
+
+test('it can add a delegate to the grouping on init', async (t) => {
+  // Given a Umi instance.
+  const umi = await createUmi();
+
+  const delegate = generateSigner(umi);
+
+  // And we create a group asset.
+  const groupAsset = generateSigner(umi);
+  await mint(umi, {
+    asset: groupAsset,
+    payer: umi.identity,
+    name: 'Group',
+    extensions: [grouping(10, delegate.publicKey)],
+  }).sendAndConfirm(umi);
+
+  t.like(await fetchAsset(umi, groupAsset.publicKey), <Asset>{
+    group: null,
+    extensions: [
+      {
+        type: ExtensionType.Grouping,
+        size: 0n,
+        maxSize: 10n,
+        delegate: delegate.publicKey,
+      },
+    ],
+  });
+
+  // When we update the maximum size of the group.
+  await update(umi, {
+    asset: groupAsset.publicKey,
+    payer: umi.identity,
+    extension: grouping(100, delegate.publicKey),
+  }).sendAndConfirm(umi);
+
+  // Then the group maximum size has been updated, and the delegate is unchanged
+  t.like(await fetchAsset(umi, groupAsset.publicKey), <Asset>{
+    group: null,
+    extensions: [
+      {
+        type: ExtensionType.Grouping,
+        size: 0n,
+        maxSize: 100n,
+        delegate: delegate.publicKey,
+      },
+    ],
+  });
+
+  // When we remove the delegate.
+  await update(umi, {
+    asset: groupAsset.publicKey,
+    payer: umi.identity,
+    extension: grouping(100),
+  }).sendAndConfirm(umi);
+
+  // Then the delegate is removed
+  t.like(await fetchAsset(umi, groupAsset.publicKey), <Asset>{
+    group: null,
+    extensions: [
+      {
+        type: ExtensionType.Grouping,
+        size: 0n,
+        maxSize: 100n,
+        delegate: null,
+      },
+    ],
+  });
+});

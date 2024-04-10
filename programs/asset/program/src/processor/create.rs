@@ -25,8 +25,9 @@ use crate::{
 ///   1. `[optional_signer]` authority
 ///   2. `[]` owner
 ///   3. `[writable, optional]` group
-///   4. `[writable, signer, optional]` payer
-///   5. `[optional]` system_program
+///   4. `[signer, optional]` group_authority
+///   5. `[writable, signer, optional]` payer
+///   6. `[optional]` system_program
 pub fn process_create(
     program_id: &Pubkey,
     ctx: Context<CreateAccounts>,
@@ -222,14 +223,17 @@ pub fn process_create(
     drop(data);
 
     // process the group (if there is one)
-
     if let Some(group) = ctx.accounts.group {
         msg!("Setting group");
+
         super::group::process_group(
             program_id,
             Context {
                 accounts: GroupAccounts {
-                    authority: ctx.accounts.authority,
+                    authority: ctx
+                        .accounts
+                        .group_authority
+                        .unwrap_or(ctx.accounts.authority),
                     asset: ctx.accounts.asset,
                     group,
                 },

@@ -5,6 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
+use crate::hooked::NullablePublicKey;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -13,4 +14,5 @@ use borsh::BorshSerialize;
 pub struct Grouping {
     pub size: u64,
     pub max_size: u64,
+    pub delegate: NullablePublicKey,
 }

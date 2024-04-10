@@ -56,27 +56,16 @@ pub fn process_ungroup(program_id: &Pubkey, ctx: Context<UngroupAccounts>) -> Pr
         "asset"
     );
 
-    // authority must match the group's authority
-
     let group = Asset::load_mut(&mut group_data);
-
-    require!(
-        group.authority == *ctx.accounts.authority.key,
-        AssetError::InvalidAuthority,
-        "group authority mismatch"
-    );
+    let asset = Asset::load_mut(&mut asset_data);
+    let group_authority = group.authority;
 
     // asset must be in the group
-
-    let asset = Asset::load_mut(&mut asset_data);
-
     require!(
         asset.group == PodOption::new(ctx.accounts.group.key.into()),
         ProgramError::InvalidArgument,
         "asset group mismatch"
     );
-
-    // unassign the group to asset and decrease the group size
 
     let grouping = if let Some(grouping) = Asset::get_mut::<GroupingMut>(&mut group_data) {
         grouping
@@ -87,6 +76,24 @@ pub fn process_ungroup(program_id: &Pubkey, ctx: Context<UngroupAccounts>) -> Pr
         );
     };
 
+    // if the signing authority doesn't match the group authority
+    if *ctx.accounts.authority.key != group_authority {
+        // then the authority must match the grouping delegate
+        if let Some(delegate) = grouping.delegate.value() {
+            require!(
+                *delegate == ctx.accounts.authority.key.into(),
+                AssetError::InvalidAuthority,
+                "group authority delegate mismatch"
+            );
+        } else {
+            return err!(
+                AssetError::InvalidAuthority,
+                "missing group authority delegate"
+            );
+        };
+    }
+
+    // unassign the group to asset and decrease the group size
     asset.group = PodOption::new(Pubkey::default().into());
     *grouping.size -= 1;
 

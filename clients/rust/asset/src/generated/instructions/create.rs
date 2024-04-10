@@ -20,6 +20,8 @@ pub struct Create {
     pub owner: solana_program::pubkey::Pubkey,
     /// Asset account of the group
     pub group: Option<solana_program::pubkey::Pubkey>,
+    /// Optional authority for minting assets into a group
+    pub group_authority: Option<solana_program::pubkey::Pubkey>,
     /// The account paying for the storage fees
     pub payer: Option<solana_program::pubkey::Pubkey>,
     /// The system program
@@ -39,7 +41,7 @@ impl Create {
         args: CreateInstructionArgs,
         remaining_accounts: &[solana_program::instruction::AccountMeta],
     ) -> solana_program::instruction::Instruction {
-        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(7 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             self.asset, true,
         ));
@@ -52,6 +54,17 @@ impl Create {
         ));
         if let Some(group) = self.group {
             accounts.push(solana_program::instruction::AccountMeta::new(group, false));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::ASSET_ID,
+                false,
+            ));
+        }
+        if let Some(group_authority) = self.group_authority {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                group_authority,
+                true,
+            ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
                 crate::ASSET_ID,
@@ -118,14 +131,16 @@ pub struct CreateInstructionArgs {
 ///   1. `[signer]` authority
 ///   2. `[]` owner
 ///   3. `[writable, optional]` group
-///   4. `[writable, signer, optional]` payer
-///   5. `[optional]` system_program
+///   4. `[signer, optional]` group_authority
+///   5. `[writable, signer, optional]` payer
+///   6. `[optional]` system_program
 #[derive(Default)]
 pub struct CreateBuilder {
     asset: Option<solana_program::pubkey::Pubkey>,
     authority: Option<(solana_program::pubkey::Pubkey, bool)>,
     owner: Option<solana_program::pubkey::Pubkey>,
     group: Option<solana_program::pubkey::Pubkey>,
+    group_authority: Option<solana_program::pubkey::Pubkey>,
     payer: Option<solana_program::pubkey::Pubkey>,
     system_program: Option<solana_program::pubkey::Pubkey>,
     name: Option<String>,
@@ -166,6 +181,16 @@ impl CreateBuilder {
     #[inline(always)]
     pub fn group(&mut self, group: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
         self.group = group;
+        self
+    }
+    /// `[optional account]`
+    /// Optional authority for minting assets into a group
+    #[inline(always)]
+    pub fn group_authority(
+        &mut self,
+        group_authority: Option<solana_program::pubkey::Pubkey>,
+    ) -> &mut Self {
+        self.group_authority = group_authority;
         self
     }
     /// `[optional account]`
@@ -233,6 +258,7 @@ impl CreateBuilder {
             authority: self.authority.expect("authority is not set"),
             owner: self.owner.expect("owner is not set"),
             group: self.group,
+            group_authority: self.group_authority,
             payer: self.payer,
             system_program: self.system_program,
         };
@@ -257,6 +283,8 @@ pub struct CreateCpiAccounts<'a, 'b> {
     pub owner: &'b solana_program::account_info::AccountInfo<'a>,
     /// Asset account of the group
     pub group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// Optional authority for minting assets into a group
+    pub group_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
@@ -275,6 +303,8 @@ pub struct CreateCpi<'a, 'b> {
     pub owner: &'b solana_program::account_info::AccountInfo<'a>,
     /// Asset account of the group
     pub group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    /// Optional authority for minting assets into a group
+    pub group_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The system program
@@ -295,6 +325,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
             authority: accounts.authority,
             owner: accounts.owner,
             group: accounts.group,
+            group_authority: accounts.group_authority,
             payer: accounts.payer,
             system_program: accounts.system_program,
             __args: args,
@@ -333,7 +364,7 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
             bool,
         )],
     ) -> solana_program::entrypoint::ProgramResult {
-        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(7 + remaining_accounts.len());
         accounts.push(solana_program::instruction::AccountMeta::new(
             *self.asset.key,
             true,
@@ -349,6 +380,17 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
         if let Some(group) = self.group {
             accounts.push(solana_program::instruction::AccountMeta::new(
                 *group.key, false,
+            ));
+        } else {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                crate::ASSET_ID,
+                false,
+            ));
+        }
+        if let Some(group_authority) = self.group_authority {
+            accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                *group_authority.key,
+                true,
             ));
         } else {
             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -393,13 +435,16 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(6 + 1 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(7 + 1 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.asset.clone());
         account_infos.push(self.authority.0.clone());
         account_infos.push(self.owner.clone());
         if let Some(group) = self.group {
             account_infos.push(group.clone());
+        }
+        if let Some(group_authority) = self.group_authority {
+            account_infos.push(group_authority.clone());
         }
         if let Some(payer) = self.payer {
             account_infos.push(payer.clone());
@@ -427,8 +472,9 @@ impl<'a, 'b> CreateCpi<'a, 'b> {
 ///   1. `[signer]` authority
 ///   2. `[]` owner
 ///   3. `[writable, optional]` group
-///   4. `[writable, signer, optional]` payer
-///   5. `[optional]` system_program
+///   4. `[signer, optional]` group_authority
+///   5. `[writable, signer, optional]` payer
+///   6. `[optional]` system_program
 pub struct CreateCpiBuilder<'a, 'b> {
     instruction: Box<CreateCpiBuilderInstruction<'a, 'b>>,
 }
@@ -441,6 +487,7 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
             authority: None,
             owner: None,
             group: None,
+            group_authority: None,
             payer: None,
             system_program: None,
             name: None,
@@ -481,6 +528,16 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
         group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     ) -> &mut Self {
         self.instruction.group = group;
+        self
+    }
+    /// `[optional account]`
+    /// Optional authority for minting assets into a group
+    #[inline(always)]
+    pub fn group_authority(
+        &mut self,
+        group_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    ) -> &mut Self {
+        self.instruction.group_authority = group_authority;
         self
     }
     /// `[optional account]`
@@ -588,6 +645,8 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
 
             group: self.instruction.group,
 
+            group_authority: self.instruction.group_authority,
+
             payer: self.instruction.payer,
 
             system_program: self.instruction.system_program,
@@ -606,6 +665,7 @@ struct CreateCpiBuilderInstruction<'a, 'b> {
     authority: Option<(&'b solana_program::account_info::AccountInfo<'a>, bool)>,
     owner: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+    group_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     name: Option<String>,

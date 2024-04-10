@@ -110,6 +110,15 @@
           ]
         },
         {
+          "name": "groupAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "Optional authority for minting assets into a group"
+          ]
+        },
+        {
           "name": "payer",
           "isMut": true,
           "isSigner": true,

@@ -317,6 +317,10 @@ kinobi.update(
                   name: "maxSize",
                   type: k.numberTypeNode("u64"),
                 }),
+                k.structFieldTypeNode({
+                  name: "delegate",
+                  type: k.definedTypeLinkNode("nullablePublicKey", "hooked"),
+                }),
               ]),
             }),
             // manager

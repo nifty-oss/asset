@@ -51,6 +51,8 @@ export type CreateInstructionAccounts = {
   owner?: PublicKey | Pda;
   /** Asset account of the group */
   group?: PublicKey | Pda;
+  /** Optional authority for minting assets into a group */
+  groupAuthority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
   /** The system program */
@@ -134,13 +136,18 @@ export function create(
       isWritable: true as boolean,
       value: input.group ?? null,
     },
-    payer: {
+    groupAuthority: {
       index: 4,
+      isWritable: false as boolean,
+      value: input.groupAuthority ?? null,
+    },
+    payer: {
+      index: 5,
       isWritable: true as boolean,
       value: input.payer ?? null,
     },
     systemProgram: {
-      index: 5,
+      index: 6,
       isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
