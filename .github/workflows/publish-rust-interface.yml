@@ -53,7 +53,7 @@ jobs:
       program_matrix: "[\"asset\",\"proxy\"]"
 
   publish_crate:
-    name: Rust Types / Publish Crate
+    name: Rust Interface / Publish Crate
     runs-on: buildjet-8vcpu-ubuntu-2204
     needs: [test_js, test_programs]
     permissions:

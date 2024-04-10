@@ -2,7 +2,7 @@
 
 Interface for Nifty Asset [program](https://github.com/nifty-oss/asset).
 
-The interface defined in this crate should be used to implement proxy programs extending Nifty Asset behaviour. It follows the [proxy pattern](https://nifty-oss.org/blog/proxy-pattern).
+The interface defined in this crate should be used to implement proxy programs extending Nifty Asset behaviour. It follows the [Proxy Pattern](https://nifty-oss.org/blog/proxy-pattern) to provide a program interface for developers to build on top and fully customise Nifty Asset.
 
 ## Getting started
 
@@ -16,6 +16,5 @@ cargo add nifty-asset-interface
 
 The SDK is divided into several modules:
 
-- `errors`: enums representing the program errors
 - `instructions`: structs to facilitate the creation of instructions on-chain
 - `types`: structs representing types used by the program
