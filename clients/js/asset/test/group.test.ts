@@ -243,7 +243,7 @@ test('it cannot replace the group of an asset', async (t) => {
   });
 });
 
-test('it can be grouped using a grouping delegate', async (t) => {
+test('it can be grouped using a group delegate', async (t) => {
   // Given a Umi instance.
   const umi = await createUmi();
 

@@ -1,7 +1,7 @@
 use nifty_asset_types::{
-    extensions::{Grouping, GroupingMut},
+    extensions::GroupingMut,
     podded::{pod::PodOption, ZeroCopy},
-    state::{Asset, Discriminator, NullablePubkey},
+    state::{Asset, Discriminator},
 };
 use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pubkey::Pubkey};
 
@@ -56,8 +56,6 @@ pub fn process_group(program_id: &Pubkey, ctx: Context<GroupAccounts>) -> Progra
         "group"
     );
 
-    // authority must match the asset's and group's authorities
-
     let asset = Asset::load_mut(&mut asset_data);
 
     require!(
@@ -66,9 +64,17 @@ pub fn process_group(program_id: &Pubkey, ctx: Context<GroupAccounts>) -> Progra
         "asset"
     );
 
-    // group size validation
-    let group = Asset::load(&group_data);
-    let grouping = if let Some(grouping) = Asset::get::<Grouping>(&group_data) {
+    let group = Asset::load_mut(&mut group_data);
+    let group_authority = group.authority;
+
+    // authority of the group must match the asset
+    require!(
+        group.authority == asset.authority,
+        AssetError::InvalidAuthority,
+        "Group and asset authority mismatch"
+    );
+
+    let grouping = if let Some(grouping) = Asset::get_mut::<GroupingMut>(&mut group_data) {
         grouping
     } else {
         return err!(
@@ -77,26 +83,24 @@ pub fn process_group(program_id: &Pubkey, ctx: Context<GroupAccounts>) -> Progra
         );
     };
 
-    if let Some(delegate) = grouping.delegate.value() {
-        require!(
-            delegate == &NullablePubkey::new(*ctx.accounts.authority.key),
-            AssetError::InvalidAuthority,
-            "group delegate mismatch"
-        );
-    } else {
-        require!(
-            group.authority == *ctx.accounts.authority.key,
-            AssetError::InvalidAuthority,
-            "group authority mismatch"
-        );
-
-        require!(
-            asset.authority == *ctx.accounts.authority.key,
-            AssetError::InvalidAuthority,
-            "asset authority mismatch"
-        );
+    // if the signing authority doesn't match the group authority
+    if *ctx.accounts.authority.key != group_authority {
+        // then the authority must match the grouping delegate
+        if let Some(delegate) = grouping.delegate.value() {
+            require!(
+                *delegate == ctx.accounts.authority.key.into(),
+                AssetError::InvalidAuthority,
+                "group authority delegate mismatch"
+            );
+        } else {
+            return err!(
+                AssetError::InvalidAuthority,
+                "missing group authority delegate"
+            );
+        };
     }
 
+    // group size validation
     if let Some(max_size) = grouping.max_size.value() {
         require!(
             *grouping.size < **max_size,
@@ -106,9 +110,6 @@ pub fn process_group(program_id: &Pubkey, ctx: Context<GroupAccounts>) -> Progra
     }
 
     // assign the group to asset and increment the group size
-    let grouping = Asset::get_mut::<GroupingMut>(&mut group_data).unwrap();
-    let asset = Asset::load_mut(&mut asset_data);
-
     asset.group = PodOption::new(ctx.accounts.group.key.into());
     *grouping.size += 1;
 

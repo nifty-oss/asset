@@ -359,7 +359,7 @@ test('it set a group on create with authority as a delegate', async (t) => {
     authority: authority.publicKey,
     name: 'Asset',
     group: groupAsset.publicKey,
-    groupingDelegate: delegate,
+    groupAuthority: delegate,
     payer: umi.identity,
   }).sendAndConfirm(umi);
 

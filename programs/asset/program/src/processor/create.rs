@@ -25,8 +25,8 @@ use crate::{
 ///   1. `[optional_signer]` authority
 ///   2. `[]` owner
 ///   3. `[writable, optional]` group
-///   4. `[writable, signer, optional]` payer
-///   5. `[signer, optional]` grouping_delegate
+///   4. `[signer, optional]` group_authority
+///   5. `[writable, signer, optional]` payer
 ///   6. `[optional]` system_program
 pub fn process_create(
     program_id: &Pubkey,
@@ -232,7 +232,7 @@ pub fn process_create(
                 accounts: GroupAccounts {
                     authority: ctx
                         .accounts
-                        .grouping_delegate
+                        .group_authority
                         .unwrap_or(ctx.accounts.authority),
                     asset: ctx.accounts.asset,
                     group,

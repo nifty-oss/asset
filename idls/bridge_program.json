@@ -325,6 +325,8 @@
   ],
   "metadata": {
     "origin": "shank",
-    "address": "BridgezKrNugsZwTcyAMYba643Z93RzC2yN1Y24LwAkm"
+    "address": "BridgezKrNugsZwTcyAMYba643Z93RzC2yN1Y24LwAkm",
+    "binaryVersion": "0.3.0",
+    "libVersion": "0.3.0"
   }
 }
