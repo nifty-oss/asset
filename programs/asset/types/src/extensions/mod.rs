@@ -38,7 +38,7 @@ use bytemuck::{Pod, Zeroable};
 use podded::ZeroCopy;
 use std::{fmt::Debug, ops::Deref};
 
-use crate::error::Error;
+use crate::{error::Error, state::Asset};
 
 /// The `Extension` struct is used to store the "header" information for an extension.
 ///
@@ -119,17 +119,14 @@ impl Extension {
         while (cursor + Extension::LEN) <= data.len() {
             let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
 
-            if extension.extension_type() == ExtensionType::None {
-                return None;
-            }
-
             match extension.try_extension_type() {
                 Ok(t) if t == T::TYPE => {
                     let start = cursor + Extension::LEN;
                     let end = start + extension.length() as usize;
                     return Some(T::from_bytes(&data[start..end]));
                 }
-                _ => cursor = extension.boundary() as usize,
+                Ok(ExtensionType::None) => return None,
+                _ => cursor = extension.boundary() as usize - Asset::LEN,
             }
         }
 

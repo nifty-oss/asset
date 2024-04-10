@@ -335,7 +335,7 @@ checksum = "9b34d609dfbaf33d6889b2b7106d3ca345eacad44200913df5ba02bfd31d2ba9"
 
 [[package]]
 name = "asset-program"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "borsh 0.10.3",
  "bytemuck",
@@ -2130,7 +2130,7 @@ dependencies = [
 
 [[package]]
 name = "nifty-asset"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "assert_matches",
  "borsh 0.10.3",
@@ -2149,7 +2149,7 @@ dependencies = [
 
 [[package]]
 name = "nifty-asset-interface"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "borsh 0.10.3",
  "nifty-asset-types",
@@ -2159,7 +2159,7 @@ dependencies = [
 
 [[package]]
 name = "nifty-asset-types"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "borsh 0.10.3",
  "bytemuck",
