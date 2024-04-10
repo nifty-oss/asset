@@ -23,6 +23,12 @@ pub fn process_create(
     // account validation
 
     require!(
+        ctx.accounts.authority.is_signer,
+        ProgramError::MissingRequiredSignature,
+        "authority"
+    );
+
+    require!(
         ctx.accounts.stub.is_signer,
         ProgramError::MissingRequiredSignature,
         "stub"
@@ -69,7 +75,8 @@ pub fn process_create(
             program_id,
             &ctx.accounts.stub.key.to_bytes(),
             bump,
-            Some(ctx.accounts.owner.key),
+            // "proxy" authority
+            Some(ctx.accounts.authority.key),
         )
         .data();
 
@@ -83,7 +90,8 @@ pub fn process_create(
 
     CreateCpiBuilder::new(ctx.accounts.nifty_asset_program)
         .asset(ctx.accounts.asset)
-        .authority(ctx.accounts.asset, true) // <- keeps the authority so we can update the asset
+        // keeps the authority so we can update the asset
+        .authority(ctx.accounts.asset, true)
         .owner(ctx.accounts.owner)
         .payer(ctx.accounts.payer)
         .system_program(ctx.accounts.system_program)

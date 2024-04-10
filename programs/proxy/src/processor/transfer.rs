@@ -12,7 +12,7 @@ use solana_program::{
 };
 
 use crate::{
-    fetch_signer,
+    fetch_signer_and_authority,
     processor::{CONTENT_TYPE, IMAGE},
     require,
 };
@@ -24,7 +24,7 @@ pub fn process_transfer<'a>(
     // account validation happends on the CPI
 
     let data = (*ctx.accounts.asset.data).borrow();
-    fetch_signer!(signer, nifty_asset_program, ctx, &data);
+    fetch_signer_and_authority!(signer, _authority, nifty_asset_program, ctx, &data);
 
     // update the transfers "counter"
 

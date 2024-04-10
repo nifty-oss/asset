@@ -37,6 +37,8 @@ export type CreateInstructionAccounts = {
   stub: Signer;
   /** The owner of the asset */
   owner: PublicKey | Pda;
+  /** The authority of the asset */
+  authority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;
   /** System program */
@@ -99,18 +101,23 @@ export function create(
       isWritable: false as boolean,
       value: input.owner ?? null,
     },
-    payer: {
+    authority: {
       index: 3,
+      isWritable: false as boolean,
+      value: input.authority ?? null,
+    },
+    payer: {
+      index: 4,
       isWritable: true as boolean,
       value: input.payer ?? null,
     },
     systemProgram: {
-      index: 4,
+      index: 5,
       isWritable: false as boolean,
       value: input.systemProgram ?? null,
     },
     niftyAssetProgram: {
-      index: 5,
+      index: 6,
       isWritable: false as boolean,
       value: input.niftyAssetProgram ?? null,
     },
@@ -131,6 +138,9 @@ export function create(
         true
       ),
     };
+  }
+  if (!resolvedAccounts.authority.value) {
+    resolvedAccounts.authority.value = context.identity;
   }
   if (!resolvedAccounts.systemProgram.value) {
     if (resolvedAccounts.payer.value) {

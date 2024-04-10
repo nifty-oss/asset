@@ -42,6 +42,6 @@ test('it can create a proxied asset', async (t) => {
   // And the asset has a proxy extension.
   const proxy = getExtension(asset, ExtensionType.Proxy);
   t.like(proxy, {
-    authority: owner.publicKey,
+    authority: umi.identity.publicKey,
   });
 });
