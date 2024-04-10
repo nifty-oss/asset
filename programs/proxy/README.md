@@ -1,6 +1,6 @@
 # Proxy
 
-A novel pattern to define extendable control access to program accounts.
+A novel pattern to define extendable access control to program accounts.
 
 ## Building
 

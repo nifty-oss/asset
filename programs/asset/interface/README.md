@@ -12,9 +12,6 @@ From your project folder:
 cargo add nifty-asset-interface
 ```
 
-## Structure
+## Example
 
-The SDK is divided into several modules:
-
-- `instructions`: structs to facilitate the creation of instructions on-chain
-- `types`: structs representing types used by the program
+The Nifty Asset repository contains an [example proxy program](https://github.com/nifty-oss/asset/tree/main/programs/proxy) showing how to use this crate to add custom behaviour to `transfer` and `update` instructions.
