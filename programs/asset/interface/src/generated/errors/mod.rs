@@ -4,10 +4,3 @@
 //!
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
-
-pub mod errors;
-pub mod instructions;
-pub mod programs;
-pub mod types;
-
-pub(crate) use programs::*;
