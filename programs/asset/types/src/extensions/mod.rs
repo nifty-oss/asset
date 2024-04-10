@@ -132,6 +132,30 @@ impl Extension {
 
         None
     }
+
+    /// Returns a mutable reference to the extension data of a given type.
+    ///
+    /// This function expects a slice of bytes of extension data only and it will return the first
+    /// extension of the given type; if the extension type is not found, `None` is returned.
+    pub fn get_mut<'a, T: ExtensionDataMut<'a>>(data: &'a mut [u8]) -> Option<T> {
+        let mut cursor = 0;
+
+        while (cursor + Extension::LEN) <= data.len() {
+            let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
+
+            match extension.try_extension_type() {
+                Ok(t) if t == T::TYPE => {
+                    let start = cursor + Extension::LEN;
+                    let end = start + extension.length() as usize;
+                    return Some(T::from_bytes_mut(&mut data[start..end]));
+                }
+                Ok(ExtensionType::None) => return None,
+                _ => cursor = extension.boundary() as usize - Asset::LEN,
+            }
+        }
+
+        None
+    }
 }
 
 impl Debug for Extension {

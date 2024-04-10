@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.1",
   "name": "nifty_asset_interface",
   "instructions": [
     {
@@ -107,6 +107,15 @@
           "isOptional": true,
           "docs": [
             "Asset account of the group"
+          ]
+        },
+        {
+          "name": "groupAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "isOptional": true,
+          "docs": [
+            "The delegate authority for minting assets into a group"
           ]
         },
         {

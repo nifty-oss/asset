@@ -157,7 +157,7 @@ impl GroupingBuilder {
     }
 
     /// Add a new attribute to the extension.
-    pub fn set_max_size(&mut self, max_size: Option<u64>) -> &mut Self {
+    pub fn set(&mut self, max_size: Option<u64>, delegate: Option<Pubkey>) -> &mut Self {
         // setting the data replaces any existing data
         self.0.clear();
 
@@ -165,22 +165,12 @@ impl GroupingBuilder {
         self.0
             .extend_from_slice(&u64::to_le_bytes(max_size.unwrap_or(0)));
 
-        self.0.extend_from_slice(&Pubkey::default().to_bytes());
-
-        self
-    }
-
-    /// Add a delegate.
-    pub fn set_delegate(&mut self, delegate: PodOption<NullablePubkey>) -> &mut Self {
-        let offset = std::mem::size_of::<u64>() * 2 as usize;
-
-        let slice: &mut [u8] = &mut self.0[offset..offset + std::mem::size_of::<Pubkey>()];
-        slice.copy_from_slice(
-            &delegate
-                .value()
-                .unwrap_or(&NullablePubkey::default())
-                .to_bytes(),
-        );
+        let delegate = if let Some(delegate) = delegate {
+            delegate.to_bytes()
+        } else {
+            Pubkey::default().to_bytes()
+        };
+        self.0.extend_from_slice(&delegate);
 
         self
     }
@@ -206,7 +196,6 @@ impl Deref for GroupingBuilder {
 
 #[cfg(test)]
 mod tests {
-    use podded::pod::PodOption;
     use solana_program::sysvar;
 
     use crate::{
@@ -218,7 +207,7 @@ mod tests {
     fn test_set_max_size() {
         // max_size set
         let mut builder = GroupingBuilder::default();
-        builder.set_max_size(Some(10));
+        builder.set(Some(10), None);
         let grouping = builder.build();
 
         assert_eq!(*grouping.size, 0);
@@ -241,7 +230,7 @@ mod tests {
     fn test_set_delegate() {
         // set delegate to a pubkey
         let mut builder = GroupingBuilder::default();
-        builder.set_delegate(PodOption::new(NullablePubkey::new(sysvar::ID)));
+        builder.set(None, Some(sysvar::ID));
         let grouping = builder.build();
 
         assert!(grouping.delegate.value().is_some());
@@ -251,7 +240,7 @@ mod tests {
         );
 
         // set delegate to None
-        builder.set_delegate(PodOption::new(NullablePubkey::default()));
+        builder.set(None, None);
         let grouping = builder.build();
 
         assert!(grouping.delegate.value().is_none());

@@ -1,5 +1,5 @@
 use nifty_asset_types::{
-    extensions::GroupingMut,
+    extensions::{Extension, GroupingMut},
     podded::{pod::PodOption, ZeroCopy},
     state::{Asset, Discriminator},
 };
@@ -64,8 +64,8 @@ pub fn process_group(program_id: &Pubkey, ctx: Context<GroupAccounts>) -> Progra
         "asset"
     );
 
-    let group = Asset::load_mut(&mut group_data);
-    let group_authority = group.authority;
+    let (group, extensions) = group_data.split_at_mut(Asset::LEN);
+    let group = Asset::load_mut(group);
 
     // authority of the group must match the asset
     require!(
@@ -74,7 +74,7 @@ pub fn process_group(program_id: &Pubkey, ctx: Context<GroupAccounts>) -> Progra
         "Group and asset authority mismatch"
     );
 
-    let grouping = if let Some(grouping) = Asset::get_mut::<GroupingMut>(&mut group_data) {
+    let grouping = if let Some(grouping) = Extension::get_mut::<GroupingMut>(extensions) {
         grouping
     } else {
         return err!(
@@ -84,18 +84,18 @@ pub fn process_group(program_id: &Pubkey, ctx: Context<GroupAccounts>) -> Progra
     };
 
     // if the signing authority doesn't match the group authority
-    if *ctx.accounts.authority.key != group_authority {
+    if *ctx.accounts.authority.key != group.authority {
         // then the authority must match the grouping delegate
         if let Some(delegate) = grouping.delegate.value() {
             require!(
-                *delegate == ctx.accounts.authority.key.into(),
+                **delegate == *ctx.accounts.authority.key,
                 AssetError::InvalidAuthority,
-                "group authority delegate mismatch"
+                "Group authority or delegate mismatch"
             );
         } else {
             return err!(
                 AssetError::InvalidAuthority,
-                "missing group authority delegate"
+                "Invalid group authority delegate"
             );
         };
     }

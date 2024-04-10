@@ -159,6 +159,9 @@ pub struct MetadataInput {
 
     /// Indicates whether the asset is mutable or not.
     pub mutable: bool,
+
+    /// Extensions to be added to the asset.
+    pub extensions: Option<Vec<ExtensionInput>>,
 }
 
 #[repr(C)]
