@@ -1,6 +1,6 @@
+import { PublicKey, defaultPublicKey } from '@metaplex-foundation/umi';
 import { TypedExtension } from '.';
 import { ExtensionType, Grouping } from '../generated';
-import { PublicKey, defaultPublicKey } from '@metaplex-foundation/umi';
 
 export const grouping = (
   maxSize: Grouping['size'] | number = 0n,
