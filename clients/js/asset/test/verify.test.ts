@@ -180,12 +180,13 @@ test('it cannot verify a wrong creator', async (t) => {
   const umi = await createUmi();
   const asset = generateSigner(umi);
   const owner = generateSigner(umi);
+  const creator = generateSigner(umi).publicKey;
 
   // And we initialize an asset with a creators extension.
   await initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: creators([{ address: umi.identity.publicKey, share: 100 }]),
+    extension: creators([{ address: creator, share: 100 }]),
   }).sendAndConfirm(umi);
 
   // And we create the asset.
@@ -202,7 +203,7 @@ test('it cannot verify a wrong creator', async (t) => {
         type: ExtensionType.Creators,
         creators: [
           {
-            address: umi.identity.publicKey,
+            address: creator,
             verified: false,
             share: 100,
           },
@@ -229,7 +230,7 @@ test('it cannot verify a wrong creator', async (t) => {
         type: ExtensionType.Creators,
         creators: [
           {
-            address: umi.identity.publicKey,
+            address: creator,
             verified: false,
             share: 100,
           },
