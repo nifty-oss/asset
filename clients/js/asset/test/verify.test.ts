@@ -17,12 +17,13 @@ test('it can verify a creator', async (t) => {
   const umi = await createUmi();
   const asset = generateSigner(umi);
   const owner = generateSigner(umi);
+  const creator = generateSigner(umi);
 
   // And we initialize an asset with a creators extension.
   await initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: creators([{ address: umi.identity.publicKey, share: 100 }]),
+    extension: creators([{ address: creator.publicKey, share: 100 }]),
   }).sendAndConfirm(umi);
 
   // And we create the asset.
@@ -39,7 +40,7 @@ test('it can verify a creator', async (t) => {
         type: ExtensionType.Creators,
         creators: [
           {
-            address: umi.identity.publicKey,
+            address: creator.publicKey,
             verified: false,
             share: 100,
           },
@@ -51,7 +52,7 @@ test('it can verify a creator', async (t) => {
   // When we verify the creator.
   await verify(umi, {
     asset: asset.publicKey,
-    creator: umi.identity,
+    creator,
   }).sendAndConfirm(umi);
 
   // Then the creator is verified.
@@ -61,7 +62,7 @@ test('it can verify a creator', async (t) => {
         type: ExtensionType.Creators,
         creators: [
           {
-            address: umi.identity.publicKey,
+            address: creator.publicKey,
             verified: true,
             share: 100,
           },
