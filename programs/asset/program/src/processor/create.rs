@@ -132,7 +132,12 @@ pub fn process_create(
             let length = extension.length() as usize;
 
             // validates the last extension found on the account
-            on_create(extension_type, &mut data[offset..offset + length]).map_err(|error| {
+            on_create(
+                extension_type,
+                &mut data[offset..offset + length],
+                Some(ctx.accounts.authority.key),
+            )
+            .map_err(|error| {
                 msg!("[ERROR] {}", error);
                 AssetError::ExtensionDataInvalid
             })?;

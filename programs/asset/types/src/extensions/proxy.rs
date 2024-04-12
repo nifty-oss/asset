@@ -105,7 +105,7 @@ impl<'a> ExtensionDataMut<'a> for ProxyMut<'a> {
 }
 
 impl Lifecycle for ProxyMut<'_> {
-    fn on_update(&mut self, other: &mut Self) -> Result<(), Error> {
+    fn on_update(&mut self, other: &mut Self, _authority: Option<&Pubkey>) -> Result<(), Error> {
         if self.program != other.program || self.seeds != other.seeds || self.bump != other.bump {
             Err(Error::CannotModifyDerivationData)
         } else {

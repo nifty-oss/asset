@@ -158,6 +158,7 @@ pub fn process_update(
                 args.extension_type,
                 &mut account_data[start..start + current_length],
                 &mut (*buffer.data).borrow_mut()[Asset::LEN..Asset::LEN + header_length],
+                Some(ctx.accounts.authority.key),
             )
             .map_err(|error| {
                 msg!("[ERROR] {}", error);
@@ -176,6 +177,7 @@ pub fn process_update(
                     args.extension_type,
                     &mut account_data[start..start + current_length],
                     extension_data.as_mut_slice(),
+                    Some(ctx.accounts.authority.key),
                 )
                 .map_err(|error| {
                     msg!("[ERROR] {}", error);

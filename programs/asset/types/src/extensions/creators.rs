@@ -66,12 +66,17 @@ impl<'a> ExtensionDataMut<'a> for CreatorsMut<'a> {
 
 impl Lifecycle for CreatorsMut<'_> {
     /// Validates the creators' share added up to `100`.
-    fn on_create(&mut self) -> Result<(), Error> {
+    fn on_create(&mut self, authority: Option<&Pubkey>) -> Result<(), Error> {
         let mut total = 0;
 
         self.creators.iter_mut().for_each(|creator| {
-            // make sure all creators are unverified
-            creator.verified = false.into();
+            // creators are always initialized as unverified, unless it matches
+            // the authority
+            creator.verified = if let Some(authority) = authority {
+                (authority == &creator.address).into()
+            } else {
+                false.into()
+            };
             total += creator.share;
         });
 
@@ -82,15 +87,20 @@ impl Lifecycle for CreatorsMut<'_> {
         }
     }
 
-    fn on_update(&mut self, other: &mut Self) -> Result<(), Error> {
+    fn on_update(&mut self, other: &mut Self, authority: Option<&Pubkey>) -> Result<(), Error> {
         let mut total = 0;
         other.creators.iter_mut().for_each(|creator| {
             if let Some(original) = self.get(&creator.address) {
                 // creators maintain their verified status
                 creator.verified = original.verified;
             } else {
-                // creators are always initialized as unverified
-                creator.verified = false.into();
+                // creators are always initialized as unverified, unless it matches
+                // the authority
+                creator.verified = if let Some(authority) = authority {
+                    (authority == &creator.address).into()
+                } else {
+                    false.into()
+                };
             }
             total += creator.share;
         });

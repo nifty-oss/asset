@@ -36,6 +36,7 @@ pub use royalties::*;
 use borsh::{BorshDeserialize, BorshSerialize};
 use bytemuck::{Pod, Zeroable};
 use podded::ZeroCopy;
+use solana_program::pubkey::Pubkey;
 use std::{fmt::Debug, ops::Deref};
 
 use crate::{error::Error, state::Asset};
@@ -257,15 +258,18 @@ pub trait ExtensionBuilder<'a, T: ExtensionData<'a>>: Default + Deref {
 /// Trait to define lifecycle callbacks for an extension.
 pub trait Lifecycle {
     /// Validates the data of the extension.
-    fn on_create(&mut self) -> Result<(), Error> {
+    ///
+    /// The `authority` (if present) is the `Pubkey` of the account that trigger the extension creation.
+    fn on_create(&mut self, _authority: Option<&Pubkey>) -> Result<(), Error> {
         Ok(())
     }
 
     /// Validates the data of the extension when it is updated.
     ///
     /// The purpose of this callback is to provide a mechanism to validate and modify the data of an
-    /// extension when it is updated.
-    fn on_update(&mut self, _other: &mut Self) -> Result<(), Error> {
+    /// extension when it is updated. /// The `authority` (if present) is the `Pubkey` of the account
+    /// that trigger the extension update.
+    fn on_update(&mut self, _other: &mut Self, _authority: Option<&Pubkey>) -> Result<(), Error> {
         Ok(())
     }
 }
@@ -281,10 +285,11 @@ macro_rules! validate_extension_type {
         pub fn on_create(
             extension_type: ExtensionType,
             data: &mut [u8],
+            authority: Option<&Pubkey>,
         ) -> Result<(), Error>{
             match extension_type {
                 $(
-                    ExtensionType::$member => $member_mut::from_bytes_mut(data).on_create(),
+                    ExtensionType::$member => $member_mut::from_bytes_mut(data).on_create(authority),
                 )+
                 _ => Ok(()),
             }
@@ -295,11 +300,13 @@ macro_rules! validate_extension_type {
             extension_type: ExtensionType,
             data: &mut [u8],
             updated: &mut [u8],
+            authority: Option<&Pubkey>,
         ) -> Result<(), Error>{
             match extension_type {
                 $(
                     ExtensionType::$member => $member_mut::from_bytes_mut(data).on_update(
-                        &mut $member_mut::from_bytes_mut(updated)
+                        &mut $member_mut::from_bytes_mut(updated),
+                        authority,
                     ),
                 )+
                 _ => Ok(()),
