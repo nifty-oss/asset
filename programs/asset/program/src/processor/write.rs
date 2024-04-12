@@ -145,7 +145,12 @@ pub(crate) fn process_write(
 
         // validate the extension data
         let asset_data = &mut (*ctx.accounts.asset.data).borrow_mut();
-        on_create(extension_type, &mut asset_data[offset..offset + length]).map_err(|error| {
+        on_create(
+            extension_type,
+            &mut asset_data[offset..offset + length],
+            None,
+        )
+        .map_err(|error| {
             msg!("[ERROR] {}", error);
             AssetError::ExtensionDataInvalid
         })?;

@@ -81,7 +81,7 @@ impl<'a> ExtensionDataMut<'a> for GroupingMut<'a> {
 }
 
 impl Lifecycle for GroupingMut<'_> {
-    fn on_create(&mut self) -> Result<(), super::Error> {
+    fn on_create(&mut self, _authority: Option<&Pubkey>) -> Result<(), super::Error> {
         if *self.size > 0 {
             Err(Error::InvalidGroupSize)
         } else {
@@ -89,7 +89,7 @@ impl Lifecycle for GroupingMut<'_> {
         }
     }
 
-    fn on_update(&mut self, other: &mut Self) -> Result<(), Error> {
+    fn on_update(&mut self, other: &mut Self, _authority: Option<&Pubkey>) -> Result<(), Error> {
         // size cannot be updated
         *other.size = *self.size;
 

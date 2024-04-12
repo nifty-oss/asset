@@ -20,12 +20,13 @@ test('it can create a new asset with a creator', async (t) => {
   const umi = await createUmi();
   const asset = generateSigner(umi);
   const owner = generateSigner(umi);
+  const creator = generateSigner(umi).publicKey;
 
   // And we initialize an asset with a creators extension.
   await initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: creators([{ address: umi.identity.publicKey, share: 100 }]),
+    extension: creators([{ address: creator, share: 100 }]),
   }).sendAndConfirm(umi);
 
   t.true(await umi.rpc.accountExists(asset.publicKey), 'asset exists');
@@ -50,8 +51,55 @@ test('it can create a new asset with a creator', async (t) => {
         type: ExtensionType.Creators,
         creators: [
           {
-            address: umi.identity.publicKey,
+            address: creator,
             verified: false,
+            share: 100,
+          },
+        ],
+      },
+    ],
+  });
+});
+
+test('it can create a new asset with the authority as a verified creator', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = generateSigner(umi);
+  const owner = generateSigner(umi);
+  const authority = umi.identity;
+
+  // And we initialize an asset with a creators extension.
+  await initialize(umi, {
+    asset,
+    payer: umi.identity,
+    extension: creators([{ address: authority.publicKey, share: 100 }]),
+  }).sendAndConfirm(umi);
+
+  t.true(await umi.rpc.accountExists(asset.publicKey), 'asset exists');
+
+  // When we create the asset.
+  await create(umi, {
+    asset,
+    owner: owner.publicKey,
+    authority,
+    name: 'Asset with creators',
+  }).sendAndConfirm(umi);
+
+  // Then an asset was created with the correct data.
+  const assetAccount = await fetchAsset(umi, asset.publicKey);
+  t.like(assetAccount, <Asset>{
+    discriminator: Discriminator.Asset,
+    state: State.Unlocked,
+    standard: Standard.NonFungible,
+    owner: owner.publicKey,
+    authority: umi.identity.publicKey,
+    extensions: [
+      {
+        type: ExtensionType.Creators,
+        creators: [
+          {
+            address: authority.publicKey,
+            verified: true,
             share: 100,
           },
         ],
