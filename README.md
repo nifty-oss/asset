@@ -112,7 +112,7 @@ Bridge:
 
 The project includes a Rust-based command-line interface:
 
-- [`nifty`](./clients/cli/README.md)
+- [`nifty`](https://github.com/nifty-oss/cli)
 
 ## Contributing
 
