@@ -174,10 +174,12 @@ impl Asset {
     /// `None` is returned.
     pub fn first_extension(data: &[u8]) -> Option<(&Extension, usize)> {
         if (Asset::LEN + Extension::LEN) <= data.len() {
-            return Some((
-                Extension::load(&data[Asset::LEN..]),
-                Asset::LEN + Extension::LEN,
-            ));
+            let extension = Extension::load(&data[Asset::LEN..]);
+
+            return match extension.try_extension_type() {
+                Ok(t) if t != ExtensionType::None => Some((extension, Asset::LEN + Extension::LEN)),
+                _ => None,
+            };
         }
 
         None
