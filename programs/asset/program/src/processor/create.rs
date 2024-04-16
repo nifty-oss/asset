@@ -131,7 +131,6 @@ pub fn process_create(
             let extension_type = extension.extension_type();
             let length = extension.length() as usize;
 
-            // validates the last extension found on the account
             on_create(
                 extension_type,
                 &mut data[offset..offset + length],
