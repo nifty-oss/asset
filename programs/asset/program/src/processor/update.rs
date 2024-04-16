@@ -225,9 +225,9 @@ pub fn process_update(
 
         if !update {
             require!(
-                boundary == account_data.len(),
+                offset == account_data.len(),
                 ProgramError::InvalidAccountData,
-                "account boundary mismatch"
+                "extension offset mismatch"
             );
             // drop the borrow to resize the account
             drop(account_data);
