@@ -1,5 +1,5 @@
 use nifty_asset_types::{
-    extensions::{on_update, Extension},
+    extensions::{on_create, on_update, Extension, ExtensionType},
     podded::{pod::PodBool, ZeroCopy},
     state::{Asset, Discriminator},
 };
@@ -12,6 +12,7 @@ use solana_program::{
 };
 
 use crate::{
+    err,
     error::AssetError,
     instruction::{
         accounts::{Context, UpdateAccounts},
@@ -90,37 +91,49 @@ pub fn process_update(
         asset.mutable = mutable.into();
     }
 
-    // updating an extension is a multi-step process:
+    // creating/updating an extension is a multi-step process:
     //
-    //   1. find the extension to update (it can only update an existing extension)
+    //   1. find the extension to update or determine that it is a new one
     //
     //   2. move the data after the extension to a new boundary (this might result
     //      in reducing or extending the size of the extension); the new size should
     //      be within the `MAX_PERMITTED_DATA_INCREASE` limit otherwise this will fail
+    //      (only happens when the extension is being updated)
     //
     //   3. update the extensions' boundaries of any extension after the one being
-    //      updated
+    //      updated (only happens when the extension is being updated)
     //
-    //   4. copying the new (updated) extension data
+    //   4. copying the new/updated extension data
     //
     // at the end of this process, the extension is "loaded" to sanity check that
     // the update was successful
     if let Some(mut args) = args.extension {
         let mut offset = Asset::LEN;
+        // extension details:
+        //   - current length
+        //   - account boundary
+        //   - update flag (false when creating the extension)
         let mut extension = None;
 
         while offset < account_data.len() {
             let current = Extension::load(&account_data[offset..offset + Extension::LEN]);
 
-            if current.extension_type() == args.extension_type {
-                extension = Some((current.length() as usize, current.boundary() as usize));
-                break;
+            match current.try_extension_type() {
+                Ok(t) if t == args.extension_type => {
+                    extension =
+                        Some((current.length() as usize, current.boundary() as usize, true));
+                    break;
+                }
+                Ok(ExtensionType::None) => break,
+                _ => offset = current.boundary() as usize,
             }
-
-            offset = current.boundary() as usize;
         }
 
-        let (current_length, boundary) = extension.ok_or(AssetError::ExtensionNotFound)?;
+        let (current_length, boundary, update) = if let Some(extension) = extension {
+            extension
+        } else {
+            (0, offset, false)
+        };
 
         // extension data can be specified through a buffer account or
         // instruction args
@@ -153,17 +166,17 @@ pub fn process_update(
             drop(extension_data);
 
             let start = offset + Extension::LEN;
-            // validate the extension data update
-            on_update(
+            // validate the extension data
+            validate(
                 args.extension_type,
-                &mut account_data[start..start + current_length],
                 &mut (*buffer.data).borrow_mut()[Asset::LEN..Asset::LEN + header_length],
-                Some(ctx.accounts.authority.key),
-            )
-            .map_err(|error| {
-                msg!("[ERROR] {}", error);
-                AssetError::ExtensionDataInvalid
-            })?;
+                if update {
+                    Some(&mut account_data[start..start + current_length])
+                } else {
+                    None
+                },
+                ctx.accounts.authority.key,
+            )?;
 
             #[cfg(feature = "logging")]
             msg!("Updating extension from buffer account");
@@ -172,17 +185,17 @@ pub fn process_update(
         } else {
             let length = if let Some(extension_data) = args.data.as_mut() {
                 let start = offset + Extension::LEN;
-                // validate the extension data update
-                on_update(
+                // validate the extension data
+                validate(
                     args.extension_type,
-                    &mut account_data[start..start + current_length],
                     extension_data.as_mut_slice(),
-                    Some(ctx.accounts.authority.key),
-                )
-                .map_err(|error| {
-                    msg!("[ERROR] {}", error);
-                    AssetError::ExtensionDataInvalid
-                })?;
+                    if update {
+                        Some(&mut account_data[start..start + current_length])
+                    } else {
+                        None
+                    },
+                    ctx.accounts.authority.key,
+                )?;
 
                 extension_data.len()
             } else {
@@ -210,8 +223,27 @@ pub fn process_update(
         // by how much the data needs to be moved
         let delta = updated_boundary as i32 - boundary as i32;
 
+        if !update {
+            require!(
+                boundary == account_data.len(),
+                ProgramError::InvalidAccountData,
+                "account boundary mismatch"
+            );
+            // drop the borrow to resize the account
+            drop(account_data);
+
+            resize(
+                updated_boundary,
+                ctx.accounts.asset,
+                ctx.accounts.payer,
+                ctx.accounts.system_program,
+            )?;
+
+            // reborrows the data after the realloc
+            account_data = (*ctx.accounts.asset.data).borrow_mut();
+        }
         // if the extension is being resized, then the account needs to be resized
-        if current_length != extension_length {
+        else if current_length != extension_length {
             let account_boundary = Asset::last_extension(&account_data)
                 .ok_or(AssetError::ExtensionNotFound)?
                 .0
@@ -253,6 +285,7 @@ pub fn process_update(
 
         let extension = Extension::load_mut(&mut account_data[offset..offset + Extension::LEN]);
 
+        extension.set_extension_type(args.extension_type);
         extension.set_length(extension_length as u32);
         extension.set_boundary(updated_boundary as u32);
 
@@ -290,4 +323,38 @@ pub fn process_update(
     }
 
     Ok(())
+}
+
+/// Validates the extension data.
+///
+/// This function is used to validate the extension data when creating or updating an extension.
+/// If the `current_data` is provided, then the extension is being updated, otherwise it is being
+/// created.
+#[inline(always)]
+fn validate(
+    extension_type: ExtensionType,
+    input_data: &mut [u8],
+    current_data: Option<&mut [u8]>,
+    authority: &Pubkey,
+) -> Result<(), AssetError> {
+    if let Some(current_data) = current_data {
+        on_update(extension_type, current_data, input_data, Some(authority)).map_err(|error| {
+            msg!("[ERROR] {}", error);
+            AssetError::ExtensionDataInvalid
+        })
+    } else {
+        match extension_type {
+            ExtensionType::None | ExtensionType::Manager | ExtensionType::Proxy => {
+                err!(
+                    AssetError::ExtensionDataInvalid,
+                    "invalid extension type: {:?}",
+                    extension_type
+                )
+            }
+            _ => on_create(extension_type, input_data, Some(authority)).map_err(|error| {
+                msg!("[ERROR] {}", error);
+                AssetError::ExtensionDataInvalid
+            }),
+        }
+    }
 }

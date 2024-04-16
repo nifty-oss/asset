@@ -1,7 +1,9 @@
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
+  ASSET_PROGRAM_ID,
   Asset,
+  DelegateRole,
   ExtensionType,
   attributes,
   blob,
@@ -9,6 +11,7 @@ import {
   fetchAsset,
   initialize,
   links,
+  manager,
   update,
   updateWithBuffer,
 } from '../src';
@@ -362,4 +365,186 @@ test('it can update an asset with a buffer', async (t) => {
     t.is(extension.data.length, image.length);
     t.deepEqual(extension.data, Array.from(image));
   }
+});
+
+test('it can update an asset to add an extension', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = generateSigner(umi);
+  const owner = generateSigner(umi);
+
+  // And we create a new asset without extensions.
+  await create(umi, {
+    asset,
+    owner: owner.publicKey,
+    name: 'Digital Asset',
+    payer: umi.identity,
+  }).sendAndConfirm(umi);
+
+  t.assert((await fetchAsset(umi, asset.publicKey)).extensions.length === 0);
+
+  // When we add a new extension to the asset.
+  await update(umi, {
+    asset: asset.publicKey,
+    payer: umi.identity,
+    extension: attributes([
+      { traitType: 'Type', value: 'Dark' },
+      { traitType: 'Clothes', value: 'Purple Shirt' },
+      { traitType: 'Ears', value: 'None' },
+    ]),
+  }).sendAndConfirm(umi);
+
+  // Then the asset has an extension.
+  t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
+    extensions: [
+      {
+        type: ExtensionType.Attributes,
+        traits: [
+          { traitType: 'Type', value: 'Dark' },
+          { traitType: 'Clothes', value: 'Purple Shirt' },
+          { traitType: 'Ears', value: 'None' },
+        ],
+      },
+    ],
+  });
+});
+
+test('it can update an asset to add multiple extensions', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = generateSigner(umi);
+  const owner = generateSigner(umi);
+
+  // And we create a new asset without extensions.
+  await create(umi, {
+    asset,
+    owner: owner.publicKey,
+    name: 'Digital Asset',
+    payer: umi.identity,
+  }).sendAndConfirm(umi);
+
+  t.assert((await fetchAsset(umi, asset.publicKey)).extensions.length === 0);
+
+  // And we add a new extension to the asset.
+  await update(umi, {
+    asset: asset.publicKey,
+    payer: umi.identity,
+    extension: attributes([
+      { traitType: 'Type', value: 'Dark' },
+      { traitType: 'Clothes', value: 'Purple Shirt' },
+      { traitType: 'Ears', value: 'None' },
+    ]),
+  }).sendAndConfirm(umi);
+
+  t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
+    extensions: [
+      {
+        type: ExtensionType.Attributes,
+        traits: [
+          { traitType: 'Type', value: 'Dark' },
+          { traitType: 'Clothes', value: 'Purple Shirt' },
+          { traitType: 'Ears', value: 'None' },
+        ],
+      },
+    ],
+  });
+
+  // When we add a second extension to the asset.
+  await update(umi, {
+    asset: asset.publicKey,
+    payer: umi.identity,
+    extension: links([
+      {
+        name: 'metadata',
+        uri: 'https://arweave.net/ebBV1qEYt65AKmM2J5wH_Vg-gjBa9YcwSYWFVt0rw9w',
+      },
+    ]),
+  }).sendAndConfirm(umi);
+
+  // Then the asset has two extensions.
+  t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
+    extensions: [
+      {
+        type: ExtensionType.Attributes,
+        traits: [
+          { traitType: 'Type', value: 'Dark' },
+          { traitType: 'Clothes', value: 'Purple Shirt' },
+          { traitType: 'Ears', value: 'None' },
+        ],
+      },
+      {
+        type: ExtensionType.Links,
+        values: [
+          {
+            name: 'metadata',
+            uri: 'https://arweave.net/ebBV1qEYt65AKmM2J5wH_Vg-gjBa9YcwSYWFVt0rw9w',
+          },
+        ],
+      },
+    ],
+  });
+});
+
+test('it cannot update an asset to add a manager extension', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = generateSigner(umi);
+  const owner = generateSigner(umi);
+
+  // And we create a new asset without extensions.
+  await create(umi, {
+    asset,
+    owner: owner.publicKey,
+    name: 'Digital Asset',
+    payer: umi.identity,
+  }).sendAndConfirm(umi);
+
+  t.assert((await fetchAsset(umi, asset.publicKey)).extensions.length === 0);
+
+  // When we add a new extension to the asset.
+  const promise = update(umi, {
+    asset: asset.publicKey,
+    payer: umi.identity,
+    extension: manager(umi.identity.publicKey, DelegateRole.Transfer),
+  }).sendAndConfirm(umi);
+
+  // Then we expect an error.
+  await t.throwsAsync(promise, {
+    message: /Extension data invalid/,
+  });
+});
+
+test('it cannot update an asset to add a proxy extension', async (t) => {
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = generateSigner(umi);
+  const owner = generateSigner(umi);
+
+  // And we create a new asset without extensions.
+  await create(umi, {
+    asset,
+    owner: owner.publicKey,
+    name: 'Digital Asset',
+    payer: umi.identity,
+  }).sendAndConfirm(umi);
+
+  t.assert((await fetchAsset(umi, asset.publicKey)).extensions.length === 0);
+
+  // When we add a new extension to the asset.
+  const promise = update(umi, {
+    asset: asset.publicKey,
+    payer: umi.identity,
+    extension: {
+      type: ExtensionType.Proxy,
+      program: ASSET_PROGRAM_ID,
+      bump: 255,
+      seeds: Array.from({ length: 32 }, () => 0),
+      authority: null,
+    },
+  }).sendAndConfirm(umi);
+
+  // Then we expect an error.
+  await t.throwsAsync(promise, {
+    message: /Extension data invalid/,
+  });
 });
