@@ -18,7 +18,7 @@ on:
         type: choice
         options:
           - devnet
-          - mainnet-beta
+          - eclipse
       version_program:
         description: Version program
         required: true
@@ -103,7 +103,7 @@ jobs:
           if [ "${{ inputs.cluster }}" == "devnet" ]; then
             echo RPC=${{ secrets.DEVNET_RPC }} >> $GITHUB_ENV
           else
-            echo RPC=${{ secrets.MAINNET_RPC }} >> $GITHUB_ENV
+            echo RPC=${{ secrets.ECLIPSE_RPC }} >> $GITHUB_ENV
           fi
 
       - name: Determine program version
