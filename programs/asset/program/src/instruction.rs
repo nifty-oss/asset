@@ -108,6 +108,13 @@ pub enum Instruction {
     #[account(1, signer, name="authority", desc = "The authority of the asset")]
     #[account(2, signer, name="new_authority", desc = "The new authority of the asset")]
     Handover,
+
+    /// Removes an extension from an asset.
+    #[account(0, writable, name="asset", desc = "Asset account")]
+    #[account(1, signer, name="authority", desc = "The authority of the asset")]
+    #[account(2, optional, name="group", desc = "The asset defining the group, if applicable")]
+    #[account(3, writable, name="recipient", desc = "The account receiving refunded rent")]
+    Remove(ExtensionType),
 }
 
 #[repr(C)]

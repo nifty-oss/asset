@@ -625,6 +625,56 @@
         "type": "u8",
         "value": 15
       }
+    },
+    {
+      "name": "Remove",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "Asset account"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The authority of the asset"
+          ]
+        },
+        {
+          "name": "group",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The asset defining the group, if applicable"
+          ]
+        },
+        {
+          "name": "recipient",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The account receiving refunded rent"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "extensionType",
+          "type": {
+            "defined": "ExtensionType"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 16
+      }
     }
   ],
   "types": [

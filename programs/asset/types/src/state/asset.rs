@@ -211,7 +211,7 @@ impl Asset {
     /// Returns the extension given its type.
     ///
     /// This function will return a tuple containing the extension type and the
-    /// slice of the extension data. If the account does not contain any extension,
+    /// offset to the extension data. If the account does not contain any extension,
     /// `None` is returned.
     pub fn get_extension(
         extension_type: ExtensionType,

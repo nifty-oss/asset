@@ -8,3 +8,4 @@
 
 export * from './allocate';
 export * from './close';
+export * from './remove';

@@ -6,6 +6,7 @@ mod create;
 mod group;
 mod handover;
 mod lock;
+mod remove;
 mod revoke;
 mod transfer;
 mod ungroup;
@@ -35,9 +36,9 @@ use crate::{
     instruction::{
         accounts::{
             AllocateAccounts, ApproveAccounts, BurnAccounts, CloseAccounts, CreateAccounts,
-            GroupAccounts, HandoverAccounts, LockAccounts, RevokeAccounts, TransferAccounts,
-            UngroupAccounts, UnlockAccounts, UnverifyAccounts, UpdateAccounts, VerifyAccounts,
-            WriteAccounts,
+            GroupAccounts, HandoverAccounts, LockAccounts, RemoveAccounts, RevokeAccounts,
+            TransferAccounts, UngroupAccounts, UnlockAccounts, UnverifyAccounts, UpdateAccounts,
+            VerifyAccounts, WriteAccounts,
         },
         Instruction,
     },
@@ -97,6 +98,10 @@ pub fn process_instruction<'a>(
         Instruction::Lock => {
             msg!("Instruction: Lock");
             lock::process_lock(program_id, LockAccounts::context(accounts)?)
+        }
+        Instruction::Remove(args) => {
+            msg!("Instruction: Remove");
+            remove::process_remove(program_id, RemoveAccounts::context(accounts)?, args)
         }
         Instruction::Revoke(args) => {
             msg!("Instruction: Revoke");
