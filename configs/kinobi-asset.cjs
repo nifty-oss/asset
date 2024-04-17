@@ -489,6 +489,7 @@ kinobi.accept(
         "group",
         "handover",
         "lock",
+        "remove",
         "revoke",
         "transfer",
         "ungroup",
