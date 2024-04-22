@@ -119,9 +119,9 @@ test('it can update the extension of an asset', async (t) => {
     asset,
     payer: umi.identity,
     extension: attributes([
-      { traitType: 'Type', value: 'Dark' },
-      { traitType: 'Clothes', value: 'Purple Shirt' },
-      { traitType: 'Ears', value: 'None' },
+      { name: 'Type', value: 'Dark' },
+      { name: 'Clothes', value: 'Purple Shirt' },
+      { name: 'Ears', value: 'None' },
     ]),
   }).sendAndConfirm(umi);
 
@@ -137,9 +137,9 @@ test('it can update the extension of an asset', async (t) => {
       {
         type: ExtensionType.Attributes,
         traits: [
-          { traitType: 'Type', value: 'Dark' },
-          { traitType: 'Clothes', value: 'Purple Shirt' },
-          { traitType: 'Ears', value: 'None' },
+          { name: 'Type', value: 'Dark' },
+          { name: 'Clothes', value: 'Purple Shirt' },
+          { name: 'Ears', value: 'None' },
         ],
       },
     ],
@@ -149,7 +149,7 @@ test('it can update the extension of an asset', async (t) => {
   await update(umi, {
     asset: asset.publicKey,
     payer: umi.identity,
-    extension: attributes([{ traitType: 'Clothes', value: 'Purple Shirt' }]),
+    extension: attributes([{ name: 'Clothes', value: 'Purple Shirt' }]),
   }).sendAndConfirm(umi);
 
   // Then the extension is updated.
@@ -157,7 +157,7 @@ test('it can update the extension of an asset', async (t) => {
     extensions: [
       {
         type: ExtensionType.Attributes,
-        traits: [{ traitType: 'Clothes', value: 'Purple Shirt' }],
+        traits: [{ name: 'Clothes', value: 'Purple Shirt' }],
       },
     ],
   });
@@ -174,9 +174,9 @@ test('it can update the extension of an asset with multiple extensions', async (
     asset,
     payer: umi.identity,
     extension: attributes([
-      { traitType: 'Type', value: 'Dark' },
-      { traitType: 'Clothes', value: 'Purple Shirt' },
-      { traitType: 'Ears', value: 'None' },
+      { name: 'Type', value: 'Dark' },
+      { name: 'Clothes', value: 'Purple Shirt' },
+      { name: 'Ears', value: 'None' },
     ]),
   }).sendAndConfirm(umi);
 
@@ -225,7 +225,7 @@ test('it can update the extension of an asset with multiple extensions', async (
   await update(umi, {
     asset: asset.publicKey,
     payer: umi.identity,
-    extension: attributes([{ traitType: 'Clothes', value: 'Purple Shirt' }]),
+    extension: attributes([{ name: 'Clothes', value: 'Purple Shirt' }]),
   }).sendAndConfirm(umi);
 
   // Then the extension is updated.
@@ -258,7 +258,7 @@ test('it can extend the length of an extension', async (t) => {
   await initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: attributes([{ traitType: 'Type', value: 'Dark' }]),
+    extension: attributes([{ name: 'Type', value: 'Dark' }]),
   }).sendAndConfirm(umi);
 
   // And we create a new asset.
@@ -272,7 +272,7 @@ test('it can extend the length of an extension', async (t) => {
     extensions: [
       {
         type: ExtensionType.Attributes,
-        traits: [{ traitType: 'Type', value: 'Dark' }],
+        traits: [{ name: 'Type', value: 'Dark' }],
       },
     ],
   });
@@ -282,9 +282,9 @@ test('it can extend the length of an extension', async (t) => {
     asset: asset.publicKey,
     payer: umi.identity,
     extension: attributes([
-      { traitType: 'Type', value: 'Dark' },
-      { traitType: 'Clothes', value: 'Purple Shirt' },
-      { traitType: 'Ears', value: 'None' },
+      { name: 'Type', value: 'Dark' },
+      { name: 'Clothes', value: 'Purple Shirt' },
+      { name: 'Ears', value: 'None' },
     ]),
   }).sendAndConfirm(umi);
 
@@ -294,9 +294,9 @@ test('it can extend the length of an extension', async (t) => {
       {
         type: ExtensionType.Attributes,
         traits: [
-          { traitType: 'Type', value: 'Dark' },
-          { traitType: 'Clothes', value: 'Purple Shirt' },
-          { traitType: 'Ears', value: 'None' },
+          { name: 'Type', value: 'Dark' },
+          { name: 'Clothes', value: 'Purple Shirt' },
+          { name: 'Ears', value: 'None' },
         ],
       },
     ],
@@ -388,9 +388,9 @@ test('it can update an asset to add an extension', async (t) => {
     asset: asset.publicKey,
     payer: umi.identity,
     extension: attributes([
-      { traitType: 'Type', value: 'Dark' },
-      { traitType: 'Clothes', value: 'Purple Shirt' },
-      { traitType: 'Ears', value: 'None' },
+      { name: 'Type', value: 'Dark' },
+      { name: 'Clothes', value: 'Purple Shirt' },
+      { name: 'Ears', value: 'None' },
     ]),
   }).sendAndConfirm(umi);
 
@@ -400,9 +400,9 @@ test('it can update an asset to add an extension', async (t) => {
       {
         type: ExtensionType.Attributes,
         traits: [
-          { traitType: 'Type', value: 'Dark' },
-          { traitType: 'Clothes', value: 'Purple Shirt' },
-          { traitType: 'Ears', value: 'None' },
+          { name: 'Type', value: 'Dark' },
+          { name: 'Clothes', value: 'Purple Shirt' },
+          { name: 'Ears', value: 'None' },
         ],
       },
     ],
@@ -430,9 +430,9 @@ test('it can update an asset to add multiple extensions', async (t) => {
     asset: asset.publicKey,
     payer: umi.identity,
     extension: attributes([
-      { traitType: 'Type', value: 'Dark' },
-      { traitType: 'Clothes', value: 'Purple Shirt' },
-      { traitType: 'Ears', value: 'None' },
+      { name: 'Type', value: 'Dark' },
+      { name: 'Clothes', value: 'Purple Shirt' },
+      { name: 'Ears', value: 'None' },
     ]),
   }).sendAndConfirm(umi);
 
@@ -441,9 +441,9 @@ test('it can update an asset to add multiple extensions', async (t) => {
       {
         type: ExtensionType.Attributes,
         traits: [
-          { traitType: 'Type', value: 'Dark' },
-          { traitType: 'Clothes', value: 'Purple Shirt' },
-          { traitType: 'Ears', value: 'None' },
+          { name: 'Type', value: 'Dark' },
+          { name: 'Clothes', value: 'Purple Shirt' },
+          { name: 'Ears', value: 'None' },
         ],
       },
     ],

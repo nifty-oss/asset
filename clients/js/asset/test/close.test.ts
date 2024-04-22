@@ -12,7 +12,7 @@ test('it can close an uninitialized asset buffer account', async (t) => {
   await initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: attributes([{ traitType: 'head', value: 'hat' }]),
+    extension: attributes([{ name: 'head', value: 'hat' }]),
   }).sendAndConfirm(umi);
 
   t.true(await umi.rpc.accountExists(asset.publicKey), 'asset exists');
