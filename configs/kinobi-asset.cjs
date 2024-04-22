@@ -187,7 +187,7 @@ kinobi.update(
               name: "trait",
               type: k.structTypeNode([
                 k.structFieldTypeNode({
-                  name: "traitType",
+                  name: "name",
                   type: k.stringTypeNode({
                     size: k.prefixedSizeNode(k.numberTypeNode("u8")),
                   }),
@@ -483,6 +483,7 @@ kinobi.accept(
         ".prettierrc.json"
       )),
       internalNodes: [
+        "allocate",
         "approve",
         "burn",
         "create",
