@@ -7,10 +7,7 @@ use nifty_asset_interface::{
     accounts::{TransferAccounts, UpdateAccounts},
     Interface,
 };
-use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
-    pubkey::Pubkey,
-};
+use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg, pubkey::Pubkey};
 
 use crate::instruction::{accounts::CreateAccounts, Instruction};
 
@@ -53,11 +50,13 @@ pub fn process_instruction<'a>(
                     input,
                 );
             }
-            _ => msg!("Unsupported interface instruction"),
+            // we can block instructions that are not supported by the proxy
+            // by returning an error here
+            _ => (),
         }
     }
 
-    Err(ProgramError::InvalidInstructionData)
+    Interface::process_instruction(&crate::ID, accounts, instruction_data)
 }
 
 #[macro_export]
@@ -70,36 +69,5 @@ macro_rules! require {
     };
     ( $constraint:expr, $error:expr, $message:literal, $($args:tt)+ ) => {
         require!( $constraint, $error, format!($message, $($args)+) );
-    };
-}
-
-#[macro_export]
-macro_rules! fetch_signer_and_authority {
-    ( $signer:ident, $authority:ident, $nifty_asset_program:ident, $ctx:expr, $data:expr ) => {
-        // proxy
-        let proxy = nifty_asset_interface::state::Asset::get::<
-            nifty_asset_interface::extensions::Proxy,
-        >($data)
-        .unwrap();
-
-        require!(
-            proxy.program == &$crate::ID,
-            solana_program::program_error::ProgramError::IncorrectProgramId,
-            "asset has the wrong proxy program"
-        );
-
-        let seeds = *proxy.seeds;
-        let $signer = [seeds.as_ref(), &[*proxy.bump]];
-
-        let $authority = if let Some(authority) = proxy.authority.value() {
-            Some(*authority)
-        } else {
-            None
-        };
-
-        let $nifty_asset_program = $ctx
-            .remaining_accounts
-            .first()
-            .ok_or(ProgramError::NotEnoughAccountKeys)?;
     };
 }
