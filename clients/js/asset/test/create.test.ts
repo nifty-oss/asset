@@ -126,13 +126,13 @@ test('it can create a new asset with multiple extensions', async (t) => {
       {
         type: ExtensionType.Attributes,
         traits: [
-          { traitType: 'Attributes Count', value: '2' },
-          { traitType: 'Type', value: 'Dark' },
-          { traitType: 'Clothes', value: 'Purple Shirt' },
-          { traitType: 'Ears', value: 'None' },
-          { traitType: 'Mouth', value: 'None' },
-          { traitType: 'Eyes', value: 'None' },
-          { traitType: 'Hat', value: 'Blue Cap' },
+          { name: 'Attributes Count', value: '2' },
+          { name: 'Type', value: 'Dark' },
+          { name: 'Clothes', value: 'Purple Shirt' },
+          { name: 'Ears', value: 'None' },
+          { name: 'Mouth', value: 'None' },
+          { name: 'Eyes', value: 'None' },
+          { name: 'Hat', value: 'Blue Cap' },
         ],
       },
       {

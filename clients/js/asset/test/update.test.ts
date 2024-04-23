@@ -204,9 +204,9 @@ test('it can update the extension of an asset with multiple extensions', async (
       {
         type: ExtensionType.Attributes,
         traits: [
-          { traitType: 'Type', value: 'Dark' },
-          { traitType: 'Clothes', value: 'Purple Shirt' },
-          { traitType: 'Ears', value: 'None' },
+          { name: 'Type', value: 'Dark' },
+          { name: 'Clothes', value: 'Purple Shirt' },
+          { name: 'Ears', value: 'None' },
         ],
       },
       {
@@ -233,7 +233,7 @@ test('it can update the extension of an asset with multiple extensions', async (
     extensions: [
       {
         type: ExtensionType.Attributes,
-        traits: [{ traitType: 'Clothes', value: 'Purple Shirt' }],
+        traits: [{ name: 'Clothes', value: 'Purple Shirt' }],
       },
       {
         type: ExtensionType.Links,
@@ -467,9 +467,9 @@ test('it can update an asset to add multiple extensions', async (t) => {
       {
         type: ExtensionType.Attributes,
         traits: [
-          { traitType: 'Type', value: 'Dark' },
-          { traitType: 'Clothes', value: 'Purple Shirt' },
-          { traitType: 'Ears', value: 'None' },
+          { name: 'Type', value: 'Dark' },
+          { name: 'Clothes', value: 'Purple Shirt' },
+          { name: 'Ears', value: 'None' },
         ],
       },
       {
