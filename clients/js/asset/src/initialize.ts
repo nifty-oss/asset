@@ -6,7 +6,10 @@ import {
 } from '@metaplex-foundation/umi';
 import { TypedExtension, getExtensionSerializerFromType } from './extensions';
 import { DEFAULT_CHUNK_SIZE, write } from './write';
-import { AllocateInstructionAccounts, allocate } from './generated/instructions/allocate';
+import {
+  AllocateInstructionAccounts,
+  allocate,
+} from './generated/instructions/allocate';
 
 export function initialize(
   context: Pick<
