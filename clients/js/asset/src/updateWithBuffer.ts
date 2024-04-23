@@ -6,13 +6,13 @@ import {
 } from '@metaplex-foundation/umi';
 import { SYSTEM_PROGRAM_ID } from '.';
 import { TypedExtension, getExtensionSerializerFromType } from './extensions';
-import { allocate } from './generated';
 import {
   UpdateInstructionAccounts,
   UpdateInstructionArgs,
   update,
 } from './generated/instructions/update';
 import { DEFAULT_CHUNK_SIZE, write } from './write';
+import { allocate } from './generated/instructions/allocate';
 
 export function updateWithBuffer(
   context: Pick<
