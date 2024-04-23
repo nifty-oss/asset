@@ -1,5 +1,6 @@
 mod generated;
 mod interface;
+mod processor;
 
 pub use interface::*;
 use solana_program::pubkey::Pubkey;
