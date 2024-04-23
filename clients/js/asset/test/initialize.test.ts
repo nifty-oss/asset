@@ -12,7 +12,7 @@ test('it can initialize a new asset with an extension', async (t) => {
   await initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: attributes([{ traitType: 'head', value: 'hat' }]),
+    extension: attributes([{ name: 'head', value: 'hat' }]),
   }).sendAndConfirm(umi);
 
   // Then the asset account was created.
@@ -28,14 +28,14 @@ test('it cannot initialize the same extension', async (t) => {
   await initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: attributes([{ traitType: 'head', value: 'hat' }]),
+    extension: attributes([{ name: 'head', value: 'hat' }]),
   }).sendAndConfirm(umi);
 
   // When we try to initialize the same extension again.
   const promise = initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: attributes([{ traitType: 'power', value: 'wizard' }]),
+    extension: attributes([{ name: 'power', value: 'wizard' }]),
   }).sendAndConfirm(umi);
 
   await t.throwsAsync(promise, { message: /Asset already initialized/ });
@@ -50,7 +50,7 @@ test('it can initialize a new asset with multiple extensions', async (t) => {
   await initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: attributes([{ traitType: 'head', value: 'hat' }]),
+    extension: attributes([{ name: 'head', value: 'hat' }]),
   }).sendAndConfirm(umi);
 
   t.true(await umi.rpc.accountExists(asset.publicKey), 'asset exists');

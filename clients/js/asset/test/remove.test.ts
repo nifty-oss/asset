@@ -32,9 +32,9 @@ test('it can remove an extension from an asset', async (t) => {
     payer: umi.identity,
     extensions: [
       attributes([
-        { traitType: 'Type', value: 'Dark' },
-        { traitType: 'Clothes', value: 'Purple Shirt' },
-        { traitType: 'Ears', value: 'None' },
+        { name: 'Type', value: 'Dark' },
+        { name: 'Clothes', value: 'Purple Shirt' },
+        { name: 'Ears', value: 'None' },
       ]),
       metadata({
         symbol: 'MAD',
@@ -49,9 +49,9 @@ test('it can remove an extension from an asset', async (t) => {
       {
         type: ExtensionType.Attributes,
         traits: [
-          { traitType: 'Type', value: 'Dark' },
-          { traitType: 'Clothes', value: 'Purple Shirt' },
-          { traitType: 'Ears', value: 'None' },
+          { name: 'Type', value: 'Dark' },
+          { name: 'Clothes', value: 'Purple Shirt' },
+          { name: 'Ears', value: 'None' },
         ],
       },
       {
@@ -81,9 +81,9 @@ test('it can remove an extension from an asset', async (t) => {
       {
         type: ExtensionType.Attributes,
         traits: [
-          { traitType: 'Type', value: 'Dark' },
-          { traitType: 'Clothes', value: 'Purple Shirt' },
-          { traitType: 'Ears', value: 'None' },
+          { name: 'Type', value: 'Dark' },
+          { name: 'Clothes', value: 'Purple Shirt' },
+          { name: 'Ears', value: 'None' },
         ],
       },
       {
@@ -115,9 +115,9 @@ test('it can remove the first extension of an asset', async (t) => {
         },
       ]),
       attributes([
-        { traitType: 'Type', value: 'Dark' },
-        { traitType: 'Clothes', value: 'Purple Shirt' },
-        { traitType: 'Ears', value: 'None' },
+        { name: 'Type', value: 'Dark' },
+        { name: 'Clothes', value: 'Purple Shirt' },
+        { name: 'Ears', value: 'None' },
       ]),
     ],
   }).sendAndConfirm(umi);
@@ -136,9 +136,9 @@ test('it can remove the first extension of an asset', async (t) => {
       {
         type: ExtensionType.Attributes,
         traits: [
-          { traitType: 'Type', value: 'Dark' },
-          { traitType: 'Clothes', value: 'Purple Shirt' },
-          { traitType: 'Ears', value: 'None' },
+          { name: 'Type', value: 'Dark' },
+          { name: 'Clothes', value: 'Purple Shirt' },
+          { name: 'Ears', value: 'None' },
         ],
       },
     ],
@@ -158,9 +158,9 @@ test('it can remove the first extension of an asset', async (t) => {
       {
         type: ExtensionType.Attributes,
         traits: [
-          { traitType: 'Type', value: 'Dark' },
-          { traitType: 'Clothes', value: 'Purple Shirt' },
-          { traitType: 'Ears', value: 'None' },
+          { name: 'Type', value: 'Dark' },
+          { name: 'Clothes', value: 'Purple Shirt' },
+          { name: 'Ears', value: 'None' },
         ],
       },
     ],
@@ -187,9 +187,9 @@ test('it can remove the last extension of an asset', async (t) => {
         },
       ]),
       attributes([
-        { traitType: 'Type', value: 'Dark' },
-        { traitType: 'Clothes', value: 'Purple Shirt' },
-        { traitType: 'Ears', value: 'None' },
+        { name: 'Type', value: 'Dark' },
+        { name: 'Clothes', value: 'Purple Shirt' },
+        { name: 'Ears', value: 'None' },
       ]),
     ],
   }).sendAndConfirm(umi);
@@ -208,9 +208,9 @@ test('it can remove the last extension of an asset', async (t) => {
       {
         type: ExtensionType.Attributes,
         traits: [
-          { traitType: 'Type', value: 'Dark' },
-          { traitType: 'Clothes', value: 'Purple Shirt' },
-          { traitType: 'Ears', value: 'None' },
+          { name: 'Type', value: 'Dark' },
+          { name: 'Clothes', value: 'Purple Shirt' },
+          { name: 'Ears', value: 'None' },
         ],
       },
     ],
@@ -369,9 +369,9 @@ test('it cannot remove a non-existing extension', async (t) => {
     payer: umi.identity,
     extensions: [
       attributes([
-        { traitType: 'Type', value: 'Dark' },
-        { traitType: 'Clothes', value: 'Purple Shirt' },
-        { traitType: 'Ears', value: 'None' },
+        { name: 'Type', value: 'Dark' },
+        { name: 'Clothes', value: 'Purple Shirt' },
+        { name: 'Ears', value: 'None' },
       ]),
       metadata({
         symbol: 'MAD',
@@ -386,9 +386,9 @@ test('it cannot remove a non-existing extension', async (t) => {
       {
         type: ExtensionType.Attributes,
         traits: [
-          { traitType: 'Type', value: 'Dark' },
-          { traitType: 'Clothes', value: 'Purple Shirt' },
-          { traitType: 'Ears', value: 'None' },
+          { name: 'Type', value: 'Dark' },
+          { name: 'Clothes', value: 'Purple Shirt' },
+          { name: 'Ears', value: 'None' },
         ],
       },
       {
