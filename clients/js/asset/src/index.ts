@@ -1,5 +1,6 @@
 import { publicKey } from '@metaplex-foundation/umi';
 
+export * from './allocate';
 export * from './approve';
 export * from './burn';
 export * from './constraints';

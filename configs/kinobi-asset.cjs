@@ -483,6 +483,7 @@ kinobi.accept(
         ".prettierrc.json"
       )),
       internalNodes: [
+        "allocate",
         "approve",
         "burn",
         "create",

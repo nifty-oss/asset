@@ -1,46 +1,27 @@
-import {
-  Context,
-  TransactionBuilderGroup,
-  some,
-  transactionBuilderGroup,
-} from '@metaplex-foundation/umi';
+import { Context, TransactionBuilder, some } from '@metaplex-foundation/umi';
 import { TypedExtension, getExtensionSerializerFromType } from './extensions';
-import { DEFAULT_CHUNK_SIZE, write } from './write';
 import {
   AllocateInstructionAccounts,
-  allocate,
+  allocate as baseAllocate,
 } from './generated/instructions/allocate';
 
-export function initialize(
+export function allocate(
   context: Pick<
     Context,
     'eddsa' | 'identity' | 'payer' | 'programs' | 'transactions'
   >,
   input: AllocateInstructionAccounts & { extension: TypedExtension }
-): TransactionBuilderGroup {
+): TransactionBuilder {
   const data = getExtensionSerializerFromType(input.extension.type).serialize(
     input.extension
   );
 
-  const chunked = data.length > DEFAULT_CHUNK_SIZE;
-
-  const builder = allocate(context, {
+  return baseAllocate(context, {
     ...input,
     extension: {
       extensionType: input.extension.type,
       length: data.length,
-      data: chunked ? null : some(data),
+      data: some(data),
     },
   });
-
-  if (chunked) {
-    return write(context, {
-      ...input,
-      data,
-    })
-      .prepend(builder)
-      .sequential();
-  }
-
-  return transactionBuilderGroup([builder]);
 }
