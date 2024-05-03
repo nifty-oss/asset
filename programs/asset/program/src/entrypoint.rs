@@ -1,6 +1,5 @@
+use nitrate::{entrypoint, program::AccountInfo};
 use solana_program::{
-    account_info::AccountInfo,
-    entrypoint,
     entrypoint::ProgramResult,
     program_error::{PrintProgramError, ProgramError},
     pubkey::Pubkey,
@@ -8,10 +7,11 @@ use solana_program::{
 
 use crate::{error::AssetError, processor};
 
-entrypoint!(process_instruction);
+entrypoint!(process_instruction, 7);
+
 fn process_instruction<'a>(
     program_id: &'a Pubkey,
-    accounts: &'a [AccountInfo<'a>],
+    accounts: &'a [AccountInfo],
     instruction_data: &[u8],
 ) -> ProgramResult {
     if let Err(error) = processor::process_instruction(program_id, accounts, instruction_data) {

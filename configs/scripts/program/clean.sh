@@ -6,6 +6,7 @@ OUTPUT="./programs/.bin"
 cd $(dirname $(dirname $(dirname ${SCRIPT_DIR})))
 
 rm -rf $OUTPUT
+rm -rf ./target
 
 if [ -z ${PROGRAMS+x} ]; then
     PROGRAMS="$(cat .github/.env | grep "PROGRAMS" | cut -d '=' -f 2)"

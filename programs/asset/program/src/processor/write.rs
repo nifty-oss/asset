@@ -11,7 +11,7 @@ use crate::{
     err,
     error::AssetError,
     instruction::{
-        accounts::{Context, WriteAccounts},
+        accounts::{Context, Write},
         DataInput,
     },
     processor::resize,
@@ -27,36 +27,36 @@ use crate::{
 ///   2. `[optional]` system_program
 pub(crate) fn process_write(
     program_id: &Pubkey,
-    ctx: Context<WriteAccounts>,
+    ctx: Context<Write>,
     data: DataInput,
 ) -> ProgramResult {
     // account validation
 
     require!(
-        ctx.accounts.system_program.key == &system_program::ID,
+        ctx.accounts.system_program.key() == &system_program::ID,
         ProgramError::IncorrectProgramId,
         "system_program"
     );
 
     require!(
-        ctx.accounts.payer.is_signer,
+        ctx.accounts.payer.is_signer(),
         ProgramError::MissingRequiredSignature,
         "payer"
     );
 
     require!(
-        ctx.accounts.asset.is_signer,
+        ctx.accounts.asset.is_signer(),
         ProgramError::MissingRequiredSignature,
         "asset"
     );
 
     require!(
-        ctx.accounts.asset.owner == program_id,
+        ctx.accounts.asset.owner() == program_id,
         ProgramError::IllegalOwner,
         "asset"
     );
 
-    let asset_data = (*ctx.accounts.asset.data).borrow();
+    let asset_data = ctx.accounts.asset.try_borrow_data()?;
 
     require!(
         asset_data.len() >= Asset::LEN,
@@ -134,7 +134,7 @@ pub(crate) fn process_write(
             expected.saturating_sub(ctx.accounts.asset.data_len())
         );
     } else {
-        let asset_data = (*ctx.accounts.asset.data).borrow();
+        let asset_data = ctx.accounts.asset.try_borrow_data()?;
         let (extension, offset) =
             Asset::last_extension(&asset_data).ok_or(AssetError::ExtensionNotFound)?;
 
@@ -144,7 +144,7 @@ pub(crate) fn process_write(
         drop(asset_data);
 
         // validate the extension data
-        let asset_data = &mut (*ctx.accounts.asset.data).borrow_mut();
+        let asset_data = &mut ctx.accounts.asset.try_borrow_mut_data()?;
         on_create(
             extension_type,
             &mut asset_data[offset..offset + length],

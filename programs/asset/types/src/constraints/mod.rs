@@ -14,22 +14,39 @@ pub use pubkey_match::*;
 
 use bytemuck::{Pod, Zeroable};
 use podded::ZeroCopy;
-use solana_program::{account_info::AccountInfo, program_error::ProgramError};
+use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 use std::fmt::{self, Debug};
 
 /// The result of a constraint evaluation.
 pub type AssertionResult = Result<Assertion, ProgramError>;
 
 /// The context of a constraint evaluation.
-pub struct Context<'a, 'b> {
+pub struct Context<'a> {
     /// The asset participating in the action.
-    pub asset: &'b AccountInfo<'a>,
+    pub asset: &'a dyn Target,
 
     /// The account authorizing the action.
-    pub authority: &'b AccountInfo<'a>,
+    pub authority: &'a dyn Target,
 
     /// The recipient account when the action is a transfer.
-    pub recipient: Option<&'b AccountInfo<'a>>,
+    pub recipient: Option<&'a dyn Target>,
+}
+
+/// Defines the target of a constraint.
+///
+/// A target is a data structure that has a key and an owner. In most cases
+/// this will be an `AccountInfo` struct.
+pub trait Target {
+    /// The key of the target.
+    fn key(&self) -> &Pubkey;
+
+    /// The owner of the target.
+    fn owner(&self) -> &Pubkey;
+
+    /// Indicates whether the target's data is empty.
+    ///
+    /// Note that even when the data is not empty, it can still be zeroed out.
+    fn is_empty(&self) -> bool;
 }
 
 #[repr(u64)]

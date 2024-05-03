@@ -340,6 +340,7 @@ dependencies = [
  "borsh 0.10.3",
  "bytemuck",
  "nifty-asset-types",
+ "nitrate",
  "num-derive 0.3.3",
  "num-traits",
  "shank",
@@ -2182,6 +2183,37 @@ dependencies = [
  "solana-program-test",
  "solana-sdk",
  "thiserror",
+]
+
+[[package]]
+name = "nitrate"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cdd91428ad6fe469b6bd1df7409dfcaa6ebbb9e5a682715c8c08d0590a001205"
+dependencies = [
+ "nitrate-macro",
+ "nitrate-program",
+]
+
+[[package]]
+name = "nitrate-macro"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8c5707c776fbcde8b8a20f97c7983c502b23868e9159064ef56b704a260889fa"
+dependencies = [
+ "proc-macro2 1.0.78",
+ "quote 1.0.35",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "nitrate-program"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7de6e5eeb68694d9aae8562be35dfee2de60d2a603ccc5d0fac89643629d1ec3"
+dependencies = [
+ "rustversion",
+ "solana-program",
 ]
 
 [[package]]

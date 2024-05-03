@@ -7,7 +7,7 @@ use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pub
 use crate::{
     error::AssetError,
     instruction::{
-        accounts::{ApproveAccounts, Context},
+        accounts::{Approve, Context},
         DelegateInput,
     },
     require,
@@ -22,18 +22,18 @@ use crate::{
 ///   2. `[]` delegate
 pub fn process_approve(
     program_id: &Pubkey,
-    ctx: Context<ApproveAccounts>,
+    ctx: Context<Approve>,
     args: DelegateInput,
 ) -> ProgramResult {
     // account validation
 
     require!(
-        ctx.accounts.asset.owner == program_id,
+        ctx.accounts.asset.owner() == program_id,
         ProgramError::IllegalOwner,
         "asset"
     );
 
-    let mut data = (*ctx.accounts.asset.data).borrow_mut();
+    let mut data = ctx.accounts.asset.try_borrow_mut_data()?;
 
     require!(
         data.len() >= Asset::LEN && data[0] == Discriminator::Asset.into(),
@@ -44,13 +44,13 @@ pub fn process_approve(
     let asset = Asset::load_mut(&mut data);
 
     require!(
-        asset.owner == *ctx.accounts.owner.key,
+        asset.owner == *ctx.accounts.owner.key(),
         AssetError::InvalidAssetOwner,
         "owner"
     );
 
     require!(
-        ctx.accounts.owner.is_signer,
+        ctx.accounts.owner.is_signer(),
         ProgramError::MissingRequiredSignature,
         "owner"
     );
@@ -65,14 +65,14 @@ pub fn process_approve(
     // only need to enable the roles; otherwise we are setting a new delegate
     // and replacing the existing one (if any)
     if let Some(delegate) = asset.delegate.value_mut() {
-        if *delegate.address == *ctx.accounts.delegate.key {
+        if *delegate.address == *ctx.accounts.delegate.key() {
             delegate.roles |= roles;
             return Ok(());
         }
     }
 
     let delegate = Delegate {
-        address: NullablePubkey::new(*ctx.accounts.delegate.key),
+        address: NullablePubkey::new(*ctx.accounts.delegate.key()),
         roles,
     };
     asset.delegate = delegate.into();
