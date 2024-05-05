@@ -23,6 +23,7 @@ export * from './links';
 export * from './manager';
 export * from './metadata';
 export * from './proxy';
+export * from './sizeInput';
 export * from './standard';
 export * from './state';
 export * from './trait';
