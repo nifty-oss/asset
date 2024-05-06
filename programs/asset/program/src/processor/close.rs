@@ -3,7 +3,7 @@ use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pub
 
 use crate::{
     error::AssetError,
-    instruction::accounts::{CloseAccounts, Context},
+    instruction::accounts::{Close, Context},
     require,
     utils::close_program_account,
 };
@@ -14,22 +14,22 @@ use crate::{
 ///
 ///   0. `[writable, signer]` buffer
 ///   1. `[writable]` recipient
-pub fn process_close(program_id: &Pubkey, ctx: Context<CloseAccounts>) -> ProgramResult {
+pub fn process_close(program_id: &Pubkey, ctx: Context<Close>) -> ProgramResult {
     // account validation
 
     require!(
-        ctx.accounts.buffer.is_signer,
+        ctx.accounts.buffer.is_signer(),
         ProgramError::MissingRequiredSignature,
         "buffer"
     );
 
     require!(
-        ctx.accounts.buffer.owner == program_id,
+        ctx.accounts.buffer.owner() == program_id,
         ProgramError::IllegalOwner,
         "buffer"
     );
 
-    let data = (*ctx.accounts.buffer.data).borrow();
+    let data = ctx.accounts.buffer.try_borrow_data()?;
 
     if !data.is_empty() {
         // make sure that the asset is uninitialized

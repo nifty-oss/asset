@@ -7,7 +7,7 @@ use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pub
 
 use crate::{
     error::AssetError,
-    instruction::accounts::{Context, LockAccounts},
+    instruction::accounts::{Context, Lock},
     require,
     utils::assert_delegate,
 };
@@ -18,22 +18,22 @@ use crate::{
 ///
 ///   0. `[writable]` asset
 ///   1. `[signer]` signer
-pub fn process_lock(program_id: &Pubkey, ctx: Context<LockAccounts>) -> ProgramResult {
+pub fn process_lock(program_id: &Pubkey, ctx: Context<Lock>) -> ProgramResult {
     // account validation
 
     require!(
-        ctx.accounts.signer.is_signer,
+        ctx.accounts.signer.is_signer(),
         ProgramError::MissingRequiredSignature,
         "signer"
     );
 
     require!(
-        ctx.accounts.asset.owner == program_id,
+        ctx.accounts.asset.owner() == program_id,
         ProgramError::IllegalOwner,
         "asset"
     );
 
-    let mut data = (*ctx.accounts.asset.data).borrow_mut();
+    let mut data = ctx.accounts.asset.try_borrow_mut_data()?;
 
     require!(
         data.len() >= Asset::LEN && data[0] == Discriminator::Asset.into(),
@@ -54,14 +54,14 @@ pub fn process_lock(program_id: &Pubkey, ctx: Context<LockAccounts>) -> ProgramR
     if asset.delegate.value().is_some() {
         assert_delegate(
             &[asset.delegate.value(), manager],
-            ctx.accounts.signer.key,
+            ctx.accounts.signer.key(),
             DelegateRole::Lock,
         )?;
     }
     // otherwise, if the signer is not the owner, the signer must be the
     // manager delegate
-    else if asset.owner != *ctx.accounts.signer.key {
-        assert_delegate(&[manager], ctx.accounts.signer.key, DelegateRole::Lock)?;
+    else if asset.owner != *ctx.accounts.signer.key() {
+        assert_delegate(&[manager], ctx.accounts.signer.key(), DelegateRole::Lock)?;
     }
 
     asset.state = State::Locked;

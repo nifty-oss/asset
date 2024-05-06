@@ -15,7 +15,7 @@ use crate::{
     err,
     error::AssetError,
     instruction::{
-        accounts::{Context, UpdateAccounts},
+        accounts::{Context, Update},
         UpdateInput,
     },
     processor::resize,
@@ -38,24 +38,24 @@ use crate::{
 #[inline(always)]
 pub fn process_update(
     program_id: &Pubkey,
-    ctx: Context<UpdateAccounts>,
+    ctx: Context<Update>,
     args: UpdateInput,
 ) -> ProgramResult {
     // account validation
 
     require!(
-        ctx.accounts.authority.is_signer,
+        ctx.accounts.authority.is_signer(),
         ProgramError::MissingRequiredSignature,
         "authority"
     );
 
     require!(
-        ctx.accounts.asset.owner == program_id,
+        ctx.accounts.asset.owner() == program_id,
         ProgramError::IllegalOwner,
         "asset"
     );
 
-    let mut account_data = (*ctx.accounts.asset.data).borrow_mut();
+    let mut account_data = ctx.accounts.asset.try_borrow_mut_data()?;
 
     require!(
         account_data.len() >= Asset::LEN && account_data[0] == Discriminator::Asset.into(),
@@ -66,7 +66,7 @@ pub fn process_update(
     let asset = Asset::load_mut(&mut account_data);
 
     require!(
-        asset.authority == *ctx.accounts.authority.key,
+        asset.authority == *ctx.accounts.authority.key(),
         AssetError::InvalidAuthority,
         "authority"
     );
@@ -139,12 +139,12 @@ pub fn process_update(
         // instruction args
         let extension_length = if let Some(buffer) = ctx.accounts.buffer {
             require!(
-                buffer.owner == program_id,
+                buffer.owner() == program_id,
                 ProgramError::IllegalOwner,
                 "buffer"
             );
 
-            let extension_data = (*buffer.data).borrow();
+            let extension_data = buffer.try_borrow_data()?;
 
             require!(
                 extension_data[0] == Discriminator::Uninitialized.into(),
@@ -169,13 +169,13 @@ pub fn process_update(
             // validate the extension data
             validate(
                 args.extension_type,
-                &mut (*buffer.data).borrow_mut()[Asset::LEN..Asset::LEN + header_length],
+                &mut buffer.try_borrow_mut_data()?[Asset::LEN..Asset::LEN + header_length],
                 if update {
                     Some(&mut account_data[start..start + current_length])
                 } else {
                     None
                 },
-                ctx.accounts.authority.key,
+                ctx.accounts.authority.key(),
             )?;
 
             #[cfg(feature = "logging")]
@@ -194,7 +194,7 @@ pub fn process_update(
                     } else {
                         None
                     },
-                    ctx.accounts.authority.key,
+                    ctx.accounts.authority.key(),
                 )?;
 
                 extension_data.len()
@@ -240,7 +240,7 @@ pub fn process_update(
             )?;
 
             // reborrows the data after the realloc
-            account_data = (*ctx.accounts.asset.data).borrow_mut();
+            account_data = ctx.accounts.asset.try_borrow_mut_data()?;
         }
         // if the extension is being resized, then the account needs to be resized
         else if current_length != extension_length {
@@ -263,7 +263,7 @@ pub fn process_update(
             }
 
             unsafe {
-                let ptr = ctx.accounts.asset.data.borrow_mut().as_mut_ptr();
+                let ptr = ctx.accounts.asset.unchecked_borrow_mut_data().as_mut_ptr();
                 let src_ptr = ptr.add(boundary);
                 let dest_ptr = ptr.add(updated_boundary);
                 // move the bytes after the extension to the new boundary
@@ -280,7 +280,7 @@ pub fn process_update(
             }
 
             // reborrows the data after the realloc
-            account_data = (*ctx.accounts.asset.data).borrow_mut();
+            account_data = ctx.accounts.asset.try_borrow_mut_data()?;
         }
 
         let extension = Extension::load_mut(&mut account_data[offset..offset + Extension::LEN]);
@@ -304,7 +304,7 @@ pub fn process_update(
             let offset = offset + Extension::LEN;
 
             if let Some(buffer) = ctx.accounts.buffer {
-                let extension_data = (*buffer.data).borrow();
+                let extension_data = buffer.try_borrow_data()?;
                 let slice = Asset::LEN + Extension::LEN;
 
                 sol_memcpy(

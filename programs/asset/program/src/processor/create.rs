@@ -3,15 +3,16 @@ use nifty_asset_types::{
     podded::ZeroCopy,
     state::{Asset, Discriminator, Standard},
 };
+use nitrate::program::system;
 use solana_program::{
-    entrypoint::ProgramResult, msg, program::invoke, program_error::ProgramError, pubkey::Pubkey,
-    rent::Rent, system_instruction, system_program, sysvar::Sysvar,
+    entrypoint::ProgramResult, msg, program_error::ProgramError, pubkey::Pubkey, rent::Rent,
+    system_program, sysvar::Sysvar,
 };
 
 use crate::{
     error::AssetError,
     instruction::{
-        accounts::{AllocateAccounts, Context, CreateAccounts, GroupAccounts},
+        accounts::{Allocate, Context, Create, Group},
         AllocateInput, MetadataInput,
     },
     require,
@@ -30,13 +31,13 @@ use crate::{
 ///   6. `[optional]` system_program
 pub fn process_create(
     program_id: &Pubkey,
-    ctx: Context<CreateAccounts>,
+    ctx: Context<Create>,
     args: MetadataInput,
 ) -> ProgramResult {
     // account validation
 
     require!(
-        ctx.accounts.asset.is_signer,
+        ctx.accounts.asset.is_signer(),
         ProgramError::MissingRequiredSignature,
         "asset"
     );
@@ -53,7 +54,7 @@ pub fn process_create(
         };
 
         require!(
-            payer.is_signer,
+            payer.is_signer(),
             ProgramError::MissingRequiredSignature,
             "payer"
         );
@@ -69,7 +70,7 @@ pub fn process_create(
         };
 
         require!(
-            system_program.key == &system_program::ID,
+            system_program.key() == &system_program::ID,
             ProgramError::IncorrectProgramId,
             "system_program"
         );
@@ -93,19 +94,16 @@ pub fn process_create(
                 0
             };
 
-        invoke(
-            &system_instruction::create_account(
-                payer.key,
-                ctx.accounts.asset.key,
-                Rent::get()?.minimum_balance(space),
-                (space) as u64,
-                program_id,
-            ),
-            &[payer.clone(), ctx.accounts.asset.clone()],
-        )?;
+        system::create_account(
+            payer,
+            ctx.accounts.asset,
+            Rent::get()?.minimum_balance(space),
+            (space) as u64,
+            program_id,
+        );
     } else {
         require!(
-            ctx.accounts.asset.owner == program_id,
+            ctx.accounts.asset.owner() == program_id,
             ProgramError::IllegalOwner,
             "asset"
         );
@@ -116,7 +114,7 @@ pub fn process_create(
             "asset"
         );
 
-        let data = &mut (*ctx.accounts.asset.data).borrow_mut();
+        let data = &mut ctx.accounts.asset.try_borrow_mut_data()?;
 
         // make sure that the asset is not already initialized since the
         // account might have been created adding extensions
@@ -134,7 +132,7 @@ pub fn process_create(
             on_create(
                 extension_type,
                 &mut data[offset..offset + length],
-                Some(ctx.accounts.authority.key),
+                Some(ctx.accounts.authority.key()),
             )
             .map_err(|error| {
                 msg!("[ERROR] {}", error);
@@ -150,12 +148,11 @@ pub fn process_create(
             super::allocate::process_allocate(
                 program_id,
                 Context {
-                    accounts: AllocateAccounts {
+                    accounts: Allocate {
                         asset: ctx.accounts.asset,
                         payer: ctx.accounts.payer,
                         system_program: ctx.accounts.system_program,
                     },
-                    remaining_accounts: ctx.remaining_accounts,
                 },
                 AllocateInput {
                     extension: extensions.swap_remove(0),
@@ -164,14 +161,14 @@ pub fn process_create(
         }
     }
 
-    let mut data = (*ctx.accounts.asset.data).borrow_mut();
+    let mut data = ctx.accounts.asset.try_borrow_mut_data()?;
     let asset = Asset::load_mut(&mut data);
 
     asset.discriminator = Discriminator::Asset;
     asset.standard = args.standard;
     asset.mutable = args.mutable.into();
-    asset.owner = *ctx.accounts.owner.key;
-    asset.authority = *ctx.accounts.authority.key;
+    asset.owner = *ctx.accounts.owner.key();
+    asset.authority = *ctx.accounts.authority.key();
     asset.name = args.name.into();
 
     let extensions = Asset::get_extensions(&data);
@@ -208,7 +205,7 @@ pub fn process_create(
             Pubkey::create_program_address(&[proxy.seeds.as_ref(), &[*proxy.bump]], proxy.program)?;
 
         require!(
-            derived_key == *ctx.accounts.asset.key,
+            derived_key == *ctx.accounts.asset.key(),
             ProgramError::InvalidSeeds,
             "Proxied asset account does not match derived key"
         );
@@ -220,6 +217,7 @@ pub fn process_create(
         );
     }
 
+    #[cfg(feature = "logging")]
     if !extensions.is_empty() {
         msg!("Asset created with {:?} extension(s)", extensions);
     }
@@ -228,12 +226,13 @@ pub fn process_create(
 
     // process the group (if there is one)
     if let Some(group) = ctx.accounts.group {
+        #[cfg(feature = "logging")]
         msg!("Setting group");
 
         super::group::process_group(
             program_id,
             Context {
-                accounts: GroupAccounts {
+                accounts: Group {
                     authority: ctx
                         .accounts
                         .group_authority
@@ -241,7 +240,6 @@ pub fn process_create(
                     asset: ctx.accounts.asset,
                     group,
                 },
-                remaining_accounts: ctx.remaining_accounts,
             },
         )?;
     }

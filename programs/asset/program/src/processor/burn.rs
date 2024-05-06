@@ -9,7 +9,7 @@ use std::ops::Deref;
 use crate::{
     err,
     error::AssetError,
-    instruction::accounts::{BurnAccounts, Context},
+    instruction::accounts::{Burn, Context},
     require,
     utils::{assert_delegate, close_program_account},
 };
@@ -22,15 +22,15 @@ use crate::{
 ///   1. `[writable, signer]` signer
 ///   2. `[writable, optional]` recipient
 ///   3. `[writable, optional]` group
-pub fn process_burn(program_id: &Pubkey, ctx: Context<BurnAccounts>) -> ProgramResult {
+pub fn process_burn(program_id: &Pubkey, ctx: Context<Burn>) -> ProgramResult {
     require!(
-        ctx.accounts.asset.owner == program_id,
+        ctx.accounts.asset.owner() == program_id,
         ProgramError::IllegalOwner,
         "asset"
     );
 
     require!(
-        ctx.accounts.signer.is_signer,
+        ctx.accounts.signer.is_signer(),
         ProgramError::MissingRequiredSignature,
         "missing required signer"
     );
@@ -48,13 +48,13 @@ pub fn process_burn(program_id: &Pubkey, ctx: Context<BurnAccounts>) -> ProgramR
     let asset = Asset::load(asset);
 
     // Validate the signer is the owner or the burn delegate.
-    let is_allowed = asset.owner == *ctx.accounts.signer.key
+    let is_allowed = asset.owner == *ctx.accounts.signer.key()
         || assert_delegate(
             &[
                 asset.delegate.value(),
                 Extension::get::<Manager>(extensions).map(|s| s.delegate),
             ],
-            ctx.accounts.signer.key,
+            ctx.accounts.signer.key(),
             DelegateRole::Burn,
         )
         .is_ok();
@@ -76,12 +76,12 @@ pub fn process_burn(program_id: &Pubkey, ctx: Context<BurnAccounts>) -> ProgramR
         })?;
 
         require!(
-            group.deref() == group_asset.key,
+            group.deref() == group_asset.key(),
             ProgramError::InvalidArgument,
             "group mismatch"
         );
 
-        let mut group_data = group_asset.data.borrow_mut();
+        let mut group_data = group_asset.try_borrow_mut_data()?;
 
         // sanity check: this should not happen since the asset is referencing the group
         let grouping = if let Some(grouping) = Asset::get_mut::<GroupingMut>(&mut group_data) {

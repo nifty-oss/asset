@@ -7,7 +7,7 @@ use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pub
 use crate::{
     err,
     error::AssetError,
-    instruction::accounts::{Context, VerifyAccounts},
+    instruction::accounts::{Context, Verify},
     require,
 };
 
@@ -17,22 +17,22 @@ use crate::{
 ///
 ///   0. `[writable]` asset
 ///   1. `[signer]` creator
-pub fn process_verify(program_id: &Pubkey, ctx: Context<VerifyAccounts>) -> ProgramResult {
+pub fn process_verify(program_id: &Pubkey, ctx: Context<Verify>) -> ProgramResult {
     // account validation
 
     require!(
-        ctx.accounts.creator.is_signer,
+        ctx.accounts.creator.is_signer(),
         ProgramError::MissingRequiredSignature,
         "missing creator signature"
     );
 
     require!(
-        ctx.accounts.asset.owner == program_id,
+        ctx.accounts.asset.owner() == program_id,
         ProgramError::IllegalOwner,
         "invalid asset account owner"
     );
 
-    let mut data = (*ctx.accounts.asset.data).borrow_mut();
+    let mut data = ctx.accounts.asset.try_borrow_mut_data()?;
 
     require!(
         data.len() >= Asset::LEN && data[0] == Discriminator::Asset.into(),
@@ -54,7 +54,7 @@ pub fn process_verify(program_id: &Pubkey, ctx: Context<VerifyAccounts>) -> Prog
     let mut found = false;
 
     extension.creators.iter_mut().for_each(|creator| {
-        if creator.address == *ctx.accounts.creator.key {
+        if creator.address == *ctx.accounts.creator.key() {
             creator.verified = true.into();
             found = true;
         }

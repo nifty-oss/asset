@@ -3,9 +3,10 @@ use nifty_asset_types::{
     extensions::ExtensionType,
     state::{DelegateRole, Standard},
 };
-use shank::{ShankContext, ShankInstruction};
+use nitrate::Accounts;
+use shank::ShankInstruction;
 
-#[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankContext, ShankInstruction)]
+#[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankInstruction, Accounts)]
 #[rustfmt::skip]
 pub enum Instruction {
     /// Closes an uninitialized asset (buffer) account.

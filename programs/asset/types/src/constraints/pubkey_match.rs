@@ -32,7 +32,7 @@ impl Assertable for PubkeyMatch<'_> {
     fn assert(&self, context: &Context) -> AssertionResult {
         let account = get_account!(self.account, context);
 
-        Ok(if self.pubkeys.contains(account.key) {
+        Ok(if self.pubkeys.contains(account.key()) {
             Assertion::Pass
         } else {
             Assertion::Failure
