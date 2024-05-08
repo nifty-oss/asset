@@ -73,6 +73,9 @@ pub enum AssetError {
     /// 20 (0x14) - Asset is already in a group
     #[error("Asset is already in a group")]
     AlreadyInGroup,
+    /// 21 (0x15) - Extension length invalid
+    #[error("Extension length invalid")]
+    ExtensionLengthInvalid,
 }
 
 impl solana_program::program_error::PrintProgramError for AssetError {
