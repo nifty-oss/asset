@@ -167,11 +167,17 @@ test("it cannot create an asset with invalid creators' total share", async (t) =
     .fill(0)
     .map(() => ({ address: generateSigner(umi).publicKey, share: 10 }));
 
-  // And we try to initialize an asset with a creators extension.
-  const promise = initialize(umi, {
+  // And we initialize an asset with a creators extension.
+  await initialize(umi, {
     asset,
     payer: umi.identity,
     extension: creators(addresses),
+  }).sendAndConfirm(umi);
+
+  const promise = create(umi, {
+    asset,
+    payer: umi.identity,
+    name: 'Asset with creators',
   }).sendAndConfirm(umi);
 
   // Then we expect an error.
