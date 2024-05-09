@@ -20,6 +20,7 @@ mod grouping;
 mod links;
 mod manager;
 mod metadata;
+mod properties;
 mod proxy;
 mod royalties;
 
@@ -70,7 +71,7 @@ impl Extension {
     /// The extension type is stored as a `u32` on the acccount data. This method tries to
     /// perform the conversion to an `ExtensionType` and returns an error if the conversion
     /// fails – e.g., the `u32` value is not a valid extension type. This can happen when
-    /// a new extension type is added and a older version of the library is used.
+    /// a new extension type is added and an older version of the library is used.
     pub fn try_extension_type(&self) -> Result<ExtensionType, Error> {
         self.data[0].try_into()
     }
