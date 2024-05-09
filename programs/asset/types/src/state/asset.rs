@@ -28,6 +28,9 @@ use crate::extensions::{Extension, ExtensionData, ExtensionDataMut, ExtensionTyp
 /// Maximum length of a name.
 pub const MAX_NAME_LENGTH: usize = 35;
 
+/// Default extension count.
+pub const DEFAULT_EXTENSION_COUNT: usize = 9;
+
 /// `Asset` account (header) information.
 #[repr(C)]
 #[derive(Clone, Copy, Pod, Zeroable)]
@@ -149,7 +152,7 @@ impl Asset {
     /// the list of recognized extensions.
     pub fn get_extensions(data: &[u8]) -> Vec<ExtensionType> {
         let mut cursor = Asset::LEN;
-        let mut extensions = Vec::new();
+        let mut extensions = Vec::with_capacity(DEFAULT_EXTENSION_COUNT);
 
         while (cursor + Extension::LEN) <= data.len() {
             let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);

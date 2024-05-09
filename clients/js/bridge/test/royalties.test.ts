@@ -176,7 +176,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
         creators: [
           {
             address: umi.identity.publicKey,
-            verified: false,
+            verified: true,
             share: 100,
           },
         ],
@@ -243,7 +243,7 @@ test('pubkeymatch failing blocks a transfer on a group asset', async (t) => {
         creators: [
           {
             address: umi.identity.publicKey,
-            verified: false,
+            verified: true,
             share: 100,
           },
         ],
