@@ -209,16 +209,8 @@ impl From<u8> for ValueType {
     }
 }
 
-trait TypedValue: Value {
-    const TYPE: ValueType;
-}
-
 pub struct NumericValue<'a> {
     pub value: &'a [u8; 8],
-}
-
-impl TypedValue for NumericValue<'_> {
-    const TYPE: ValueType = ValueType::Numeric;
 }
 
 impl Value for NumericValue<'_> {
@@ -253,10 +245,6 @@ impl<'a> NumericValue<'a> {
 
 pub struct StringValue<'a> {
     pub value: U8PrefixStr<'a>,
-}
-
-impl TypedValue for StringValue<'_> {
-    const TYPE: ValueType = ValueType::String;
 }
 
 impl Value for StringValue<'_> {

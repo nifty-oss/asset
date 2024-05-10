@@ -31,6 +31,7 @@ pub use grouping::*;
 pub use links::*;
 pub use manager::*;
 pub use metadata::*;
+pub use properties::*;
 pub use proxy::*;
 pub use royalties::*;
 
