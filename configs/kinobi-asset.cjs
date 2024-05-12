@@ -130,6 +130,7 @@ kinobi.update(
                   { name: "Manager" },
                   { name: "Proxy" },
                   { name: "Properties" },
+                  { name: "Bucket" },
                 ],
               },
             }),
@@ -356,6 +357,19 @@ kinobi.update(
                 k.structFieldTypeNode({
                   name: "authority",
                   type: k.definedTypeLinkNode("nullablePublicKey", "hooked"),
+                }),
+              ]),
+            }),
+            // bucket
+            k.definedTypeNode({
+              name: "bucket",
+              type: k.structTypeNode([
+                k.structFieldTypeNode({
+                  name: "data",
+                  type: k.arrayTypeNode(
+                    k.numberTypeNode("u8"),
+                    k.remainderSizeNode()
+                  ),
                 }),
               ]),
             }),

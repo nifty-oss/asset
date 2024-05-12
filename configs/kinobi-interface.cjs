@@ -71,6 +71,7 @@ kinobi.update(
                   { name: "Manager" },
                   { name: "Proxy" },
                   { name: "Properties" },
+                  { name: "Bucket" },
                 ],
               },
             }),
