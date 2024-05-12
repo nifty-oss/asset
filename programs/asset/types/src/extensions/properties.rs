@@ -4,7 +4,9 @@ use std::{fmt::Debug, ops::Deref};
 
 use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle};
 
-/// Extension to add (typed) properties to an asset – e.g., `"id": 1`.
+/// Extension to add (typed) properties to an asset – e.g., `"version": 1`, `"type": "asset"`.
+///
+/// The extension currently supports `&str` and `u64` values.
 pub struct Properties<'a> {
     values: Vec<Property<'a>>,
 }
@@ -13,11 +15,17 @@ impl Properties<'_> {
     /// Get the value of a property by name.
     ///
     /// If no value is found under the `name`, returns `None`.
-    pub fn get(&self, name: &str) -> Option<&dyn Value> {
-        self.values
+    pub fn get<T: Value>(&self, name: &str) -> Option<&T> {
+        if let Some(pointer) = self
+            .values
             .iter()
             .find(|t| t.name.as_str() == name)
-            .map(|p| p.value.as_ref())
+            .map(|p| &*p.value as *const dyn Value as *const T)
+        {
+            unsafe { pointer.as_ref() }
+        } else {
+            None
+        }
     }
 }
 
@@ -30,7 +38,7 @@ impl<'a> Deref for Properties<'a> {
 }
 
 impl<'a> ExtensionData<'a> for Properties<'a> {
-    const TYPE: ExtensionType = ExtensionType::Attributes;
+    const TYPE: ExtensionType = ExtensionType::Properties;
 
     fn from_bytes(bytes: &'a [u8]) -> Self {
         let mut cursor = 0;
@@ -57,12 +65,35 @@ impl Debug for Properties<'_> {
     }
 }
 
+/// Mutable version of the `Properties` extension.
 pub struct PropertiesMut<'a> {
-    values: Vec<PropertyMut<'a>>,
+    values: Vec<Property<'a>>,
+}
+
+impl PropertiesMut<'_> {
+    /// Get the value of a property by name.
+    ///
+    /// If no value is found under the `name`, returns `None`.
+    pub fn get<T: Value>(&self, name: &str) -> Option<&T> {
+        if let Some(pointer) = self
+            .values
+            .iter()
+            .find(|t| t.name.as_str() == name)
+            .map(|p| &*p.value as *const dyn Value as *const T)
+        {
+            unsafe { pointer.as_ref() }
+        } else {
+            None
+        }
+    }
+
+    pub fn remove(&mut self, name: &str) {
+        self.values.retain(|p| p.name.as_str() != name);
+    }
 }
 
 impl<'a> Deref for PropertiesMut<'a> {
-    type Target = Vec<PropertyMut<'a>>;
+    type Target = Vec<Property<'a>>;
 
     fn deref(&self) -> &Self::Target {
         &self.values
@@ -70,22 +101,15 @@ impl<'a> Deref for PropertiesMut<'a> {
 }
 
 impl<'a> ExtensionDataMut<'a> for PropertiesMut<'a> {
-    const TYPE: ExtensionType = ExtensionType::Attributes;
+    const TYPE: ExtensionType = ExtensionType::Properties;
 
     fn from_bytes_mut(bytes: &'a mut [u8]) -> Self {
+        let mut cursor = 0;
         let mut values = Vec::new();
-        // mutable reference to the current bytes
-        let mut bytes = bytes;
 
-        while !bytes.is_empty() {
-            let p = Property::from_bytes(bytes);
-            let cursor = p.size();
-            drop(p);
-
-            let (current, remainder) = bytes.split_at_mut(cursor);
-            let p = PropertyMut::from_bytes_mut(current);
-            bytes = remainder;
-
+        while cursor < bytes.len() {
+            let p = Property::from_bytes(&bytes[cursor..]);
+            cursor += p.size();
             values.push(p);
         }
         Self { values }
@@ -94,21 +118,14 @@ impl<'a> ExtensionDataMut<'a> for PropertiesMut<'a> {
 
 impl Lifecycle for PropertiesMut<'_> {}
 
+/// A property with a name and a value.
 pub struct Property<'a> {
-    name: U8PrefixStr<'a>,
+    pub name: U8PrefixStr<'a>,
 
-    value: Box<dyn Value + 'a>,
+    pub value: Box<dyn Value + 'a>,
 }
 
 impl<'a> Property<'a> {
-    pub fn as_u64(&self) -> Option<u64> {
-        self.value.as_u64()
-    }
-
-    pub fn as_str(&self) -> Option<&str> {
-        self.value.as_str()
-    }
-
     pub fn size(&self) -> usize {
         self.name.size() + self.value.size()
     }
@@ -119,8 +136,8 @@ impl<'a> Property<'a> {
         let (_, value) = bytes.split_at(name.size());
 
         let value = match value[0].into() {
-            ValueType::Numeric => Box::new(NumericValue::from_bytes(value)) as Box<dyn Value>,
-            ValueType::String => Box::new(StringValue::from_bytes(value)) as Box<dyn Value>,
+            Type::Text => Box::new(Text::from_bytes(value)) as Box<dyn Value>,
+            Type::Number => Box::new(Number::from_bytes(value)) as Box<dyn Value>,
         };
 
         Self { name, value }
@@ -136,106 +153,52 @@ impl Debug for Property<'_> {
     }
 }
 
-pub struct PropertyMut<'a> {
-    name: U8PrefixStrMut<'a>,
-
-    value: Box<dyn Value + 'a>,
-}
-
-impl<'a> PropertyMut<'a> {
-    pub fn as_u64(&self) -> Option<u64> {
-        self.value.as_u64()
-    }
-
-    pub fn as_str(&self) -> Option<&str> {
-        self.value.as_str()
-    }
-
-    pub fn size(&self) -> usize {
-        self.name.len() + self.value.size()
-    }
-
-    fn from_bytes_mut(bytes: &'a mut [u8]) -> Self {
-        let name = U8PrefixStr::from_bytes(bytes);
-
-        let (name, value) = bytes.split_at_mut(name.size());
-
-        let name = U8PrefixStrMut::from_bytes_mut(name);
-
-        let value = match value[0].into() {
-            ValueType::Numeric => Box::new(NumericValue::from_bytes(value)) as Box<dyn Value>,
-            ValueType::String => Box::new(StringValue::from_bytes(value)) as Box<dyn Value>,
-        };
-
-        Self { name, value }
-    }
-}
-
+/// Trait representing a value in a property.
 pub trait Value: Debug {
-    fn as_u64(&self) -> Option<u64>;
-
-    fn as_str(&self) -> Option<&str>;
-
     fn size(&self) -> usize;
 }
 
+/// Type of the value in a property.
+///
+/// This is used to "encode" the type on the serialized data.
 #[repr(u8)]
 #[derive(Clone, Copy)]
-pub enum ValueType {
-    String,
-    Numeric,
+pub enum Type {
+    Text,
+    Number,
 }
 
-unsafe impl Pod for ValueType {}
+unsafe impl Pod for Type {}
 
-unsafe impl Zeroable for ValueType {}
+unsafe impl Zeroable for Type {}
 
-impl From<ValueType> for u8 {
-    fn from(value: ValueType) -> Self {
+impl From<Type> for u8 {
+    fn from(value: Type) -> Self {
         match value {
-            ValueType::String => 0,
-            ValueType::Numeric => 1,
+            Type::Text => 0,
+            Type::Number => 1,
         }
     }
 }
 
-impl From<u8> for ValueType {
+impl From<u8> for Type {
     fn from(value: u8) -> Self {
         match value {
-            0 => ValueType::String,
-            1 => ValueType::Numeric,
+            0 => Type::Text,
+            1 => Type::Number,
             _ => panic!("invalid value type: {}", value),
         }
     }
 }
 
-pub struct NumericValue<'a> {
+/// A numeric value in a property.
+pub struct Number<'a> {
     pub value: &'a [u8; 8],
 }
 
-impl Value for NumericValue<'_> {
-    fn as_str(&self) -> Option<&str> {
-        None
-    }
-
-    fn as_u64(&self) -> Option<u64> {
-        Some(u64::from_le_bytes(*self.value))
-    }
-
-    fn size(&self) -> usize {
-        std::mem::size_of::<ValueType>() + std::mem::size_of_val(self.value)
-    }
-}
-
-impl Debug for NumericValue<'_> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.as_u64().unwrap())
-    }
-}
-
-impl<'a> NumericValue<'a> {
+impl<'a> Number<'a> {
     fn from_bytes(bytes: &'a [u8]) -> Self {
-        let (_, value) = bytes.split_at(std::mem::size_of::<ValueType>());
+        let (_, value) = bytes.split_at(std::mem::size_of::<Type>());
 
         Self {
             value: bytemuck::from_bytes(value),
@@ -243,37 +206,58 @@ impl<'a> NumericValue<'a> {
     }
 }
 
-pub struct StringValue<'a> {
+impl Value for Number<'_> {
+    fn size(&self) -> usize {
+        std::mem::size_of::<Type>() + std::mem::size_of_val(self.value)
+    }
+}
+
+impl Debug for Number<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.deref())
+    }
+}
+
+impl Deref for Number<'_> {
+    type Target = u64;
+
+    fn deref(&self) -> &Self::Target {
+        unsafe { &*(self.value as *const u8 as *const u64) }
+    }
+}
+
+/// A string value in a property.
+pub struct Text<'a> {
     pub value: U8PrefixStr<'a>,
 }
 
-impl Value for StringValue<'_> {
-    fn as_str(&self) -> Option<&str> {
-        Some(self.value.deref())
-    }
+impl<'a> Text<'a> {
+    pub fn from_bytes(bytes: &'a [u8]) -> Self {
+        let (_, value) = bytes.split_at(std::mem::size_of::<Type>());
 
-    fn as_u64(&self) -> Option<u64> {
-        None
-    }
-
-    fn size(&self) -> usize {
-        std::mem::size_of::<ValueType>() + self.value.size()
+        Self {
+            value: U8PrefixStr::from_bytes(value),
+        }
     }
 }
 
-impl Debug for StringValue<'_> {
+impl Value for Text<'_> {
+    fn size(&self) -> usize {
+        std::mem::size_of::<Type>() + self.value.size()
+    }
+}
+
+impl Debug for Text<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.value.fmt(f)
     }
 }
 
-impl<'a> StringValue<'a> {
-    pub fn from_bytes(bytes: &'a [u8]) -> Self {
-        let (_, value) = bytes.split_at(std::mem::size_of::<ValueType>());
+impl Deref for Text<'_> {
+    type Target = str;
 
-        Self {
-            value: U8PrefixStr::from_bytes(value),
-        }
+    fn deref(&self) -> &Self::Target {
+        self.value.as_str()
     }
 }
 
@@ -293,7 +277,7 @@ impl PropertiesBuilder {
     }
 
     /// Add a new string property to the extension.
-    pub fn add_string(&mut self, name: &str, value: &str) -> &mut Self {
+    pub fn add_text(&mut self, name: &str, value: &str) -> &mut Self {
         // add the length of the name + prefix to the data buffer.
         let cursor = self.0.len();
         self.0.append(&mut vec![0u8; name.len() + 1]);
@@ -301,7 +285,7 @@ impl PropertiesBuilder {
         name_str.copy_from_str(name);
 
         // add the value type
-        self.0.push(ValueType::String.into());
+        self.0.push(Type::Text.into());
 
         // add the length of the value + prefix to the data buffer.
         let cursor = self.0.len();
@@ -313,7 +297,7 @@ impl PropertiesBuilder {
     }
 
     /// Add a new numeric property to the extension.
-    pub fn add_numeric(&mut self, name: &str, value: u64) -> &mut Self {
+    pub fn add_number(&mut self, name: &str, value: u64) -> &mut Self {
         // add the length of the name + prefix to the data buffer.
         let cursor = self.0.len();
         self.0.append(&mut vec![0u8; name.len() + 1]);
@@ -321,7 +305,7 @@ impl PropertiesBuilder {
         name_str.copy_from_str(name);
 
         // add the value type
-        self.0.push(ValueType::Numeric.into());
+        self.0.push(Type::Number.into());
 
         // add the numeric value to the data buffer.
         self.0.extend_from_slice(&value.to_le_bytes());
@@ -351,20 +335,42 @@ impl Deref for PropertiesBuilder {
 #[cfg(test)]
 mod tests {
     use super::PropertiesBuilder;
-    use crate::extensions::ExtensionBuilder;
+    use crate::extensions::{ExtensionBuilder, ExtensionDataMut, Number, PropertiesMut, Text};
 
     #[test]
     pub fn test_create_property() {
         let mut builder = PropertiesBuilder::default();
-        builder.add_string("name", "asset");
-        builder.add_numeric("version", 1);
+        builder.add_text("name", "asset");
+        builder.add_number("version", 1);
         let properties = builder.build();
 
         assert_eq!(properties.values.len(), 2);
         assert_eq!(properties.values[0].name.as_str(), "name");
         assert_eq!(properties.values[1].name.as_str(), "version");
 
-        assert_eq!(properties.get("name").unwrap().as_str().unwrap(), "asset");
-        assert_eq!(properties.get("version").unwrap().as_u64().unwrap(), 1);
+        let name: &str = properties.get::<Text>("name").unwrap();
+        assert_eq!(name, "asset");
+
+        let version: &u64 = properties.get::<Number>("version").unwrap();
+        assert_eq!(version, &1u64);
+    }
+
+    #[test]
+    pub fn test_remove_property() {
+        let mut builder = PropertiesBuilder::default();
+        builder.add_text("name", "asset");
+        builder.add_number("version", 1);
+        let mut data = builder.data();
+
+        let mut properties = PropertiesMut::from_bytes_mut(&mut data);
+
+        assert_eq!(properties.values.len(), 2);
+        assert_eq!(properties.values[0].name.as_str(), "name");
+        assert_eq!(properties.values[1].name.as_str(), "version");
+
+        properties.remove("name");
+
+        assert_eq!(properties.values.len(), 1);
+        assert_eq!(properties.values[0].name.as_str(), "version");
     }
 }

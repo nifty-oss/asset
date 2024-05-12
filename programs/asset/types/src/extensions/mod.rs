@@ -204,6 +204,7 @@ pub enum ExtensionType {
     Royalties,
     Manager,
     Proxy,
+    Properties,
 }
 
 impl TryFrom<u32> for ExtensionType {
@@ -221,6 +222,7 @@ impl TryFrom<u32> for ExtensionType {
             7 => Ok(ExtensionType::Royalties),
             8 => Ok(ExtensionType::Manager),
             9 => Ok(ExtensionType::Proxy),
+            10 => Ok(ExtensionType::Properties),
             _ => Err(Error::InvalidExtensionType(value)),
         }
     }
@@ -239,6 +241,7 @@ impl From<ExtensionType> for u32 {
             ExtensionType::Royalties => 7,
             ExtensionType::Manager => 8,
             ExtensionType::Proxy => 9,
+            ExtensionType::Properties => 10,
         }
     }
 }
@@ -326,5 +329,6 @@ validate_extension_type!(
     (Metadata, MetadataMut),
     (Royalties, RoyaltiesMut),
     (Manager, ManagerMut),
-    (Proxy, ProxyMut)
+    (Proxy, ProxyMut),
+    (Properties, PropertiesMut)
 );
