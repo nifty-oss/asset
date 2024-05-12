@@ -5,6 +5,8 @@ use crate::constraints::{
     Operator, OperatorType,
 };
 
+use super::DEFAULT_CAPACITY;
+
 /// A list of constraints that must all succeed for the assertion to pass.
 pub struct And<'a> {
     pub constraints: Vec<Constraint<'a>>,
@@ -12,7 +14,7 @@ pub struct And<'a> {
 
 impl<'a> FromBytes<'a> for And<'a> {
     fn from_bytes(bytes: &'a [u8]) -> Self {
-        let mut constraints = Vec::new();
+        let mut constraints = Vec::with_capacity(DEFAULT_CAPACITY);
         let mut offset = 0;
 
         while offset < bytes.len() {
@@ -38,7 +40,7 @@ impl Assertable for And<'_> {
     }
 
     fn as_bytes(&self) -> Vec<u8> {
-        let mut bytes = Vec::new();
+        let mut bytes = Vec::with_capacity(DEFAULT_CAPACITY);
         for constraint in &self.constraints {
             bytes.extend_from_slice(constraint.as_bytes().as_ref());
         }

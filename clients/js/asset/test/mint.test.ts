@@ -66,7 +66,7 @@ test('it can mint an asset with an extension', async (t) => {
     extensions: [
       {
         type: ExtensionType.Attributes,
-        traits: [
+        values: [
           {
             name: 'head',
             value: 'hat',

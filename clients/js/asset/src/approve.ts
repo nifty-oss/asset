@@ -11,7 +11,7 @@ import {
 } from './generated/instructions/approve';
 
 export function approve(
-  context: Pick<Context, 'programs'>,
+  context: Pick<Context, 'identity' | 'programs'>,
   input: ApproveInstructionAccounts &
     ApproveInstructionArgs & { proxy?: PublicKey }
 ): TransactionBuilder {

@@ -1,15 +1,17 @@
 use podded::types::{U8PrefixStr, U8PrefixStrMut};
 use std::{fmt::Debug, ops::Deref};
 
-use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle};
+use super::{
+    ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle, DEFAULT_CAPACITY,
+};
 
-/// Extension to add attributes (traits) to an asset – e.g., `"head": "bald"`.
+/// Extension to add attributes (values) to an asset – e.g., `"head": "bald"`.
 ///
 /// A trait is a name-value pair of strings:
 ///   * `name` - name of the attribute.
 ///   * `value` - value of the attribute.
 pub struct Attributes<'a> {
-    traits: Vec<Trait<'a>>,
+    values: Vec<Trait<'a>>,
 }
 
 impl Attributes<'_> {
@@ -17,7 +19,7 @@ impl Attributes<'_> {
     ///
     /// If no value is found under the `name`, returns `None`.
     pub fn get(&self, name: &str) -> Option<&str> {
-        self.traits
+        self.values
             .iter()
             .find(|t| t.name.as_str() == name)
             .map(|t| t.value.as_str())
@@ -28,7 +30,7 @@ impl<'a> Deref for Attributes<'a> {
     type Target = Vec<Trait<'a>>;
 
     fn deref(&self) -> &Self::Target {
-        &self.traits
+        &self.values
     }
 }
 
@@ -37,25 +39,25 @@ impl<'a> ExtensionData<'a> for Attributes<'a> {
 
     fn from_bytes(bytes: &'a [u8]) -> Self {
         let mut cursor = 0;
-        let mut traits = Vec::new();
+        let mut values = Vec::with_capacity(DEFAULT_CAPACITY);
 
         while cursor < bytes.len() {
             let t = Trait::from_bytes(&bytes[cursor..]);
             cursor += t.length();
-            traits.push(t);
+            values.push(t);
         }
-        Self { traits }
+        Self { values }
     }
 
     fn length(&self) -> usize {
-        self.traits.iter().map(|t| t.length()).sum()
+        self.values.iter().map(|t| t.length()).sum()
     }
 }
 
 impl Debug for Attributes<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Attributes")
-            .field("traits", &self.traits)
+            .field("values", &self.values)
             .finish()
     }
 }
@@ -91,14 +93,14 @@ impl Debug for Trait<'_> {
 }
 
 pub struct AttributesMut<'a> {
-    traits: Vec<TraitMut<'a>>,
+    values: Vec<TraitMut<'a>>,
 }
 
 impl<'a> Deref for AttributesMut<'a> {
     type Target = Vec<TraitMut<'a>>;
 
     fn deref(&self) -> &Self::Target {
-        &self.traits
+        &self.values
     }
 }
 
@@ -106,7 +108,7 @@ impl<'a> ExtensionDataMut<'a> for AttributesMut<'a> {
     const TYPE: ExtensionType = ExtensionType::Attributes;
 
     fn from_bytes_mut(bytes: &'a mut [u8]) -> Self {
-        let mut traits = Vec::new();
+        let mut values = Vec::with_capacity(DEFAULT_CAPACITY);
         // mutable reference to the current bytes
         let mut bytes = bytes;
 
@@ -118,9 +120,9 @@ impl<'a> ExtensionDataMut<'a> for AttributesMut<'a> {
             let t = TraitMut::from_bytes_mut(current);
             bytes = remainder;
 
-            traits.push(t);
+            values.push(t);
         }
-        Self { traits }
+        Self { values }
     }
 }
 
@@ -213,10 +215,10 @@ mod tests {
         builder.add("hat", "wizard");
         let attributes = builder.build();
 
-        assert_eq!(attributes.traits.len(), 2);
-        assert_eq!(attributes.traits[0].name.as_str(), "head");
-        assert_eq!(attributes.traits[0].value.as_str(), "bald");
-        assert_eq!(attributes.traits[1].name.as_str(), "hat");
-        assert_eq!(attributes.traits[1].value.as_str(), "wizard");
+        assert_eq!(attributes.values.len(), 2);
+        assert_eq!(attributes.values[0].name.as_str(), "head");
+        assert_eq!(attributes.values[0].value.as_str(), "bald");
+        assert_eq!(attributes.values[1].name.as_str(), "hat");
+        assert_eq!(attributes.values[1].value.as_str(), "wizard");
     }
 }

@@ -111,7 +111,7 @@ test('it can execute custom logic on transfer', async (t) => {
 
   let attributes = getExtension(asset, ExtensionType.Attributes);
   // initial value for the number of transfers
-  const initial = attributes?.traits[0].value;
+  const initial = attributes?.values[0].value;
   t.true(parseInt(initial!) === 0);
 
   const recipient = generateSigner(umi).publicKey;
@@ -136,7 +136,7 @@ test('it can execute custom logic on transfer', async (t) => {
 
   // And the custom logic is executed.
   attributes = getExtension(asset, ExtensionType.Attributes);
-  const current = parseInt(attributes?.traits[0].value!);
+  const current = parseInt(attributes?.values[0].value!);
   t.true(current === 1);
   t.assert(parseInt(initial!) < current);
 });
@@ -168,7 +168,7 @@ test('it can transfer the proxy asset multiple times', async (t) => {
 
   let attributes = getExtension(asset, ExtensionType.Attributes);
   // initial value for the number of transfers
-  const initial = attributes?.traits[0].value;
+  const initial = attributes?.values[0].value;
 
   const proxy = getExtension(asset, ExtensionType.Proxy);
   // And we transfer the proxied asset through the proxy program (using
@@ -193,6 +193,6 @@ test('it can transfer the proxy asset multiple times', async (t) => {
     await fetchAsset(umi, address),
     ExtensionType.Attributes
   );
-  const current = parseInt(attributes?.traits[0].value!);
+  const current = parseInt(attributes?.values[0].value!);
   t.assert(parseInt(initial!) < current);
 });

@@ -16,13 +16,13 @@ const TOTAL_SHARE: u8 = 100;
 /// that the total share of royalties must be `100`.
 pub struct Creators<'a> {
     /// List of creators.
-    pub creators: &'a [Creator],
+    pub values: &'a [Creator],
 }
 
 impl Creators<'_> {
     /// Returns the creator with the given address.
     pub fn get(&self, address: &Pubkey) -> Option<&Creator> {
-        self.creators
+        self.values
             .iter()
             .find(|creator| &creator.address == address)
     }
@@ -33,11 +33,11 @@ impl<'a> ExtensionData<'a> for Creators<'a> {
 
     fn from_bytes(bytes: &'a [u8]) -> Self {
         let creators = bytemuck::cast_slice(bytes);
-        Self { creators }
+        Self { values: creators }
     }
 
     fn length(&self) -> usize {
-        std::mem::size_of_val(self.creators)
+        std::mem::size_of_val(self.values)
     }
 }
 
@@ -235,12 +235,12 @@ mod tests {
         );
         let list = builder.build();
 
-        assert_eq!(list.creators.len(), 1);
+        assert_eq!(list.values.len(), 1);
         assert_eq!(
-            list.creators[0].address,
+            list.values[0].address,
             pubkey!("AssetGtQBTSgm5s91d1RAQod5JmaZiJDxqsgtqrZud73")
         );
-        assert!(<PodBool as Into<bool>>::into(list.creators[0].verified));
-        assert_eq!(list.creators[0].share, 100);
+        assert!(<PodBool as Into<bool>>::into(list.values[0].verified));
+        assert_eq!(list.values[0].share, 100);
     }
 }

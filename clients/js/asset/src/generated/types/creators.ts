@@ -13,13 +13,13 @@ import {
 } from '@metaplex-foundation/umi/serializers';
 import { Creator, CreatorArgs, getCreatorSerializer } from '.';
 
-export type Creators = { creators: Array<Creator> };
+export type Creators = { values: Array<Creator> };
 
-export type CreatorsArgs = { creators: Array<CreatorArgs> };
+export type CreatorsArgs = { values: Array<CreatorArgs> };
 
 export function getCreatorsSerializer(): Serializer<CreatorsArgs, Creators> {
   return struct<Creators>(
-    [['creators', array(getCreatorSerializer(), { size: 'remainder' })]],
+    [['values', array(getCreatorSerializer(), { size: 'remainder' })]],
     { description: 'Creators' }
   ) as Serializer<CreatorsArgs, Creators>;
 }

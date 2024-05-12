@@ -21,4 +21,5 @@ pub enum ExtensionType {
     Royalties,
     Manager,
     Proxy,
+    Properties,
 }

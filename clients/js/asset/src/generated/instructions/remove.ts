@@ -40,7 +40,7 @@ export type RemoveInstructionAccounts = {
   /** The asset defining the group, if applicable */
   group?: PublicKey | Pda;
   /** The account receiving refunded rent */
-  recipient: PublicKey | Pda;
+  recipient?: PublicKey | Pda;
 };
 
 // Data.
@@ -111,6 +111,9 @@ export function remove(
   // Default values.
   if (!resolvedAccounts.authority.value) {
     resolvedAccounts.authority.value = context.identity;
+  }
+  if (!resolvedAccounts.recipient.value) {
+    resolvedAccounts.recipient.value = context.identity.publicKey;
   }
 
   // Accounts in order.

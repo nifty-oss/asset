@@ -157,18 +157,15 @@ mod mint {
 
         let creators = Asset::get::<Creators>(account_data).unwrap();
         assert_eq!(
-            creators.creators.first().unwrap().address,
+            creators.values.first().unwrap().address,
             first_creator.address
         );
+        assert_eq!(creators.values.first().unwrap().share, first_creator.share);
         assert_eq!(
-            creators.creators.first().unwrap().share,
-            first_creator.share
-        );
-        assert_eq!(
-            creators.creators.last().unwrap().address,
+            creators.values.last().unwrap().address,
             last_creator.address
         );
-        assert_eq!(creators.creators.last().unwrap().share, last_creator.share);
+        assert_eq!(creators.values.last().unwrap().share, last_creator.share);
     }
 
     #[tokio::test]

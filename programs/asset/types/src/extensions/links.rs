@@ -1,7 +1,9 @@
 use podded::types::{U8PrefixStr, U8PrefixStrMut};
 use std::{fmt::Debug, ops::Deref};
 
-use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle};
+use super::{
+    ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle, DEFAULT_CAPACITY,
+};
 
 /// Extension to add external links.
 ///
@@ -26,7 +28,7 @@ impl<'a> ExtensionData<'a> for Links<'a> {
 
     fn from_bytes(bytes: &'a [u8]) -> Self {
         let mut cursor = 0;
-        let mut values = Vec::new();
+        let mut values = Vec::with_capacity(DEFAULT_CAPACITY);
 
         while cursor < bytes.len() {
             let link = Link::from_bytes(&bytes[cursor..]);
@@ -95,7 +97,7 @@ impl<'a> ExtensionDataMut<'a> for LinksMut<'a> {
     const TYPE: ExtensionType = ExtensionType::Links;
 
     fn from_bytes_mut(bytes: &'a mut [u8]) -> Self {
-        let mut values = Vec::new();
+        let mut values = Vec::with_capacity(DEFAULT_CAPACITY);
         // mutable reference to the current bytes
         let mut bytes = bytes;
 

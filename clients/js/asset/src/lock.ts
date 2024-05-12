@@ -10,7 +10,7 @@ import {
 } from './generated/instructions/lock';
 
 export function lock(
-  context: Pick<Context, 'programs'>,
+  context: Pick<Context, 'identity' | 'programs'>,
   input: LockInstructionAccounts & { proxy?: PublicKey }
 ): TransactionBuilder {
   if (input.proxy) {

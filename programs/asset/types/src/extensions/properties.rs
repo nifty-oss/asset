@@ -2,7 +2,9 @@ use bytemuck::{Pod, Zeroable};
 use podded::types::{U8PrefixStr, U8PrefixStrMut};
 use std::{fmt::Debug, ops::Deref};
 
-use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle};
+use super::{
+    ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle, DEFAULT_CAPACITY,
+};
 
 /// Extension to add (typed) properties to an asset – e.g., `"version": 1`, `"type": "asset"`.
 ///
@@ -42,7 +44,7 @@ impl<'a> ExtensionData<'a> for Properties<'a> {
 
     fn from_bytes(bytes: &'a [u8]) -> Self {
         let mut cursor = 0;
-        let mut values = Vec::new();
+        let mut values = Vec::with_capacity(DEFAULT_CAPACITY);
 
         while cursor < bytes.len() {
             let p = Property::from_bytes(&bytes[cursor..]);
@@ -105,7 +107,7 @@ impl<'a> ExtensionDataMut<'a> for PropertiesMut<'a> {
 
     fn from_bytes_mut(bytes: &'a mut [u8]) -> Self {
         let mut cursor = 0;
-        let mut values = Vec::new();
+        let mut values = Vec::with_capacity(DEFAULT_CAPACITY);
 
         while cursor < bytes.len() {
             let p = Property::from_bytes(&bytes[cursor..]);
