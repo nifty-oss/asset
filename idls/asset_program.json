@@ -675,6 +675,57 @@
         "type": "u8",
         "value": 16
       }
+    },
+    {
+      "name": "Resize",
+      "accounts": [
+        {
+          "name": "asset",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Asset account"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The authority of the asset"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": false,
+          "isOptionalSigner": true,
+          "docs": [
+            "The account paying for the storage fees"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "The system program"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "strategy",
+          "type": {
+            "defined": "Strategy"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 17
+      }
     }
   ],
   "types": [
@@ -815,6 +866,26 @@
           }
         ]
       }
+    },
+    {
+      "name": "Strategy",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Trim"
+          },
+          {
+            "name": "Extend",
+            "fields": [
+              {
+                "name": "value",
+                "type": "u16"
+              }
+            ]
+          }
+        ]
+      }
     }
   ],
   "errors": [
@@ -922,6 +993,11 @@
       "code": 20,
       "name": "AlreadyInGroup",
       "msg": "Asset is already in a group"
+    },
+    {
+      "code": 21,
+      "name": "ExtensionLengthInvalid",
+      "msg": "Extension length invalid"
     }
   ],
   "metadata": {

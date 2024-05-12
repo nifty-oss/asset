@@ -1,7 +1,7 @@
 use nifty_asset_types::{
     extensions::{on_create, Extension, ExtensionType, Proxy},
     podded::ZeroCopy,
-    state::{Asset, Discriminator, Standard},
+    state::{Asset, Discriminator, Standard, DEFAULT_EXTENSION_COUNT},
 };
 use nitrate::program::system;
 use solana_program::{
@@ -10,6 +10,7 @@ use solana_program::{
 };
 
 use crate::{
+    err,
     error::AssetError,
     instruction::{
         accounts::{Allocate, Context, Create, Group},
@@ -123,22 +124,6 @@ pub fn process_create(
             AssetError::AlreadyInitialized,
             "asset"
         );
-
-        // validates that the last extension is complete
-        if let Some((extension, offset)) = Asset::last_extension(data) {
-            let extension_type = extension.extension_type();
-            let length = extension.length() as usize;
-
-            on_create(
-                extension_type,
-                &mut data[offset..offset + length],
-                Some(ctx.accounts.authority.key()),
-            )
-            .map_err(|error| {
-                msg!("[ERROR] {}", error);
-                AssetError::ExtensionDataInvalid
-            })?;
-        }
     }
 
     // process extensions (if there are any)
@@ -161,8 +146,62 @@ pub fn process_create(
         }
     }
 
+    // validate the asset extension data (if there is any)
+
+    let mut extensions = Vec::with_capacity(DEFAULT_EXTENSION_COUNT);
+    let mut offset = Asset::LEN;
+
     let mut data = ctx.accounts.asset.try_borrow_mut_data()?;
-    let asset = Asset::load_mut(&mut data);
+    let (asset, mut extension_data) = data.split_at_mut(offset);
+
+    while Extension::LEN <= extension_data.len() {
+        let (header, remainder) = extension_data.split_at_mut(Extension::LEN);
+        // load the extension header
+        let extension = Extension::load(header);
+
+        match extension.try_extension_type() {
+            Ok(ExtensionType::None) => {
+                break;
+            }
+            Ok(t) => {
+                extensions.push(t);
+            }
+            Err(_) => {
+                return err!(AssetError::ExtensionDataInvalid, "invalid extension type");
+            }
+        }
+
+        // adjust the offset for the extension data slice
+        let adjusted = extension.boundary() as usize - (Extension::LEN + offset);
+        offset = extension.boundary() as usize;
+
+        if remainder.len() < adjusted {
+            return err!(
+                AssetError::ExtensionDataInvalid,
+                "Invalid extension data (expected {} bytes, got {} bytes)",
+                adjusted,
+                remainder.len()
+            );
+        }
+
+        let (current, remainder) = remainder.split_at_mut(adjusted);
+
+        on_create(
+            extension.extension_type(),
+            &mut current[..extension.length() as usize],
+            Some(ctx.accounts.authority.key()),
+        )
+        .map_err(|error| {
+            msg!("[ERROR] {}", error);
+            AssetError::ExtensionDataInvalid
+        })?;
+
+        extension_data = remainder;
+    }
+
+    // creates the asset
+
+    let asset = Asset::load_mut(asset);
 
     asset.discriminator = Discriminator::Asset;
     asset.standard = args.standard;
@@ -170,8 +209,6 @@ pub fn process_create(
     asset.owner = *ctx.accounts.owner.key();
     asset.authority = *ctx.accounts.authority.key();
     asset.name = args.name.into();
-
-    let extensions = Asset::get_extensions(&data);
 
     // make sure that a managed asset is created with the manager
     // extension; and vice versa, a non-managed asset is created

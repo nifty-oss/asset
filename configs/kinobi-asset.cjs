@@ -401,6 +401,19 @@ kinobi.update(
         },
       },
     },
+    resize: {
+      accounts: {
+        systemProgram: {
+          defaultValue: k.conditionalValueNode({
+            condition: k.accountValueNode("payer"),
+            ifTrue: k.publicKeyValueNode(
+              "11111111111111111111111111111111",
+              "systemProgram"
+            ),
+          }),
+        },
+      },
+    },
     update: {
       accounts: {
         systemProgram: {
@@ -492,6 +505,7 @@ kinobi.accept(
         "handover",
         "lock",
         "remove",
+        "resize",
         "revoke",
         "transfer",
         "ungroup",
