@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use nifty_asset_types::{
     extensions::{on_create, on_update, Extension, ExtensionType},
     podded::{pod::PodBool, ZeroCopy},
@@ -161,6 +163,14 @@ pub fn process_update(
                 "extension type mismatch"
             );
 
+            require!(
+                buffer.data_len() >= header.boundary() as usize,
+                AssetError::ExtensionDataInvalid,
+                "invalid extension data (expected {} bytes, got {} bytes)",
+                header.boundary(),
+                buffer.data_len()
+            );
+
             let header_length = header.length() as usize;
 
             drop(extension_data);
@@ -205,6 +215,25 @@ pub fn process_update(
 
             #[cfg(feature = "logging")]
             msg!("Updating extension from instruction data");
+
+            // sanity check: did we receive the correct extension length?
+            match length.cmp(&(args.length as usize)) {
+                Ordering::Less => {
+                    return err!(
+                        AssetError::ExtensionDataInvalid,
+                        "invalid extension data (expected {} bytes, got {} bytes)",
+                        args.length,
+                        length
+                    );
+                }
+                Ordering::Greater => {
+                    return err!(
+                        AssetError::ExtensionLengthInvalid,
+                        "extension length mismatch"
+                    );
+                }
+                Ordering::Equal => (),
+            }
 
             length
         };

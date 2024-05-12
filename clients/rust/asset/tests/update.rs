@@ -4,7 +4,7 @@ pub mod utils;
 use nifty_asset::{
     errors::AssetError,
     extensions::{Attributes, AttributesBuilder, ExtensionBuilder},
-    instructions::{AllocateBuilder, CreateBuilder},
+    instructions::{CreateBuilder, UpdateBuilder},
     state::{Asset, Discriminator, Standard, State},
     types::{ExtensionInput, ExtensionType},
     ZeroCopy,
@@ -16,12 +16,12 @@ use solana_sdk::{
     transaction::Transaction,
 };
 
-mod create {
+mod update {
 
     use super::*;
 
     #[tokio::test]
-    async fn create() {
+    async fn update() {
         let mut context = ProgramTest::new("asset_program", nifty_asset::ID, None)
             .start_with_context()
             .await;
@@ -30,7 +30,7 @@ mod create {
 
         let asset = Keypair::new();
 
-        let ix = CreateBuilder::new()
+        let create_ix = CreateBuilder::new()
             .asset(asset.pubkey())
             .authority(context.payer.pubkey(), false)
             .owner(context.payer.pubkey())
@@ -39,56 +39,35 @@ mod create {
             .name("name".to_string())
             .instruction();
 
-        // When we create a new asset.
+        // And we create a new asset.
 
         let tx = Transaction::new_signed_with_payer(
-            &[ix],
+            &[create_ix],
             Some(&context.payer.pubkey()),
             &[&context.payer, &asset],
             context.last_blockhash,
         );
         context.banks_client.process_transaction(tx).await.unwrap();
 
-        // Then an asset was created with the correct data.
-
         let account = context
             .banks_client
             .get_account(asset.pubkey())
             .await
             .unwrap();
+
         assert!(account.is_some());
         let account = account.unwrap();
 
         let account_data = account.data.as_ref();
-        let asset = Asset::load(account_data);
-
-        assert_eq!(asset.discriminator, Discriminator::Asset);
-        assert_eq!(asset.state, State::Unlocked);
-        assert_eq!(asset.standard, Standard::NonFungible);
-        assert_eq!(asset.authority, context.payer.pubkey());
-        assert_eq!(asset.owner, context.payer.pubkey());
-        // we are not expecting any extension on the account
         assert!(Asset::get_extensions(account_data).is_empty());
-    }
-
-    #[tokio::test]
-    async fn create_with_extension() {
-        let mut context = ProgramTest::new("asset_program", nifty_asset::ID, None)
-            .start_with_context()
-            .await;
-
-        // Given a new keypair.
-
-        let asset = Keypair::new();
-
-        // And an extension.
 
         let mut attributes = AttributesBuilder::default();
         attributes.add("hat", "nifty");
         let data = attributes.data();
 
-        let ix = AllocateBuilder::new()
+        let update_ix = UpdateBuilder::new()
             .asset(asset.pubkey())
+            .authority(context.payer.pubkey())
             .payer(Some(context.payer.pubkey()))
             .system_program(Some(system_program::id()))
             .extension(ExtensionInput {
@@ -98,40 +77,23 @@ mod create {
             })
             .instruction();
 
+        // When we update the asset.
         let tx = Transaction::new_signed_with_payer(
-            &[ix],
+            &[update_ix],
             Some(&context.payer.pubkey()),
-            &[&context.payer, &asset],
+            &[&context.payer],
             context.last_blockhash,
         );
         context.banks_client.process_transaction(tx).await.unwrap();
 
-        // When we create a new asset.
-
-        let ix = CreateBuilder::new()
-            .asset(asset.pubkey())
-            .authority(context.payer.pubkey(), false)
-            .owner(context.payer.pubkey())
-            .payer(Some(context.payer.pubkey()))
-            .system_program(Some(system_program::id()))
-            .name("name".to_string())
-            .instruction();
-
-        let tx = Transaction::new_signed_with_payer(
-            &[ix],
-            Some(&context.payer.pubkey()),
-            &[&context.payer, &asset],
-            context.last_blockhash,
-        );
-        context.banks_client.process_transaction(tx).await.unwrap();
-
-        // Then an asset was created with the correct data.
+        // Then an asset was updated with the correct data.
 
         let account = context
             .banks_client
             .get_account(asset.pubkey())
             .await
             .unwrap();
+
         assert!(account.is_some());
         let account = account.unwrap();
 
@@ -155,7 +117,7 @@ mod create {
     }
 
     #[tokio::test]
-    async fn create_with_invalid_extension_length_fails() {
+    async fn update_with_invalid_extension_length_fails() {
         let mut context = ProgramTest::new("asset_program", nifty_asset::ID, None)
             .start_with_context()
             .await;
@@ -164,32 +126,59 @@ mod create {
 
         let asset = Keypair::new();
 
-        // And an extension.
-
-        let mut attributes = AttributesBuilder::default();
-        attributes.add("hat", "nifty");
-        let data = attributes.data();
-
-        // When we try to create a new asset with an invalid extension length.
-
-        let ix = CreateBuilder::new()
+        let create_ix = CreateBuilder::new()
             .asset(asset.pubkey())
             .authority(context.payer.pubkey(), false)
             .owner(context.payer.pubkey())
             .payer(Some(context.payer.pubkey()))
             .system_program(Some(system_program::id()))
             .name("name".to_string())
-            .extensions(vec![ExtensionInput {
-                extension_type: ExtensionType::Attributes,
-                length: 1,
-                data: Some(data),
-            }])
             .instruction();
 
+        // And we create a new asset.
+
         let tx = Transaction::new_signed_with_payer(
-            &[ix],
+            &[create_ix],
             Some(&context.payer.pubkey()),
             &[&context.payer, &asset],
+            context.last_blockhash,
+        );
+        context.banks_client.process_transaction(tx).await.unwrap();
+
+        let account = context
+            .banks_client
+            .get_account(asset.pubkey())
+            .await
+            .unwrap();
+
+        assert!(account.is_some());
+        let account = account.unwrap();
+
+        let account_data = account.data.as_ref();
+        assert!(Asset::get_extensions(account_data).is_empty());
+
+        let mut attributes = AttributesBuilder::default();
+        attributes.add("hat", "nifty");
+        let data = attributes.data();
+
+        let update_ix = UpdateBuilder::new()
+            .asset(asset.pubkey())
+            .authority(context.payer.pubkey())
+            .payer(Some(context.payer.pubkey()))
+            .system_program(Some(system_program::id()))
+            .extension(ExtensionInput {
+                extension_type: ExtensionType::Attributes,
+                // invalida extension length
+                length: 1,
+                data: Some(data),
+            })
+            .instruction();
+
+        // When we update the asset with an invalid extension length.
+        let tx = Transaction::new_signed_with_payer(
+            &[update_ix],
+            Some(&context.payer.pubkey()),
+            &[&context.payer],
             context.last_blockhash,
         );
         let err = context
@@ -204,7 +193,7 @@ mod create {
     }
 
     #[tokio::test]
-    async fn create_with_missing_extension_data_fails() {
+    async fn update_with_invalid_extension_data_fails() {
         let mut context = ProgramTest::new("asset_program", nifty_asset::ID, None)
             .start_with_context()
             .await;
@@ -213,33 +202,59 @@ mod create {
 
         let asset = Keypair::new();
 
-        // And an extension.
-
-        let mut attributes = AttributesBuilder::default();
-        attributes.add("hat", "nifty");
-        let data = attributes.data();
-
-        // When we try to create a new asset with an invalid extension length.
-
-        let ix = CreateBuilder::new()
+        let create_ix = CreateBuilder::new()
             .asset(asset.pubkey())
             .authority(context.payer.pubkey(), false)
             .owner(context.payer.pubkey())
             .payer(Some(context.payer.pubkey()))
             .system_program(Some(system_program::id()))
             .name("name".to_string())
-            .extensions(vec![ExtensionInput {
+            .instruction();
+
+        // And we create a new asset.
+
+        let tx = Transaction::new_signed_with_payer(
+            &[create_ix],
+            Some(&context.payer.pubkey()),
+            &[&context.payer, &asset],
+            context.last_blockhash,
+        );
+        context.banks_client.process_transaction(tx).await.unwrap();
+
+        let account = context
+            .banks_client
+            .get_account(asset.pubkey())
+            .await
+            .unwrap();
+
+        assert!(account.is_some());
+        let account = account.unwrap();
+
+        let account_data = account.data.as_ref();
+        assert!(Asset::get_extensions(account_data).is_empty());
+
+        let mut attributes = AttributesBuilder::default();
+        attributes.add("hat", "nifty");
+        let data = attributes.data();
+
+        let update_ix = UpdateBuilder::new()
+            .asset(asset.pubkey())
+            .authority(context.payer.pubkey())
+            .payer(Some(context.payer.pubkey()))
+            .system_program(Some(system_program::id()))
+            .extension(ExtensionInput {
                 extension_type: ExtensionType::Attributes,
                 // increase the data length
                 length: data.len() as u32 + 100,
                 data: Some(data),
-            }])
+            })
             .instruction();
 
+        // When we update the asset with an invalid extension length.
         let tx = Transaction::new_signed_with_payer(
-            &[ix],
+            &[update_ix],
             Some(&context.payer.pubkey()),
-            &[&context.payer, &asset],
+            &[&context.payer],
             context.last_blockhash,
         );
         let err = context

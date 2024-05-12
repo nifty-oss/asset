@@ -1,5 +1,5 @@
 use nifty_asset_types::{
-    extensions::{on_create, Extension},
+    extensions::Extension,
     podded::ZeroCopy,
     state::{Asset, Discriminator},
 };
@@ -103,7 +103,13 @@ pub fn process_allocate(
                 args.extension.extension_type
             );
         }
-        (args.extension.length - data.len() as u32, data)
+        (
+            args.extension
+                .length
+                .checked_sub(data.len() as u32)
+                .ok_or(AssetError::ExtensionLengthInvalid)?,
+            data,
+        )
     } else {
         (args.extension.length, &[])
     };
@@ -117,26 +123,6 @@ pub fn process_allocate(
             length
         );
     } else {
-        let asset_data = ctx.accounts.asset.try_borrow_data()?;
-        let (extension, offset) =
-            Asset::last_extension(&asset_data).ok_or(AssetError::ExtensionNotFound)?;
-
-        let extension_type = extension.extension_type();
-        let length = extension.length() as usize;
-
-        drop(asset_data);
-
-        // validate the extension data
-        let asset_data = &mut ctx.accounts.asset.try_borrow_mut_data()?;
-        on_create(
-            extension_type,
-            &mut asset_data[offset..offset + length],
-            None,
-        )
-        .map_err(|error| {
-            msg!("[ERROR] {}", error);
-            AssetError::ExtensionDataInvalid
-        })?;
         #[cfg(feature = "logging")]
         msg!(
             "Extension [{:?}] initialized",

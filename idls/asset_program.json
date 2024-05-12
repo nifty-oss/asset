@@ -993,6 +993,11 @@
       "code": 20,
       "name": "AlreadyInGroup",
       "msg": "Asset is already in a group"
+    },
+    {
+      "code": 21,
+      "name": "ExtensionLengthInvalid",
+      "msg": "Extension length invalid"
     }
   ],
   "metadata": {

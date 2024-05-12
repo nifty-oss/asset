@@ -91,6 +91,10 @@ pub enum AssetError {
     /// 20 - Asset is already in a group
     #[error("Asset is already in a group")]
     AlreadyInGroup,
+
+    /// 21 - Extension length invalid.
+    #[error("Extension length invalid")]
+    ExtensionLengthInvalid,
 }
 
 impl PrintProgramError for AssetError {

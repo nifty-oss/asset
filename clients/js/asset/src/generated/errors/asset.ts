@@ -288,6 +288,19 @@ export class AlreadyInGroupError extends ProgramError {
 codeToErrorMap.set(0x14, AlreadyInGroupError);
 nameToErrorMap.set('AlreadyInGroup', AlreadyInGroupError);
 
+/** ExtensionLengthInvalid: Extension length invalid */
+export class ExtensionLengthInvalidError extends ProgramError {
+  override readonly name: string = 'ExtensionLengthInvalid';
+
+  readonly code: number = 0x15; // 21
+
+  constructor(program: Program, cause?: Error) {
+    super('Extension length invalid', program, cause);
+  }
+}
+codeToErrorMap.set(0x15, ExtensionLengthInvalidError);
+nameToErrorMap.set('ExtensionLengthInvalid', ExtensionLengthInvalidError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
