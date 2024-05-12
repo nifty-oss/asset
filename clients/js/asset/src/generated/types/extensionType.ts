@@ -19,6 +19,7 @@ export enum ExtensionType {
   Royalties,
   Manager,
   Proxy,
+  Properties,
 }
 
 export type ExtensionTypeArgs = ExtensionType;

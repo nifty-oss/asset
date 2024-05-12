@@ -129,6 +129,7 @@ kinobi.update(
                   { name: "Royalties" },
                   { name: "Manager" },
                   { name: "Proxy" },
+                  { name: "Properties" },
                 ],
               },
             }),
