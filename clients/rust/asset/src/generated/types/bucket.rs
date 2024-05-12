@@ -7,20 +7,10 @@
 
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
+use kaigan::types::RemainderVec;
 
-#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq, PartialOrd, Hash)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub enum ExtensionType {
-    None,
-    Attributes,
-    Blob,
-    Creators,
-    Links,
-    Metadata,
-    Grouping,
-    Royalties,
-    Manager,
-    Proxy,
-    Properties,
-    Bucket,
+pub struct Bucket {
+    pub data: RemainderVec<u8>,
 }
