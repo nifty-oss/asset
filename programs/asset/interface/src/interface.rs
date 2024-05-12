@@ -122,7 +122,7 @@ pub enum Interface {
     #[account(1, signer, name="authority", desc = "The authority of the asset")]
     #[account(2, optional_signer, writable, name="payer", desc = "The account paying for the storage fees")]
     #[account(3, optional, name="system_program", desc = "The system program")]
-    Resize(SizeInput),
+    Resize(Strategy),
 }
 
 #[repr(C)]
@@ -196,12 +196,12 @@ pub struct UpdateInput {
 /// Input for the `resize` instruction.
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, PartialEq)]
-pub enum SizeInput {
-    /// Fit the asset account to the minimum required size.
+pub enum Strategy {
+    /// Trim the asset account to the minimum required size.
     ///
     /// This is useful when the asset account has been resized
     /// to a larger size than required.
-    Fit,
+    Trim,
 
     /// Extend the asset account by the specified value.
     Extend { value: u16 },

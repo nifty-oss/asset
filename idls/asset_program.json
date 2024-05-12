@@ -716,9 +716,9 @@
       ],
       "args": [
         {
-          "name": "sizeInput",
+          "name": "strategy",
           "type": {
-            "defined": "SizeInput"
+            "defined": "Strategy"
           }
         }
       ],
@@ -868,12 +868,12 @@
       }
     },
     {
-      "name": "SizeInput",
+      "name": "Strategy",
       "type": {
         "kind": "enum",
         "variants": [
           {
-            "name": "Fit"
+            "name": "Trim"
           },
           {
             "name": "Extend",

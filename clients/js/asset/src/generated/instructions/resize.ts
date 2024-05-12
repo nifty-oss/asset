@@ -25,7 +25,7 @@ import {
   ResolvedAccountsWithIndices,
   getAccountMetasAndSigners,
 } from '../shared';
-import { SizeInput, SizeInputArgs, getSizeInputSerializer } from '../types';
+import { Strategy, StrategyArgs, getStrategySerializer } from '../types';
 
 // Accounts.
 export type ResizeInstructionAccounts = {
@@ -42,10 +42,10 @@ export type ResizeInstructionAccounts = {
 // Data.
 export type ResizeInstructionData = {
   discriminator: number;
-  sizeInput: SizeInput;
+  strategy: Strategy;
 };
 
-export type ResizeInstructionDataArgs = { sizeInput: SizeInputArgs };
+export type ResizeInstructionDataArgs = { strategy: StrategyArgs };
 
 export function getResizeInstructionDataSerializer(): Serializer<
   ResizeInstructionDataArgs,
@@ -55,7 +55,7 @@ export function getResizeInstructionDataSerializer(): Serializer<
     struct<ResizeInstructionData>(
       [
         ['discriminator', u8()],
-        ['sizeInput', getSizeInputSerializer()],
+        ['strategy', getStrategySerializer()],
       ],
       { description: 'ResizeInstructionData' }
     ),

@@ -8,7 +8,7 @@ use crate::{
     error::AssetError,
     instruction::{
         accounts::{Context, Resize},
-        SizeInput,
+        Strategy,
     },
     processor::resize,
     require,
@@ -23,7 +23,7 @@ use crate::{
 ///   2. `[signer, writable]` payer
 ///   3. `[optional]` system_program
 #[inline(always)]
-pub fn process_resize(program_id: &Pubkey, ctx: Context<Resize>, args: SizeInput) -> ProgramResult {
+pub fn process_resize(program_id: &Pubkey, ctx: Context<Resize>, args: Strategy) -> ProgramResult {
     // account validation
 
     require!(
@@ -63,9 +63,9 @@ pub fn process_resize(program_id: &Pubkey, ctx: Context<Resize>, args: SizeInput
     // resizes the asset account
 
     let size = match args {
-        SizeInput::Fit => Asset::last_extension(&account_data)
+        Strategy::Trim => Asset::last_extension(&account_data)
             .map_or(Asset::LEN, |(extension, _)| extension.boundary() as usize),
-        SizeInput::Extend { value } => account_data.len().saturating_add(value as usize),
+        Strategy::Extend { value } => account_data.len().saturating_add(value as usize),
     };
 
     drop(account_data);

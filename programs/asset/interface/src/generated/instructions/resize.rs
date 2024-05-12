@@ -5,7 +5,7 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-use crate::generated::types::SizeInput;
+use crate::generated::types::Strategy;
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
@@ -84,7 +84,7 @@ impl ResizeInstructionData {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ResizeInstructionArgs {
-    pub size_input: SizeInput,
+    pub strategy: Strategy,
 }
 
 /// Instruction builder for `Resize`.
@@ -101,7 +101,7 @@ pub struct ResizeBuilder {
     authority: Option<solana_program::pubkey::Pubkey>,
     payer: Option<(solana_program::pubkey::Pubkey, bool)>,
     system_program: Option<solana_program::pubkey::Pubkey>,
-    size_input: Option<SizeInput>,
+    strategy: Option<Strategy>,
     __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -138,8 +138,8 @@ impl ResizeBuilder {
         self
     }
     #[inline(always)]
-    pub fn size_input(&mut self, size_input: SizeInput) -> &mut Self {
-        self.size_input = Some(size_input);
+    pub fn strategy(&mut self, strategy: Strategy) -> &mut Self {
+        self.strategy = Some(strategy);
         self
     }
     /// Add an aditional account to the instruction.
@@ -169,7 +169,7 @@ impl ResizeBuilder {
             system_program: self.system_program,
         };
         let args = ResizeInstructionArgs {
-            size_input: self.size_input.clone().expect("size_input is not set"),
+            strategy: self.strategy.clone().expect("strategy is not set"),
         };
 
         accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -332,7 +332,7 @@ impl<'a, 'b> ResizeCpiBuilder<'a, 'b> {
             authority: None,
             payer: None,
             system_program: None,
-            size_input: None,
+            strategy: None,
             __remaining_accounts: Vec::new(),
         });
         Self { instruction }
@@ -373,8 +373,8 @@ impl<'a, 'b> ResizeCpiBuilder<'a, 'b> {
         self
     }
     #[inline(always)]
-    pub fn size_input(&mut self, size_input: SizeInput) -> &mut Self {
-        self.instruction.size_input = Some(size_input);
+    pub fn strategy(&mut self, strategy: Strategy) -> &mut Self {
+        self.instruction.strategy = Some(strategy);
         self
     }
     /// Add an additional account to the instruction.
@@ -419,11 +419,11 @@ impl<'a, 'b> ResizeCpiBuilder<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
     ) -> solana_program::entrypoint::ProgramResult {
         let args = ResizeInstructionArgs {
-            size_input: self
+            strategy: self
                 .instruction
-                .size_input
+                .strategy
                 .clone()
-                .expect("size_input is not set"),
+                .expect("strategy is not set"),
         };
         let instruction = ResizeCpi {
             __program: self.instruction.__program,
@@ -450,7 +450,7 @@ struct ResizeCpiBuilderInstruction<'a, 'b> {
     authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     payer: Option<(&'b solana_program::account_info::AccountInfo<'a>, bool)>,
     system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    size_input: Option<SizeInput>,
+    strategy: Option<Strategy>,
     /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
     __remaining_accounts: Vec<(
         &'b solana_program::account_info::AccountInfo<'a>,

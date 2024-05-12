@@ -1,6 +1,6 @@
 import { assertAccountExists, generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
-import { create, resize, sizeInput } from '../src';
+import { create, resize, strategy } from '../src';
 import { createUmi } from './_setup';
 
 test('it can resize an asset', async (t) => {
@@ -22,7 +22,7 @@ test('it can resize an asset', async (t) => {
     asset: asset.publicKey,
     authority: umi.identity,
     payer: umi.identity,
-    sizeInput: sizeInput('Extend', { value: 1000 }),
+    strategy: strategy('Extend', { value: 1000 }),
   }).sendAndConfirm(umi);
 
   // Then an asset account was resized.
@@ -51,7 +51,7 @@ test('it can resize an asset to fit the minimum required size.', async (t) => {
     asset: asset.publicKey,
     authority: umi.identity,
     payer: umi.identity,
-    sizeInput: sizeInput('Extend', { value: 1000 }),
+    strategy: strategy('Extend', { value: 1000 }),
   }).sendAndConfirm(umi);
 
   let account = await umi.rpc.getAccount(asset.publicKey);
@@ -63,7 +63,7 @@ test('it can resize an asset to fit the minimum required size.', async (t) => {
     asset: asset.publicKey,
     authority: umi.identity,
     payer: umi.identity,
-    sizeInput: sizeInput('Fit'),
+    strategy: strategy('Trim'),
   }).sendAndConfirm(umi);
 
   // Then an asset account was resized.
