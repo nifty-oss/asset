@@ -15,6 +15,7 @@ export * from './lock';
 export * from './mint';
 export * from './plugin';
 export * from './remove';
+export * from './resize';
 export * from './revoke';
 export * from './transfer';
 export * from './ungroup';

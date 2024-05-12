@@ -504,6 +504,7 @@ kinobi.accept(
         "handover",
         "lock",
         "remove",
+        "resize",
         "revoke",
         "transfer",
         "ungroup",

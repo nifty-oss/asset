@@ -7,4 +7,3 @@
  */
 
 export * from './close';
-export * from './resize';
