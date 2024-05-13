@@ -10,13 +10,12 @@ import {
 import { TypedExtension, getExtension } from '.';
 import { Asset, ExtensionType, Type, getTypeSerializer } from '../generated';
 
-export const properties = (
-  values: (
-    | { name: string; value: string }
-    | { name: string; value: bigint }
-    | { name: string; value: boolean }
-  )[]
-): TypedExtension => ({
+type Property =
+  | Omit<Text, 'type'>
+  | Omit<Number, 'type'>
+  | Omit<Boolean, 'type'>;
+
+export const properties = (values: Property[]): TypedExtension => ({
   type: ExtensionType.Properties,
   values: values.map(
     (property) =>
@@ -37,13 +36,13 @@ export function getProperty<T extends Type>(
   name: string,
   type: T
 ): TypedPropertyfromEnum<T> | undefined {
-  const properties = getExtension(asset, ExtensionType.Properties);
+  const extension = getExtension(asset, ExtensionType.Properties);
 
-  if (!properties) {
+  if (!extension) {
     return undefined;
   }
 
-  const property = properties.values.find(
+  const property = extension.values.find(
     (p) => 'type' in p && p.type === type && p.name === name
   );
 
@@ -73,10 +72,7 @@ export const getPropertySerializer = (): Serializer<TypedProperty> => ({
   serialize: (property: TypedProperty) =>
     getPropertySerializerFromType(property.type).serialize(property),
   deserialize: (buffer, offset = 0) => {
-    const [_name, nameOffset] = string({ size: u8() }).deserialize(
-      buffer,
-      offset
-    );
+    const [, nameOffset] = string({ size: u8() }).deserialize(buffer, offset);
     const type = buffer[nameOffset] as Type;
     return getPropertySerializerFromType(type).deserialize(buffer, offset);
   },
