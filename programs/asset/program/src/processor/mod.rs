@@ -7,6 +7,7 @@ mod group;
 mod handover;
 mod lock;
 mod remove;
+mod resize;
 mod revoke;
 mod transfer;
 mod ungroup;
@@ -34,7 +35,7 @@ use crate::{
     error::AssetError,
     instruction::{
         accounts::{
-            Allocate, Approve, Burn, Close, Create, Group, Handover, Lock, Remove, Revoke,
+            Allocate, Approve, Burn, Close, Create, Group, Handover, Lock, Remove, Resize, Revoke,
             Transfer, Ungroup, Unlock, Unverify, Update, Verify, Write,
         },
         Instruction,
@@ -100,6 +101,10 @@ pub fn process_instruction(
         Instruction::Remove(args) => {
             msg!("Instruction: Remove");
             remove::process_remove(program_id, Remove::context(accounts)?, args)
+        }
+        Instruction::Resize(args) => {
+            msg!("Instruction: Resize");
+            resize::process_resize(program_id, Resize::context(accounts)?, args)
         }
         Instruction::Revoke(args) => {
             msg!("Instruction: Revoke");

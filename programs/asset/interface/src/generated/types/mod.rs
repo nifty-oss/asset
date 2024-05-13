@@ -10,9 +10,11 @@ pub(crate) mod r#delegate_role;
 pub(crate) mod r#extension_input;
 pub(crate) mod r#extension_type;
 pub(crate) mod r#standard;
+pub(crate) mod r#strategy;
 
 pub use self::r#delegate_input::*;
 pub use self::r#delegate_role::*;
 pub use self::r#extension_input::*;
 pub use self::r#extension_type::*;
 pub use self::r#standard::*;
+pub use self::r#strategy::*;

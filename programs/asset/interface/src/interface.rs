@@ -116,6 +116,13 @@ pub enum Interface {
     #[account(2, optional, name="group", desc = "The asset defining the group, if applicable")]
     #[account(3, writable, name="recipient", desc = "The account receiving refunded rent")]
     Remove(ExtensionType),
+
+    /// Resize an asset account.
+    #[account(0, signer, writable, name="asset", desc = "Asset account")]
+    #[account(1, signer, name="authority", desc = "The authority of the asset")]
+    #[account(2, optional_signer, writable, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, optional, name="system_program", desc = "The system program")]
+    Resize(Strategy),
 }
 
 #[repr(C)]
@@ -184,4 +191,18 @@ pub struct UpdateInput {
 
     /// Extension to be updated.
     pub extension: Option<ExtensionInput>,
+}
+
+/// Input for the `resize` instruction.
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, PartialEq)]
+pub enum Strategy {
+    /// Trim the asset account to the minimum required size.
+    ///
+    /// This is useful when the asset account has been resized
+    /// to a larger size than required.
+    Trim,
+
+    /// Extend the asset account by the specified value.
+    Extend { value: u16 },
 }
