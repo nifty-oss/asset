@@ -27,7 +27,7 @@ pub struct BucketMut<'a> {
 }
 
 impl<'a> ExtensionDataMut<'a> for BucketMut<'a> {
-    const TYPE: ExtensionType = ExtensionType::Blob;
+    const TYPE: ExtensionType = ExtensionType::Bucket;
 
     fn from_bytes_mut(bytes: &'a mut [u8]) -> Self {
         Self { data: bytes }
