@@ -191,8 +191,8 @@ impl Asset {
     /// Returns the last extension of the account.
     ///
     /// This function will return a tuple containing the extension type and the
-    /// offset of the extension data. If the account does not contain any extension,
-    /// `None` is returned.
+    /// offset of the extension data. If the account does not contain any extension or
+    /// if it contains an unrecognized extension type, `None` is returned.
     pub fn last_extension(data: &[u8]) -> Option<(&Extension, usize)> {
         let mut cursor = Asset::LEN;
         let mut last = None;
@@ -200,12 +200,13 @@ impl Asset {
         while (cursor + Extension::LEN) <= data.len() {
             let extension = Extension::load(&data[cursor..]);
 
-            if let Ok(ExtensionType::None) = extension.try_extension_type() {
-                return last;
+            match extension.try_extension_type() {
+                Ok(ExtensionType::None) | Err(_) => return last,
+                _ => {
+                    last = Some((extension, cursor + Extension::LEN));
+                    cursor = extension.boundary() as usize;
+                }
             }
-
-            last = Some((extension, cursor + Extension::LEN));
-            cursor = extension.boundary() as usize;
         }
 
         last
