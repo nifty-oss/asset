@@ -22,4 +22,5 @@ pub enum ExtensionType {
     Manager,
     Proxy,
     Properties,
+    Bucket,
 }

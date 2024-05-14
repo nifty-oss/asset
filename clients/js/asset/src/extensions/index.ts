@@ -3,6 +3,7 @@ import {
   Asset,
   Attributes,
   Blob,
+  Bucket,
   Creators,
   ExtensionType,
   Grouping,
@@ -12,6 +13,7 @@ import {
   Proxy,
   getAttributesSerializer,
   getBlobSerializer,
+  getBucketSerializer,
   getCreatorsSerializer,
   getGroupingSerializer,
   getLinksSerializer,
@@ -24,6 +26,7 @@ import { Properties, getPropertiesSerializer } from './properties';
 
 export * from './attributes';
 export * from './blob';
+export * from './bucket';
 export * from './creators';
 export * from './grouping';
 export * from './links';
@@ -42,7 +45,8 @@ export type TypedExtension =
   | ({ type: ExtensionType.Royalties } & Royalties)
   | ({ type: ExtensionType.Manager } & Manager)
   | ({ type: ExtensionType.Proxy } & Proxy)
-  | ({ type: ExtensionType.Properties } & Properties);
+  | ({ type: ExtensionType.Properties } & Properties)
+  | ({ type: ExtensionType.Bucket } & Bucket);
 
 export const getExtensionSerializerFromType = <T extends TypedExtension>(
   type: ExtensionType
@@ -69,6 +73,8 @@ export const getExtensionSerializerFromType = <T extends TypedExtension>(
         return getProxySerializer();
       case ExtensionType.Properties:
         return getPropertiesSerializer();
+      case ExtensionType.Bucket:
+        return getBucketSerializer();
       default:
         throw new Error(`Unknown extension type: ${type}`);
     }

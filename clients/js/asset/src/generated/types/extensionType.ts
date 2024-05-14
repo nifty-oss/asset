@@ -20,6 +20,7 @@ export enum ExtensionType {
   Manager,
   Proxy,
   Properties,
+  Bucket,
 }
 
 export type ExtensionTypeArgs = ExtensionType;

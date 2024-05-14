@@ -7,6 +7,7 @@
 
 pub(crate) mod r#attributes;
 pub(crate) mod r#blob;
+pub(crate) mod r#bucket;
 pub(crate) mod r#creator;
 pub(crate) mod r#creators;
 pub(crate) mod r#delegate;
@@ -30,6 +31,7 @@ pub(crate) mod r#type;
 
 pub use self::r#attributes::*;
 pub use self::r#blob::*;
+pub use self::r#bucket::*;
 pub use self::r#creator::*;
 pub use self::r#creators::*;
 pub use self::r#delegate::*;

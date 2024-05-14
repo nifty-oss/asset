@@ -8,6 +8,7 @@
 
 export * from './attributes';
 export * from './blob';
+export * from './bucket';
 export * from './creator';
 export * from './creators';
 export * from './delegate';

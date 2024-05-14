@@ -15,6 +15,7 @@
 
 mod attributes;
 mod blob;
+mod bucket;
 mod creators;
 mod grouping;
 mod links;
@@ -26,6 +27,7 @@ mod royalties;
 
 pub use attributes::*;
 pub use blob::*;
+pub use bucket::*;
 pub use creators::*;
 pub use grouping::*;
 pub use links::*;
@@ -208,6 +210,7 @@ pub enum ExtensionType {
     Manager,
     Proxy,
     Properties,
+    Bucket,
 }
 
 impl TryFrom<u32> for ExtensionType {
@@ -226,6 +229,7 @@ impl TryFrom<u32> for ExtensionType {
             8 => Ok(ExtensionType::Manager),
             9 => Ok(ExtensionType::Proxy),
             10 => Ok(ExtensionType::Properties),
+            11 => Ok(ExtensionType::Bucket),
             _ => Err(Error::InvalidExtensionType(value)),
         }
     }
@@ -245,6 +249,7 @@ impl From<ExtensionType> for u32 {
             ExtensionType::Manager => 8,
             ExtensionType::Proxy => 9,
             ExtensionType::Properties => 10,
+            ExtensionType::Bucket => 11,
         }
     }
 }
@@ -333,5 +338,6 @@ validate_extension_type!(
     (Royalties, RoyaltiesMut),
     (Manager, ManagerMut),
     (Proxy, ProxyMut),
-    (Properties, PropertiesMut)
+    (Properties, PropertiesMut),
+    (Bucket, BucketMut)
 );
