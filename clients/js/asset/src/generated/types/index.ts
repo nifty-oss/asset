@@ -28,3 +28,4 @@ export * from './standard';
 export * from './state';
 export * from './strategy';
 export * from './trait';
+export * from './type';

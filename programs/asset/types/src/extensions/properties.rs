@@ -6,9 +6,12 @@ use super::{
     ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle, DEFAULT_CAPACITY,
 };
 
-/// Extension to add (typed) properties to an asset – e.g., `"version": 1`, `"type": "asset"`.
+/// Extension to add (typed) properties to an asset.
 ///
-/// The extension currently supports `&str` and `u64` values.
+/// The extension currently supports:
+/// * `&str`: `"type": "asset"`
+/// * `u64`: `"version": 1`
+/// * `bool`: `"alpha": false`
 pub struct Properties<'a> {
     values: Vec<Property<'a>>,
 }
@@ -140,6 +143,7 @@ impl<'a> Property<'a> {
         let value = match value[0].into() {
             Type::Text => Box::new(Text::from_bytes(value)) as Box<dyn Value>,
             Type::Number => Box::new(Number::from_bytes(value)) as Box<dyn Value>,
+            Type::Boolean => Box::new(Boolean::from_bytes(value)) as Box<dyn Value>,
         };
 
         Self { name, value }
@@ -168,6 +172,7 @@ pub trait Value: Debug {
 pub enum Type {
     Text,
     Number,
+    Boolean,
 }
 
 unsafe impl Pod for Type {}
@@ -179,6 +184,7 @@ impl From<Type> for u8 {
         match value {
             Type::Text => 0,
             Type::Number => 1,
+            Type::Boolean => 2,
         }
     }
 }
@@ -188,43 +194,9 @@ impl From<u8> for Type {
         match value {
             0 => Type::Text,
             1 => Type::Number,
+            2 => Type::Boolean,
             _ => panic!("invalid value type: {}", value),
         }
-    }
-}
-
-/// A numeric value in a property.
-pub struct Number<'a> {
-    pub value: &'a [u8; 8],
-}
-
-impl<'a> Number<'a> {
-    fn from_bytes(bytes: &'a [u8]) -> Self {
-        let (_, value) = bytes.split_at(std::mem::size_of::<Type>());
-
-        Self {
-            value: bytemuck::from_bytes(value),
-        }
-    }
-}
-
-impl Value for Number<'_> {
-    fn size(&self) -> usize {
-        std::mem::size_of::<Type>() + std::mem::size_of_val(self.value)
-    }
-}
-
-impl Debug for Number<'_> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.deref())
-    }
-}
-
-impl Deref for Number<'_> {
-    type Target = u64;
-
-    fn deref(&self) -> &Self::Target {
-        unsafe { &*(self.value as *const u8 as *const u64) }
     }
 }
 
@@ -260,6 +232,73 @@ impl Deref for Text<'_> {
 
     fn deref(&self) -> &Self::Target {
         self.value.as_str()
+    }
+}
+
+/// A numeric value in a property.
+pub struct Number<'a> {
+    pub value: &'a [u8; 8],
+}
+
+impl<'a> Number<'a> {
+    fn from_bytes(bytes: &'a [u8]) -> Self {
+        const START: usize = std::mem::size_of::<Type>();
+        let value = bytemuck::from_bytes(&bytes[START..START + std::mem::size_of::<u64>()]);
+
+        Self { value }
+    }
+}
+
+impl Value for Number<'_> {
+    fn size(&self) -> usize {
+        std::mem::size_of::<Type>() + std::mem::size_of_val(self.value)
+    }
+}
+
+impl Debug for Number<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.deref())
+    }
+}
+
+impl Deref for Number<'_> {
+    type Target = u64;
+
+    fn deref(&self) -> &Self::Target {
+        unsafe { &*(self.value as *const u8 as *const u64) }
+    }
+}
+
+/// A boolean value in a property.
+pub struct Boolean<'a> {
+    pub value: &'a u8,
+}
+
+impl<'a> Boolean<'a> {
+    fn from_bytes(bytes: &'a [u8]) -> Self {
+        const START: usize = std::mem::size_of::<Type>();
+        let value = bytemuck::from_bytes(&bytes[START..START + std::mem::size_of::<u8>()]);
+        Self { value }
+    }
+}
+
+impl Value for Boolean<'_> {
+    fn size(&self) -> usize {
+        std::mem::size_of::<Type>() + std::mem::size_of_val(self.value)
+    }
+}
+
+impl Debug for Boolean<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.deref())
+    }
+}
+
+impl Deref for Boolean<'_> {
+    type Target = bool;
+
+    fn deref(&self) -> &Self::Target {
+        unsafe { std::mem::transmute::<&u8, &bool>(self.value) }
     }
 }
 
@@ -314,6 +353,23 @@ impl PropertiesBuilder {
 
         self
     }
+
+    /// Add a new boolean property to the extension.
+    pub fn add_boolean(&mut self, name: &str, value: bool) -> &mut Self {
+        // add the length of the name + prefix to the data buffer.
+        let cursor = self.0.len();
+        self.0.append(&mut vec![0u8; name.len() + 1]);
+        let mut name_str = U8PrefixStrMut::new(&mut self.0[cursor..]);
+        name_str.copy_from_str(name);
+
+        // add the value type
+        self.0.push(Type::Boolean.into());
+
+        // add the boolean value to the data buffer.
+        self.0.push(if value { 1 } else { 0 });
+
+        self
+    }
 }
 
 impl<'a> ExtensionBuilder<'a, Properties<'a>> for PropertiesBuilder {
@@ -337,24 +393,31 @@ impl Deref for PropertiesBuilder {
 #[cfg(test)]
 mod tests {
     use super::PropertiesBuilder;
-    use crate::extensions::{ExtensionBuilder, ExtensionDataMut, Number, PropertiesMut, Text};
+    use crate::extensions::{
+        Boolean, ExtensionBuilder, ExtensionDataMut, Number, PropertiesMut, Text,
+    };
 
     #[test]
     pub fn test_create_property() {
         let mut builder = PropertiesBuilder::default();
         builder.add_text("name", "asset");
         builder.add_number("version", 1);
+        builder.add_boolean("alpha", false);
         let properties = builder.build();
 
-        assert_eq!(properties.values.len(), 2);
+        assert_eq!(properties.values.len(), 3);
         assert_eq!(properties.values[0].name.as_str(), "name");
         assert_eq!(properties.values[1].name.as_str(), "version");
+        assert_eq!(properties.values[2].name.as_str(), "alpha");
 
         let name: &str = properties.get::<Text>("name").unwrap();
         assert_eq!(name, "asset");
 
         let version: &u64 = properties.get::<Number>("version").unwrap();
         assert_eq!(version, &1u64);
+
+        let alpha: &bool = properties.get::<Boolean>("alpha").unwrap();
+        assert_eq!(alpha, &false);
     }
 
     #[test]
