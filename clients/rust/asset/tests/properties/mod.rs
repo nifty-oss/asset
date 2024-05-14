@@ -104,6 +104,7 @@ async fn create_with_multiple() {
     let mut properties = PropertiesBuilder::default();
     properties.add_text("name", "nifty");
     properties.add_number("points", 0);
+    properties.add_boolean("active", true);
 
     let mut attributes = AttributesBuilder::default();
     attributes.add("type", "solid");
@@ -168,7 +169,8 @@ async fn create_with_multiple() {
     assert!(Asset::get_extensions(account_data).len() == 3);
     let properties = Asset::get::<Properties>(account_data).unwrap();
 
-    assert_eq!(properties.len(), 2);
+    assert_eq!(properties.len(), 3);
     assert_eq!(properties[0].name.as_str(), "name");
     assert_eq!(properties[1].name.as_str(), "points");
+    assert_eq!(properties[2].name.as_str(), "active");
 }

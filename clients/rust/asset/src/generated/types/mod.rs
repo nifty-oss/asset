@@ -26,6 +26,7 @@ pub(crate) mod r#standard;
 pub(crate) mod r#state;
 pub(crate) mod r#strategy;
 pub(crate) mod r#trait;
+pub(crate) mod r#type;
 
 pub use self::r#attributes::*;
 pub use self::r#blob::*;
@@ -48,3 +49,4 @@ pub use self::r#standard::*;
 pub use self::r#state::*;
 pub use self::r#strategy::*;
 pub use self::r#trait::*;
+pub use self::r#type::*;
