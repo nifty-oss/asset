@@ -135,7 +135,7 @@ test('it can create a collection asset on the bridge for a pNFT', async (t) => {
       },
       {
         type: ExtensionType.Creators,
-        creators,
+        values: creators,
       },
       {
         type: ExtensionType.Grouping,
