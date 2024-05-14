@@ -1,6 +1,6 @@
 [package]
 name = "nifty-asset-types"
-version = "0.5.0"
+version = "0.5.1"
 description = "Types for Nifty Asset program"
 authors = ["nifty-oss maintainers <maintainers@nifty-oss.org>"]
 repository = "https://github.com/nifty-oss/asset"
