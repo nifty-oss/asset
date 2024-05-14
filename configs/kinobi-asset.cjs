@@ -129,6 +129,7 @@ kinobi.update(
                   { name: "Royalties" },
                   { name: "Manager" },
                   { name: "Proxy" },
+                  { name: "Properties" },
                 ],
               },
             }),
@@ -357,6 +358,18 @@ kinobi.update(
                   type: k.definedTypeLinkNode("nullablePublicKey", "hooked"),
                 }),
               ]),
+            }),
+            // type (for properties extension)
+            k.definedTypeNodeFromIdl({
+              name: "type",
+              type: {
+                kind: "enum",
+                variants: [
+                  { name: "Text" },
+                  { name: "Number" },
+                  { name: "Boolean" },
+                ],
+              },
             }),
           ],
         };

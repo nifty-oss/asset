@@ -10,16 +10,8 @@ use borsh::BorshSerialize;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq, PartialOrd, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub enum ExtensionType {
-    None,
-    Attributes,
-    Blob,
-    Creators,
-    Links,
-    Metadata,
-    Grouping,
-    Royalties,
-    Manager,
-    Proxy,
-    Properties,
+pub enum Type {
+    Text,
+    Number,
+    Boolean,
 }
