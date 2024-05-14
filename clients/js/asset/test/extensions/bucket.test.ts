@@ -25,7 +25,7 @@ test('it can create a new asset with a bucket', async (t) => {
   );
   const data = new Uint8Array(await response.arrayBuffer());
 
-  // And we initialize an image extension.
+  // And we initialize a bucket extension.
   await initialize(umi, {
     asset,
     payer: umi.identity,
@@ -51,13 +51,15 @@ test('it can create a new asset with a bucket', async (t) => {
     authority: umi.identity.publicKey,
   });
 
-  // And the blob (image) extension was added.
+  // And the bucket extension was added.
   const extension = assetAccount.extensions[0];
   t.true(extension.type === ExtensionType.Bucket);
 
-  // And the blob (image) has the correct data.
-  if (extension.type === ExtensionType.Blob) {
+  // And the bucket has the correct data.
+  if (extension.type === ExtensionType.Bucket) {
     t.is(extension.data.length, data.length);
     t.deepEqual(extension.data, Array.from(data));
+  } else {
+    t.fail('extension is not a bucket');
   }
 });
