@@ -10,6 +10,6 @@ license = "Apache-2.0"
 
 [dependencies]
 borsh = "^0.10"
-nifty-asset-types = { version = "0.4.0", path = "../types" }
+nifty-asset-types = { version = "0.5.0", path = "../types" }
 shank = "0.3.0"
 solana-program = "^1.16"
