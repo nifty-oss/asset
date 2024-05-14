@@ -73,7 +73,7 @@ test('it can create a new asset with an extension', async (t) => {
     extensions: [
       {
         type: ExtensionType.Attributes,
-        traits: [
+        values: [
           {
             name: 'head',
             value: 'hat',
@@ -125,7 +125,7 @@ test('it can create a new asset with multiple extensions', async (t) => {
     extensions: [
       {
         type: ExtensionType.Attributes,
-        traits: [
+        values: [
           { name: 'Attributes Count', value: '2' },
           { name: 'Type', value: 'Dark' },
           { name: 'Clothes', value: 'Purple Shirt' },
@@ -432,7 +432,7 @@ test('it can create an asset with a collection', async (t) => {
       },
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: publicKey('5XvhfmRjwXkGp3jHGmaKpqeerNYjkuZZBYLVQYdeVcRv'),
             share: 0,

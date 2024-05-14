@@ -175,7 +175,7 @@ kinobi.update(
               name: "attributes",
               type: k.structTypeNode([
                 k.structFieldTypeNode({
-                  name: "traits",
+                  name: "values",
                   type: k.arrayTypeNode(
                     k.definedTypeLinkNode("trait"),
                     k.remainderSizeNode()
@@ -256,7 +256,7 @@ kinobi.update(
               name: "creators",
               type: k.structTypeNode([
                 k.structFieldTypeNode({
-                  name: "creators",
+                  name: "values",
                   type: k.arrayTypeNode(
                     k.definedTypeLinkNode("creator"),
                     k.remainderSizeNode()
@@ -394,9 +394,15 @@ kinobi.update(
         },
       },
     },
+    approve: {
+      accounts: {
+        owner: { defaultValue: k.identityValueNode() },
+      },
+    },
     create: {
       accounts: {
         owner: { defaultValue: k.identityValueNode() },
+        authority: { defaultValue: k.identityValueNode() },
         systemProgram: {
           defaultValue: k.conditionalValueNode({
             condition: k.accountValueNode("payer"),
@@ -413,8 +419,30 @@ kinobi.update(
         },
       },
     },
+    handover: {
+      accounts: {
+        authority: { defaultValue: k.identityValueNode() },
+      },
+    },
+    group: {
+      accounts: {
+        authority: { defaultValue: k.identityValueNode() },
+      },
+    },
+    lock: {
+      accounts: {
+        signer: { defaultValue: k.identityValueNode() },
+      },
+    },
+    remove: {
+      accounts: {
+        authority: { defaultValue: k.identityValueNode() },
+        recipient: { defaultValue: k.identityValueNode() },
+      },
+    },
     resize: {
       accounts: {
+        authority: { defaultValue: k.identityValueNode() },
         systemProgram: {
           defaultValue: k.conditionalValueNode({
             condition: k.accountValueNode("payer"),
@@ -426,8 +454,29 @@ kinobi.update(
         },
       },
     },
+    revoke: {
+      accounts: {
+        signer: { defaultValue: k.identityValueNode() },
+      },
+    },
+    transfer: {
+      accounts: {
+        signer: { defaultValue: k.identityValueNode() },
+      },
+    },
+    ungroup: {
+      accounts: {
+        authority: { defaultValue: k.identityValueNode() },
+      },
+    },
+    unlock: {
+      accounts: {
+        signer: { defaultValue: k.identityValueNode() },
+      },
+    },
     update: {
       accounts: {
+        authority: { defaultValue: k.identityValueNode() },
         systemProgram: {
           defaultValue: k.conditionalValueNode({
             condition: k.accountValueNode("payer"),
@@ -436,6 +485,16 @@ kinobi.update(
               "systemProgram"
             ),
           }),
+        },
+      },
+    },
+    write: {
+      accounts: {
+        systemProgram: {
+          defaultValue: k.publicKeyValueNode(
+            "11111111111111111111111111111111",
+            "systemProgram"
+          ),
         },
       },
     },

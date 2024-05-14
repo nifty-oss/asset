@@ -31,7 +31,7 @@ export type UnlockInstructionAccounts = {
   /** Asset account */
   asset: PublicKey | Pda;
   /** Delegate or owner account */
-  signer: Signer;
+  signer?: Signer;
 };
 
 // Data.
@@ -53,7 +53,7 @@ export function getUnlockInstructionDataSerializer(): Serializer<
 
 // Instruction.
 export function unlock(
-  context: Pick<Context, 'programs'>,
+  context: Pick<Context, 'identity' | 'programs'>,
   input: UnlockInstructionAccounts
 ): TransactionBuilder {
   // Program ID.
@@ -75,6 +75,11 @@ export function unlock(
       value: input.signer ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
+
+  // Default values.
+  if (!resolvedAccounts.signer.value) {
+    resolvedAccounts.signer.value = context.identity;
+  }
 
   // Accounts in order.
   const orderedAccounts: ResolvedAccount[] = Object.values(

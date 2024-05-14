@@ -10,7 +10,7 @@ import {
 import { ASSET_PROGRAM_ID } from './generated';
 
 export function transfer(
-  context: Pick<Context, 'programs'>,
+  context: Pick<Context, 'identity' | 'programs'>,
   input: TransferInstructionAccounts & { proxy?: PublicKey }
 ): TransactionBuilder {
   if (input.proxy) {

@@ -43,6 +43,9 @@ use std::{fmt::Debug, ops::Deref};
 
 use crate::{error::Error, state::Asset};
 
+/// Default capacity for `Vec` values.
+const DEFAULT_CAPACITY: usize = 5;
+
 /// The `Extension` struct is used to store the "header" information for an extension.
 ///
 /// This information is added at the start of each extension data and it is used to determine

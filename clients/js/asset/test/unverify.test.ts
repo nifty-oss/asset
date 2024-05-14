@@ -43,7 +43,7 @@ test('it can unverify a creator', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: umi.identity.publicKey,
             verified: true,
@@ -66,7 +66,7 @@ test('it can unverify a creator', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: umi.identity.publicKey,
             verified: false,
@@ -125,7 +125,7 @@ test('it can unverify multiple creators', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: creator1.publicKey,
             verified: true,
@@ -162,7 +162,7 @@ test('it can unverify multiple creators', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: creator1.publicKey,
             verified: false,
@@ -209,7 +209,7 @@ test('it cannot unverify a wrong creator', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: umi.identity.publicKey,
             verified: true,
@@ -236,7 +236,7 @@ test('it cannot unverify a wrong creator', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: umi.identity.publicKey,
             verified: true,

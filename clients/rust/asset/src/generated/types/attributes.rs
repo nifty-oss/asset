@@ -13,5 +13,5 @@ use kaigan::types::RemainderVec;
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Attributes {
-    pub traits: RemainderVec<Trait>,
+    pub values: RemainderVec<Trait>,
 }

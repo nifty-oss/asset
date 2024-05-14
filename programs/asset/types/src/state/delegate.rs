@@ -6,6 +6,11 @@ use podded::{pod::PodOption, ZeroCopy};
 
 use super::{Nullable, NullablePubkey};
 
+/// Default capacity for roles `Vec`.
+///
+/// Currently is equal to the number of roles.
+const DEFAULT_CAPACITY: usize = 3;
+
 #[repr(C)]
 #[derive(Clone, Copy, Default, Pod, Zeroable)]
 pub struct Delegate {
@@ -33,7 +38,7 @@ impl Delegate {
     }
 
     pub fn decode_roles(roles: u8) -> Vec<DelegateRole> {
-        let mut result = Vec::new();
+        let mut result = Vec::with_capacity(DEFAULT_CAPACITY);
         if roles == 0 {
             result.push(DelegateRole::None);
             return result;

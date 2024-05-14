@@ -10,7 +10,7 @@ import {
 } from './generated/instructions/unlock';
 
 export function unlock(
-  context: Pick<Context, 'programs'>,
+  context: Pick<Context, 'identity' | 'programs'>,
   input: UnlockInstructionAccounts & { proxy?: PublicKey }
 ): TransactionBuilder {
   if (input.proxy) {

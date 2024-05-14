@@ -17,6 +17,9 @@ use podded::ZeroCopy;
 use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 use std::fmt::{self, Debug};
 
+/// Default capacity for `Vec` values.
+const DEFAULT_CAPACITY: usize = 2;
+
 /// The result of a constraint evaluation.
 pub type AssertionResult = Result<Assertion, ProgramError>;
 
