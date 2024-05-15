@@ -253,11 +253,6 @@ pub fn process_update(
         let delta = updated_boundary as i32 - boundary as i32;
 
         if !update {
-            require!(
-                offset == account_data.len(),
-                ProgramError::InvalidAccountData,
-                "extension offset mismatch"
-            );
             // drop the borrow to resize the account
             drop(account_data);
 
