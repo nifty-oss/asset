@@ -6,7 +6,7 @@ pub enum Error {
     #[error("Total creators share is invalid (expected {0}, got {1})")]
     InvalidCreatorsTotalShare(u8, u8),
 
-    #[error("Royalty basis points exceed 10000 ")]
+    #[error("Royalty basis points exceed 10000")]
     InvalidRoyaltyBasisPoints,
 
     /// 1 - Cannot unverify creator

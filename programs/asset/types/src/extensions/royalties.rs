@@ -65,10 +65,10 @@ impl Lifecycle for RoyaltiesMut<'_> {
 
     fn on_update(
         &mut self,
-        _other: &mut Self,
+        other: &mut Self,
         _authority: Option<&solana_program::pubkey::Pubkey>,
     ) -> Result<(), Error> {
-        if *self.basis_points > 10000 {
+        if *other.basis_points > 10000 {
             return Err(Error::InvalidRoyaltyBasisPoints);
         }
 
