@@ -12,6 +12,8 @@ import {
   initialize,
   links,
   manager,
+  resize,
+  strategy,
   update,
   updateWithBuffer,
 } from '../src';
@@ -546,5 +548,74 @@ test('it cannot update an asset to add a proxy extension', async (t) => {
   // Then we expect an error.
   await t.throwsAsync(promise, {
     message: /Extension data invalid/,
+  });
+});
+
+test('it can update an asset to add a large blob extension', async (t) => {
+  // adjust timeout for this test
+  t.timeout(20000);
+
+  // Given a Umi instance and a new signer.
+  const umi = await createUmi();
+  const asset = generateSigner(umi);
+  const owner = generateSigner(umi);
+
+  // And we create a new asset without extensions.
+  await create(umi, {
+    asset,
+    owner: owner.publicKey,
+    name: 'Asset with large blob',
+    payer: umi.identity,
+  }).sendAndConfirm(umi);
+
+  t.assert((await fetchAsset(umi, asset.publicKey)).extensions.length === 0);
+
+  // And we initialize a buffer with a large blob extension.
+  const image = new Uint8Array([...Array(10500).keys()]);
+  const contentType = 'image/png';
+
+  const buffer = generateSigner(umi);
+  await initialize(umi, {
+    asset: buffer,
+    payer: umi.identity,
+    extension: blob(contentType, image),
+  }).sendAndConfirm(umi);
+
+  // When we try to add a large extension to the asset.
+  const promise = update(umi, {
+    asset: asset.publicKey,
+    payer: umi.identity,
+    buffer: buffer.publicKey,
+  }).sendAndConfirm(umi);
+
+  // Then we expect an error.
+  await t.throwsAsync(promise, {
+    message: /account data too small for instruction/,
+  });
+
+  // Then we resize the account (half the size that we need since the other half will
+  // be resized by the update instruction).
+  await resize(umi, {
+    asset: asset.publicKey,
+    payer: umi.identity,
+    strategy: strategy('Extend', { value: image.length / 2 }),
+  }).sendAndConfirm(umi);
+
+  // When we add (again) a large extension to the asset.
+  await update(umi, {
+    asset: asset.publicKey,
+    payer: umi.identity,
+    buffer: buffer.publicKey,
+  }).sendAndConfirm(umi);
+
+  // Then the asset has an extension.
+  t.like(await fetchAsset(umi, asset.publicKey), <Asset>{
+    extensions: [
+      {
+        type: ExtensionType.Blob,
+        contentType,
+        data: Array.from(image),
+      },
+    ],
   });
 });
