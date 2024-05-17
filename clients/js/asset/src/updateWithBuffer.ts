@@ -3,17 +3,18 @@ import {
   PublicKey,
   TransactionBuilderGroup,
   generateSigner,
+  none,
   transactionBuilderGroup,
 } from '@metaplex-foundation/umi';
 import { ASSET_PROGRAM_ID, SYSTEM_PROGRAM_ID, close } from '.';
 import { TypedExtension, getExtensionSerializerFromType } from './extensions';
+import { allocate } from './generated/instructions/allocate';
 import {
   UpdateInstructionAccounts,
   UpdateInstructionArgs,
   update,
 } from './generated/instructions/update';
 import { DEFAULT_CHUNK_SIZE, write } from './write';
-import { allocate } from './generated/instructions/allocate';
 
 export function updateWithBuffer(
   context: Pick<
@@ -44,11 +45,7 @@ export function updateWithBuffer(
       ...input,
       buffer: buffer.publicKey,
       systemProgram: SYSTEM_PROGRAM_ID,
-      extension: {
-        extensionType: input.extension.type,
-        length: data.length,
-        data: null,
-      },
+      extension: none(),
     });
 
     if (input.proxy) {

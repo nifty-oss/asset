@@ -111,7 +111,13 @@ pub fn process_update(
     // the update was successful
     if args.extension.is_some() || ctx.accounts.buffer.is_some() {
         // extension data can be specified through a buffer account or
-        // instruction args (buffer account takes precedence over args)
+        // instruction args, but not both
+        require!(
+            args.extension.is_some() != ctx.accounts.buffer.is_some(),
+            ProgramError::InvalidInstructionData,
+            "only specify instruction args or buffer account"
+        );
+
         let extension_type = if let Some(buffer) = ctx.accounts.buffer {
             require!(
                 buffer.owner() == program_id,
