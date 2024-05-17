@@ -111,10 +111,8 @@ pub fn process_update(
     // the update was successful
     if args.extension.is_some() || ctx.accounts.buffer.is_some() {
         // extension data can be specified through a buffer account or
-        // instruction args
-        let extension_type = if let Some(args) = &args.extension {
-            args.extension_type
-        } else if let Some(buffer) = ctx.accounts.buffer {
+        // instruction args (buffer account takes precedence over args)
+        let extension_type = if let Some(buffer) = ctx.accounts.buffer {
             require!(
                 buffer.owner() == program_id,
                 ProgramError::IllegalOwner,
@@ -139,6 +137,8 @@ pub fn process_update(
                 Asset::first_extension(&extension_data).ok_or(AssetError::ExtensionNotFound)?;
 
             header.extension_type()
+        } else if let Some(args) = &args.extension {
+            args.extension_type
         } else {
             // sanity check: this should not happen since we already checked that we either
             // have extension args or a buffer account
