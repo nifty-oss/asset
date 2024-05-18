@@ -305,6 +305,12 @@ kinobi.update(
                     size: k.prefixedSizeNode(k.numberTypeNode("u8")),
                   }),
                 }),
+                k.structFieldTypeNode({
+                  name: "imageUri",
+                  type: k.stringTypeNode({
+                    size: k.prefixedSizeNode(k.numberTypeNode("u8")),
+                  }),
+                }),
               ]),
             }),
             // grouping

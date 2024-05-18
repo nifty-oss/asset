@@ -13,7 +13,12 @@ import {
   u8,
 } from '@metaplex-foundation/umi/serializers';
 
-export type Metadata = { symbol: string; description: string; uri: string };
+export type Metadata = {
+  symbol: string;
+  description: string;
+  uri: string;
+  imageUri: string;
+};
 
 export type MetadataArgs = Metadata;
 
@@ -23,6 +28,7 @@ export function getMetadataSerializer(): Serializer<MetadataArgs, Metadata> {
       ['symbol', string({ size: u8() })],
       ['description', string({ size: u8() })],
       ['uri', string({ size: u8() })],
+      ['imageUri', string({ size: u8() })],
     ],
     { description: 'Metadata' }
   ) as Serializer<MetadataArgs, Metadata>;

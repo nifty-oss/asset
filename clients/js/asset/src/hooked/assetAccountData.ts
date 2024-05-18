@@ -60,8 +60,15 @@ export const getAssetAccountDataSerializer = (): Serializer<
       if (type === ExtensionType.None) {
         break;
       } else if (ExtensionType[type]) {
+        let endOffset = headerOffset + header.length;
+        if (type === ExtensionType.Metadata) {
+          // backwards compatibility for metadata extension: there is now an 'imageUrl'
+          // on the extension, so we use the extra padding to simulate having it for
+          // assets created before the change.
+          endOffset = header.boundary;
+        }
         const [extension] = getExtensionSerializerFromType(type).deserialize(
-          buffer.subarray(headerOffset, headerOffset + header.length)
+          buffer.subarray(headerOffset, endOffset)
         );
         extensions.push({ ...extension, type } as TypedExtension);
       }
