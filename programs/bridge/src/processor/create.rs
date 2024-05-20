@@ -198,7 +198,7 @@ pub fn process_create(
     ];
 
     let mut extension = MetadataBuilder::default();
-    extension.set(Some(&metadata.symbol), None, Some(&metadata.uri));
+    extension.set(Some(&metadata.symbol), None, Some(&metadata.uri), None);
     let data = extension.data();
 
     AllocateCpiBuilder::new(ctx.accounts.nifty_asset_program)

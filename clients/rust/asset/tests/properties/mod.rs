@@ -99,7 +99,7 @@ async fn create_with_multiple() {
     // And multiple extensions.
 
     let mut metadata = MetadataBuilder::default();
-    metadata.set(Some("NIFTY"), None, None);
+    metadata.set(Some("NIFTY"), None, None, None);
 
     let mut properties = PropertiesBuilder::default();
     properties.add_text("name", "nifty");
