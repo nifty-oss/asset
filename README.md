@@ -1,5 +1,5 @@
 <h1 align="center">
-  Nifty Asset
+  <code>nifty asset</code>
 </h1>
 <p align="center">
   <img width="400" alt="Nifty Asset" src="https://github.com/nifty-oss/asset/assets/729235/90513ea4-ce87-41b5-88a4-008991fc73a7" />
@@ -37,7 +37,7 @@ The main goal of `nifty asset` is to provide an open-source, lightweight and com
 - Storing as much or as little data on-chain using optional extensions.
 - Efficient zero-copy de-/serialization to minimize compute units utilization.
 - Full-featured standard, including royalty enforcement, delegates, lock/unlock, inscriptions and groups (collections).
-- Rust and JavaScript client SDKs.
+- Rust and JavaScript client packages.
 
 ## Overview
 
