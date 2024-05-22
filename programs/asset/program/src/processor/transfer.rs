@@ -12,14 +12,13 @@ use std::ops::Deref;
 use solana_program::{
     entrypoint::ProgramResult,
     instruction::{get_stack_height, TRANSACTION_LEVEL_STACK_HEIGHT},
-    msg,
     program_error::ProgramError,
     pubkey::Pubkey,
 };
 
 use crate::{
     error::AssetError,
-    instruction::accounts::{Context, TransferAccounts},
+    instruction::accounts::{Context, Transfer},
     process_royalties, require,
     utils::assert_delegate,
 };
@@ -32,21 +31,21 @@ use crate::{
 ///   1. `[signer]` signer
 ///   2. `[]` recipient
 ///   3. `[optional]` group_asset
-pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> ProgramResult {
+pub fn process_transfer(program_id: &Pubkey, ctx: Context<Transfer>) -> ProgramResult {
     require!(
-        ctx.accounts.asset.owner == program_id,
+        ctx.accounts.asset.owner() == program_id,
         ProgramError::IllegalOwner,
         "asset"
     );
 
     // Account must be a signer.
     require!(
-        ctx.accounts.signer.is_signer,
+        ctx.accounts.signer.is_signer(),
         ProgramError::MissingRequiredSignature,
         "signer"
     );
 
-    let mut data = (*ctx.accounts.asset.data).borrow_mut();
+    let mut data = ctx.accounts.asset.try_borrow_mut_data()?;
 
     // Must be an initialized asset.
     require!(
@@ -68,13 +67,13 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
         "soulbound asset"
     );
 
-    let is_allowed = asset.owner == *ctx.accounts.signer.key
+    let is_allowed = asset.owner == *ctx.accounts.signer.key()
         || assert_delegate(
             &[
                 asset.delegate.value(),
                 Extension::get::<Manager>(extensions).map(|s| s.delegate),
             ],
-            ctx.accounts.signer.key,
+            ctx.accounts.signer.key(),
             DelegateRole::Transfer,
         )
         .is_ok();
@@ -87,7 +86,7 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
     );
 
     // Self transfer short-circuits so as not to clear the delegate.
-    if asset.owner == *ctx.accounts.recipient.key {
+    if asset.owner == *ctx.accounts.recipient.key() {
         return Ok(());
     }
 
@@ -107,32 +106,34 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<TransferAccounts>) -> 
 
             // Group asset account must be owned by the program.
             require!(
-                group_asset_info.owner == program_id,
+                group_asset_info.owner() == program_id,
                 AssetError::InvalidGroup,
                 "group account is not owned by the program"
             );
 
             // Group asset account must match the asset group.
             require!(
-                group.deref() == group_asset_info.key,
+                group.deref() == group_asset_info.key(),
                 AssetError::InvalidGroup,
                 "group account does not match the asset group"
             );
 
+            let group_data = group_asset_info.try_borrow_data()?;
+
             // Group asset account must be initialized.
             require!(
-                (*group_asset_info.data).borrow()[0] == Discriminator::Asset.into(),
+                group_data[0] == Discriminator::Asset.into(),
                 AssetError::InvalidGroup,
                 "group account is not initialized"
             );
 
             // Check if royalties extension is present on the group asset and validate the constraint.
-            process_royalties!(ctx, &(*group_asset_info.data).borrow());
+            process_royalties!(ctx, &group_data);
         }
     }
 
     // Transfer the asset.
-    asset.owner = *ctx.accounts.recipient.key;
+    asset.owner = *ctx.accounts.recipient.key();
 
     // Clear the delegate.
     asset.delegate = PodOption::new(Delegate::default());

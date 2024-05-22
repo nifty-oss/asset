@@ -27,6 +27,8 @@ test('it can create a new asset with a metadata', async (t) => {
       symbol: 'SMB',
       description: 'A metadata extension',
       uri: 'https://arweave.net/62Z5yOFbIeFqvoOl-aq75EAGSDzS-GxpIKC2ws5LVDc',
+      imageUri:
+        'https://arweave.net/Va823FYwx0jqbbtpGjJryJCr2FtJwfRTM1f8nNn3dyg',
     }),
   }).sendAndConfirm(umi);
 
@@ -53,6 +55,8 @@ test('it can create a new asset with a metadata', async (t) => {
         symbol: 'SMB',
         description: 'A metadata extension',
         uri: 'https://arweave.net/62Z5yOFbIeFqvoOl-aq75EAGSDzS-GxpIKC2ws5LVDc',
+        imageUri:
+          'https://arweave.net/Va823FYwx0jqbbtpGjJryJCr2FtJwfRTM1f8nNn3dyg',
       },
     ],
   });

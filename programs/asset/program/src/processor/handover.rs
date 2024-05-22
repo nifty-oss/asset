@@ -6,7 +6,7 @@ use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pub
 
 use crate::{
     error::AssetError,
-    instruction::accounts::{Context, HandoverAccounts},
+    instruction::accounts::{Context, Handover},
     require,
 };
 
@@ -17,28 +17,28 @@ use crate::{
 ///   0. `[writable]` asset
 ///   1. `[signer]` authority
 ///   2. `[signer]` new_authority
-pub fn process_handover(program_id: &Pubkey, ctx: Context<HandoverAccounts>) -> ProgramResult {
+pub fn process_handover(program_id: &Pubkey, ctx: Context<Handover>) -> ProgramResult {
     // account validation
 
     require!(
-        ctx.accounts.authority.is_signer,
+        ctx.accounts.authority.is_signer(),
         ProgramError::MissingRequiredSignature,
         "authority"
     );
 
     require!(
-        ctx.accounts.new_authority.is_signer,
+        ctx.accounts.new_authority.is_signer(),
         ProgramError::MissingRequiredSignature,
         "new_authority"
     );
 
     require!(
-        ctx.accounts.asset.owner == program_id,
+        ctx.accounts.asset.owner() == program_id,
         ProgramError::IllegalOwner,
         "asset"
     );
 
-    let mut data = (*ctx.accounts.asset.data).borrow_mut();
+    let mut data = ctx.accounts.asset.try_borrow_mut_data()?;
 
     require!(
         data.len() >= Asset::LEN && data[0] == Discriminator::Asset.into(),
@@ -49,7 +49,7 @@ pub fn process_handover(program_id: &Pubkey, ctx: Context<HandoverAccounts>) -> 
     let asset = Asset::load_mut(&mut data);
 
     require!(
-        asset.authority == *ctx.accounts.authority.key,
+        asset.authority == *ctx.accounts.authority.key(),
         AssetError::InvalidAuthority,
         "authority"
     );
@@ -60,7 +60,7 @@ pub fn process_handover(program_id: &Pubkey, ctx: Context<HandoverAccounts>) -> 
         "asset"
     );
 
-    asset.authority = *ctx.accounts.new_authority.key;
+    asset.authority = *ctx.accounts.new_authority.key();
 
     Ok(())
 }

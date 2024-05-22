@@ -13,16 +13,16 @@ import {
 } from '@metaplex-foundation/umi/serializers';
 import { Trait, TraitArgs, getTraitSerializer } from '.';
 
-export type Attributes = { traits: Array<Trait> };
+export type Attributes = { values: Array<Trait> };
 
-export type AttributesArgs = { traits: Array<TraitArgs> };
+export type AttributesArgs = { values: Array<TraitArgs> };
 
 export function getAttributesSerializer(): Serializer<
   AttributesArgs,
   Attributes
 > {
   return struct<Attributes>(
-    [['traits', array(getTraitSerializer(), { size: 'remainder' })]],
+    [['values', array(getTraitSerializer(), { size: 'remainder' })]],
     { description: 'Attributes' }
   ) as Serializer<AttributesArgs, Attributes>;
 }

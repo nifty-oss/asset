@@ -12,6 +12,6 @@ use kaigan::types::U8PrefixString;
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Trait {
-    pub trait_type: U8PrefixString,
+    pub name: U8PrefixString,
     pub value: U8PrefixString,
 }

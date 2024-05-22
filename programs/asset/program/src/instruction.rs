@@ -3,9 +3,10 @@ use nifty_asset_types::{
     extensions::ExtensionType,
     state::{DelegateRole, Standard},
 };
-use shank::{ShankContext, ShankInstruction};
+use nitrate::Accounts;
+use shank::ShankInstruction;
 
-#[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankContext, ShankInstruction)]
+#[derive(BorshDeserialize, BorshSerialize, Clone, Debug, ShankInstruction, Accounts)]
 #[rustfmt::skip]
 pub enum Instruction {
     /// Closes an uninitialized asset (buffer) account.
@@ -115,8 +116,16 @@ pub enum Instruction {
     #[account(2, optional, name="group", desc = "The asset defining the group, if applicable")]
     #[account(3, writable, name="recipient", desc = "The account receiving refunded rent")]
     Remove(ExtensionType),
+
+    /// Resize an asset account.
+    #[account(0, writable, name="asset", desc = "Asset account")]
+    #[account(1, signer, name="authority", desc = "The authority of the asset")]
+    #[account(2, optional_signer, writable, name="payer", desc = "The account paying for the storage fees")]
+    #[account(3, optional, name="system_program", desc = "The system program")]
+    Resize(Strategy),
 }
 
+/// Input for the `allocate` instruction.
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct AllocateInput {
@@ -124,13 +133,18 @@ pub struct AllocateInput {
     pub extension: ExtensionInput,
 }
 
+/// Input for the `approve` and `revoke` instructions.
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, PartialEq)]
 pub enum DelegateInput {
+    /// Represent all delegate roles.
     All,
+
+    /// List of delegate roles.
     Some { roles: Vec<DelegateRole> },
 }
 
+/// Input for the `write` instruction.
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct DataInput {
@@ -141,6 +155,7 @@ pub struct DataInput {
     pub bytes: Vec<u8>,
 }
 
+/// Input the input data of an extension.
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct ExtensionInput {
@@ -154,6 +169,7 @@ pub struct ExtensionInput {
     pub data: Option<Vec<u8>>,
 }
 
+/// Input for the `create` instruction.
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct MetadataInput {
@@ -170,6 +186,7 @@ pub struct MetadataInput {
     pub extensions: Option<Vec<ExtensionInput>>,
 }
 
+/// Input for the `update` instruction.
 #[repr(C)]
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct UpdateInput {
@@ -183,4 +200,18 @@ pub struct UpdateInput {
 
     /// Extension to be updated.
     pub extension: Option<ExtensionInput>,
+}
+
+/// Input for the `resize` instruction.
+#[repr(C)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, PartialEq)]
+pub enum Strategy {
+    /// Trim the asset account to the minimum required size.
+    ///
+    /// This is useful when the asset account has been resized
+    /// to a larger size than required.
+    Trim,
+
+    /// Extend the asset account by the specified value.
+    Extend { value: u16 },
 }

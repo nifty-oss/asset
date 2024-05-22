@@ -7,6 +7,7 @@
 
 pub(crate) mod r#attributes;
 pub(crate) mod r#blob;
+pub(crate) mod r#bucket;
 pub(crate) mod r#creator;
 pub(crate) mod r#creators;
 pub(crate) mod r#delegate;
@@ -24,10 +25,13 @@ pub(crate) mod r#metadata;
 pub(crate) mod r#proxy;
 pub(crate) mod r#standard;
 pub(crate) mod r#state;
+pub(crate) mod r#strategy;
 pub(crate) mod r#trait;
+pub(crate) mod r#type;
 
 pub use self::r#attributes::*;
 pub use self::r#blob::*;
+pub use self::r#bucket::*;
 pub use self::r#creator::*;
 pub use self::r#creators::*;
 pub use self::r#delegate::*;
@@ -45,4 +49,6 @@ pub use self::r#metadata::*;
 pub use self::r#proxy::*;
 pub use self::r#standard::*;
 pub use self::r#state::*;
+pub use self::r#strategy::*;
 pub use self::r#trait::*;
+pub use self::r#type::*;

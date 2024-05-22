@@ -53,7 +53,7 @@ test('it can create a new asset with an extension', async (t) => {
   await initialize(umi, {
     asset,
     payer: umi.identity,
-    extension: attributes([{ traitType: 'head', value: 'hat' }]),
+    extension: attributes([{ name: 'head', value: 'hat' }]),
   }).sendAndConfirm(umi);
 
   // When we create a new asset.
@@ -73,9 +73,9 @@ test('it can create a new asset with an extension', async (t) => {
     extensions: [
       {
         type: ExtensionType.Attributes,
-        traits: [
+        values: [
           {
-            traitType: 'head',
+            name: 'head',
             value: 'hat',
           },
         ],
@@ -98,13 +98,13 @@ test('it can create a new asset with multiple extensions', async (t) => {
     name: 'Digital Asset',
     extensions: [
       attributes([
-        { traitType: 'Attributes Count', value: '2' },
-        { traitType: 'Type', value: 'Dark' },
-        { traitType: 'Clothes', value: 'Purple Shirt' },
-        { traitType: 'Ears', value: 'None' },
-        { traitType: 'Mouth', value: 'None' },
-        { traitType: 'Eyes', value: 'None' },
-        { traitType: 'Hat', value: 'Blue Cap' },
+        { name: 'Attributes Count', value: '2' },
+        { name: 'Type', value: 'Dark' },
+        { name: 'Clothes', value: 'Purple Shirt' },
+        { name: 'Ears', value: 'None' },
+        { name: 'Mouth', value: 'None' },
+        { name: 'Eyes', value: 'None' },
+        { name: 'Hat', value: 'Blue Cap' },
       ]),
       links([
         {
@@ -125,14 +125,14 @@ test('it can create a new asset with multiple extensions', async (t) => {
     extensions: [
       {
         type: ExtensionType.Attributes,
-        traits: [
-          { traitType: 'Attributes Count', value: '2' },
-          { traitType: 'Type', value: 'Dark' },
-          { traitType: 'Clothes', value: 'Purple Shirt' },
-          { traitType: 'Ears', value: 'None' },
-          { traitType: 'Mouth', value: 'None' },
-          { traitType: 'Eyes', value: 'None' },
-          { traitType: 'Hat', value: 'Blue Cap' },
+        values: [
+          { name: 'Attributes Count', value: '2' },
+          { name: 'Type', value: 'Dark' },
+          { name: 'Clothes', value: 'Purple Shirt' },
+          { name: 'Ears', value: 'None' },
+          { name: 'Mouth', value: 'None' },
+          { name: 'Eyes', value: 'None' },
+          { name: 'Hat', value: 'Blue Cap' },
         ],
       },
       {
@@ -432,7 +432,7 @@ test('it can create an asset with a collection', async (t) => {
       },
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: publicKey('5XvhfmRjwXkGp3jHGmaKpqeerNYjkuZZBYLVQYdeVcRv'),
             share: 0,

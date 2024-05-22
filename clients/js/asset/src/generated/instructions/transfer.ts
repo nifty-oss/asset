@@ -31,7 +31,7 @@ export type TransferInstructionAccounts = {
   /** Asset account */
   asset: PublicKey | Pda;
   /** Current owner of the asset or transfer delegate */
-  signer: Signer;
+  signer?: Signer;
   /** The recipient of the asset */
   recipient: PublicKey | Pda;
   /** The asset defining the group, if applicable */
@@ -61,7 +61,7 @@ export function getTransferInstructionDataSerializer(): Serializer<
 
 // Instruction.
 export function transfer(
-  context: Pick<Context, 'programs'>,
+  context: Pick<Context, 'identity' | 'programs'>,
   input: TransferInstructionAccounts
 ): TransactionBuilder {
   // Program ID.
@@ -93,6 +93,11 @@ export function transfer(
       value: input.group ?? null,
     },
   } satisfies ResolvedAccountsWithIndices;
+
+  // Default values.
+  if (!resolvedAccounts.signer.value) {
+    resolvedAccounts.signer.value = context.identity;
+  }
 
   // Accounts in order.
   const orderedAccounts: ResolvedAccount[] = Object.values(

@@ -1,6 +1,8 @@
 #![cfg(feature = "test-sbf")]
+pub mod utils;
 
 use nifty_asset::{
+    errors::AssetError,
     extensions::{Attributes, AttributesBuilder, ExtensionBuilder},
     instructions::{AllocateBuilder, CreateBuilder},
     state::{Asset, Discriminator, Standard, State},
@@ -150,5 +152,104 @@ mod create {
         assert_eq!(attributes.len(), 1);
         assert_eq!(attributes[0].name.as_str(), "hat");
         assert_eq!(attributes[0].value.as_str(), "nifty");
+    }
+
+    #[tokio::test]
+    async fn create_with_invalid_extension_length_fails() {
+        let mut context = ProgramTest::new("asset_program", nifty_asset::ID, None)
+            .start_with_context()
+            .await;
+
+        // Given a new keypair.
+
+        let asset = Keypair::new();
+
+        // And an extension.
+
+        let mut attributes = AttributesBuilder::default();
+        attributes.add("hat", "nifty");
+        let data = attributes.data();
+
+        // When we try to create a new asset with an invalid extension length.
+
+        let ix = CreateBuilder::new()
+            .asset(asset.pubkey())
+            .authority(context.payer.pubkey(), false)
+            .owner(context.payer.pubkey())
+            .payer(Some(context.payer.pubkey()))
+            .system_program(Some(system_program::id()))
+            .name("name".to_string())
+            .extensions(vec![ExtensionInput {
+                extension_type: ExtensionType::Attributes,
+                length: 1,
+                data: Some(data),
+            }])
+            .instruction();
+
+        let tx = Transaction::new_signed_with_payer(
+            &[ix],
+            Some(&context.payer.pubkey()),
+            &[&context.payer, &asset],
+            context.last_blockhash,
+        );
+        let err = context
+            .banks_client
+            .process_transaction(tx)
+            .await
+            .unwrap_err();
+
+        // Then we expect an error.
+
+        assert_custom_error!(err, AssetError::ExtensionLengthInvalid);
+    }
+
+    #[tokio::test]
+    async fn create_with_missing_extension_data_fails() {
+        let mut context = ProgramTest::new("asset_program", nifty_asset::ID, None)
+            .start_with_context()
+            .await;
+
+        // Given a new keypair.
+
+        let asset = Keypair::new();
+
+        // And an extension.
+
+        let mut attributes = AttributesBuilder::default();
+        attributes.add("hat", "nifty");
+        let data = attributes.data();
+
+        // When we try to create a new asset with an invalid extension length.
+
+        let ix = CreateBuilder::new()
+            .asset(asset.pubkey())
+            .authority(context.payer.pubkey(), false)
+            .owner(context.payer.pubkey())
+            .payer(Some(context.payer.pubkey()))
+            .system_program(Some(system_program::id()))
+            .name("name".to_string())
+            .extensions(vec![ExtensionInput {
+                extension_type: ExtensionType::Attributes,
+                // increase the data length
+                length: data.len() as u32 + 100,
+                data: Some(data),
+            }])
+            .instruction();
+
+        let tx = Transaction::new_signed_with_payer(
+            &[ix],
+            Some(&context.payer.pubkey()),
+            &[&context.payer, &asset],
+            context.last_blockhash,
+        );
+        let err = context
+            .banks_client
+            .process_transaction(tx)
+            .await
+            .unwrap_err();
+
+        // Then we expect an error.
+
+        assert_custom_error!(err, AssetError::ExtensionDataInvalid);
     }
 }

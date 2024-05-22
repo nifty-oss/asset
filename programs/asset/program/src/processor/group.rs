@@ -8,7 +8,7 @@ use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pub
 use crate::{
     err,
     error::AssetError,
-    instruction::accounts::{Context, GroupAccounts},
+    instruction::accounts::{Context, Group},
     require,
 };
 
@@ -19,28 +19,28 @@ use crate::{
 ///   0. `[writable]` asset
 ///   1. `[writable]` group
 ///   2. `[signer]` authority
-pub fn process_group(program_id: &Pubkey, ctx: Context<GroupAccounts>) -> ProgramResult {
+pub fn process_group(program_id: &Pubkey, ctx: Context<Group>) -> ProgramResult {
     // account validation
 
     require!(
-        ctx.accounts.authority.is_signer,
+        ctx.accounts.authority.is_signer(),
         ProgramError::MissingRequiredSignature,
         "authority"
     );
 
     require!(
-        ctx.accounts.asset.owner == program_id,
+        ctx.accounts.asset.owner() == program_id,
         ProgramError::IllegalOwner,
         "asset"
     );
 
     require!(
-        ctx.accounts.group.owner == program_id,
+        ctx.accounts.group.owner() == program_id,
         ProgramError::IllegalOwner,
         "group"
     );
 
-    let mut asset_data = (*ctx.accounts.asset.data).borrow_mut();
+    let mut asset_data = ctx.accounts.asset.try_borrow_mut_data()?;
 
     require!(
         asset_data.len() >= Asset::LEN && asset_data[0] == Discriminator::Asset.into(),
@@ -48,7 +48,7 @@ pub fn process_group(program_id: &Pubkey, ctx: Context<GroupAccounts>) -> Progra
         "asset"
     );
 
-    let mut group_data = (*ctx.accounts.group.data).borrow_mut();
+    let mut group_data = ctx.accounts.group.try_borrow_mut_data()?;
 
     require!(
         group_data.len() >= Asset::LEN && group_data[0] == Discriminator::Asset.into(),
@@ -84,11 +84,11 @@ pub fn process_group(program_id: &Pubkey, ctx: Context<GroupAccounts>) -> Progra
     };
 
     // if the signing authority doesn't match the group authority
-    if *ctx.accounts.authority.key != group.authority {
+    if *ctx.accounts.authority.key() != group.authority {
         // then the authority must match the grouping delegate
         if let Some(delegate) = grouping.delegate.value() {
             require!(
-                **delegate == *ctx.accounts.authority.key,
+                **delegate == *ctx.accounts.authority.key(),
                 AssetError::InvalidAuthority,
                 "Group authority or delegate mismatch"
             );
@@ -110,7 +110,7 @@ pub fn process_group(program_id: &Pubkey, ctx: Context<GroupAccounts>) -> Progra
     }
 
     // assign the group to asset and increment the group size
-    asset.group = PodOption::new(ctx.accounts.group.key.into());
+    asset.group = PodOption::new(ctx.accounts.group.key().into());
     *grouping.size += 1;
 
     Ok(())

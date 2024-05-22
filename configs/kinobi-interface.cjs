@@ -70,6 +70,8 @@ kinobi.update(
                   { name: "Royalties" },
                   { name: "Manager" },
                   { name: "Proxy" },
+                  { name: "Properties" },
+                  { name: "Bucket" },
                 ],
               },
             }),
@@ -83,9 +85,8 @@ kinobi.update(
 // Update instructions.
 kinobi.update(
   k.updateInstructionsVisitor({
-    create: {
+    allocate: {
       accounts: {
-        owner: { defaultValue: k.identityValueNode() },
         systemProgram: {
           defaultValue: k.conditionalValueNode({
             condition: k.accountValueNode("payer"),
@@ -97,8 +98,15 @@ kinobi.update(
         },
       },
     },
-    allocate: {
+    approve: {
       accounts: {
+        owner: { defaultValue: k.identityValueNode() },
+      },
+    },
+    create: {
+      accounts: {
+        owner: { defaultValue: k.identityValueNode() },
+        authority: { defaultValue: k.identityValueNode() },
         systemProgram: {
           defaultValue: k.conditionalValueNode({
             condition: k.accountValueNode("payer"),
@@ -107,6 +115,91 @@ kinobi.update(
               "systemProgram"
             ),
           }),
+        },
+      },
+      arguments: {
+        extensions: {
+          defaultValue: k.noneValueNode(),
+        },
+      },
+    },
+    handover: {
+      accounts: {
+        authority: { defaultValue: k.identityValueNode() },
+      },
+    },
+    group: {
+      accounts: {
+        authority: { defaultValue: k.identityValueNode() },
+      },
+    },
+    lock: {
+      accounts: {
+        signer: { defaultValue: k.identityValueNode() },
+      },
+    },
+    remove: {
+      accounts: {
+        authority: { defaultValue: k.identityValueNode() },
+        recipient: { defaultValue: k.identityValueNode() },
+      },
+    },
+    resize: {
+      accounts: {
+        authority: { defaultValue: k.identityValueNode() },
+        systemProgram: {
+          defaultValue: k.conditionalValueNode({
+            condition: k.accountValueNode("payer"),
+            ifTrue: k.publicKeyValueNode(
+              "11111111111111111111111111111111",
+              "systemProgram"
+            ),
+          }),
+        },
+      },
+    },
+    revoke: {
+      accounts: {
+        signer: { defaultValue: k.identityValueNode() },
+      },
+    },
+    transfer: {
+      accounts: {
+        signer: { defaultValue: k.identityValueNode() },
+      },
+    },
+    ungroup: {
+      accounts: {
+        authority: { defaultValue: k.identityValueNode() },
+      },
+    },
+    unlock: {
+      accounts: {
+        signer: { defaultValue: k.identityValueNode() },
+      },
+    },
+    update: {
+      accounts: {
+        authority: { defaultValue: k.identityValueNode() },
+        systemProgram: {
+          defaultValue: k.conditionalValueNode({
+            condition: k.accountValueNode("payer"),
+            ifTrue: k.publicKeyValueNode(
+              "11111111111111111111111111111111",
+              "systemProgram"
+            ),
+          }),
+        },
+      },
+    },
+    write: {
+      accounts: {
+        payer: { defaultValue: k.identityValueNode() },
+        systemProgram: {
+          defaultValue: k.publicKeyValueNode(
+            "11111111111111111111111111111111",
+            "systemProgram"
+          ),
         },
       },
     },

@@ -8,7 +8,7 @@ use crate::{
     err,
     error::AssetError,
     instruction::{
-        accounts::{Context, RevokeAccounts},
+        accounts::{Context, Revoke},
         DelegateInput,
     },
     require,
@@ -22,24 +22,24 @@ use crate::{
 ///   1. `[signer]` signer
 pub fn process_revoke(
     program_id: &Pubkey,
-    ctx: Context<RevokeAccounts>,
+    ctx: Context<Revoke>,
     args: DelegateInput,
 ) -> ProgramResult {
     // account validation
 
     require!(
-        ctx.accounts.signer.is_signer,
+        ctx.accounts.signer.is_signer(),
         ProgramError::MissingRequiredSignature,
         "signer"
     );
 
     require!(
-        ctx.accounts.asset.owner == program_id,
+        ctx.accounts.asset.owner() == program_id,
         ProgramError::IllegalOwner,
         "asset"
     );
 
-    let mut data = (*ctx.accounts.asset.data).borrow_mut();
+    let mut data = ctx.accounts.asset.try_borrow_mut_data()?;
 
     require!(
         data.len() >= Asset::LEN && data[0] == Discriminator::Asset.into(),
@@ -49,11 +49,11 @@ pub fn process_revoke(
 
     let asset = Asset::load_mut(&mut data);
 
-    let is_allowed = asset.owner == *ctx.accounts.signer.key
+    let is_allowed = asset.owner == *ctx.accounts.signer.key()
         || asset
             .delegate
             .value()
-            .map(|delegate| *delegate.address == *ctx.accounts.signer.key)
+            .map(|delegate| *delegate.address == *ctx.accounts.signer.key())
             == Some(true);
 
     // we only revoke a delegate if the signer is the owner or the current delegate

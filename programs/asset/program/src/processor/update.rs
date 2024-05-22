@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use nifty_asset_types::{
     extensions::{on_create, on_update, Extension, ExtensionType},
     podded::{pod::PodBool, ZeroCopy},
@@ -15,7 +17,7 @@ use crate::{
     err,
     error::AssetError,
     instruction::{
-        accounts::{Context, UpdateAccounts},
+        accounts::{Context, Update},
         UpdateInput,
     },
     processor::resize,
@@ -38,24 +40,24 @@ use crate::{
 #[inline(always)]
 pub fn process_update(
     program_id: &Pubkey,
-    ctx: Context<UpdateAccounts>,
+    ctx: Context<Update>,
     args: UpdateInput,
 ) -> ProgramResult {
     // account validation
 
     require!(
-        ctx.accounts.authority.is_signer,
+        ctx.accounts.authority.is_signer(),
         ProgramError::MissingRequiredSignature,
         "authority"
     );
 
     require!(
-        ctx.accounts.asset.owner == program_id,
+        ctx.accounts.asset.owner() == program_id,
         ProgramError::IllegalOwner,
         "asset"
     );
 
-    let mut account_data = (*ctx.accounts.asset.data).borrow_mut();
+    let mut account_data = ctx.accounts.asset.try_borrow_mut_data()?;
 
     require!(
         account_data.len() >= Asset::LEN && account_data[0] == Discriminator::Asset.into(),
@@ -66,7 +68,7 @@ pub fn process_update(
     let asset = Asset::load_mut(&mut account_data);
 
     require!(
-        asset.authority == *ctx.accounts.authority.key,
+        asset.authority == *ctx.accounts.authority.key(),
         AssetError::InvalidAuthority,
         "authority"
     );
@@ -107,7 +109,48 @@ pub fn process_update(
     //
     // at the end of this process, the extension is "loaded" to sanity check that
     // the update was successful
-    if let Some(mut args) = args.extension {
+    if args.extension.is_some() || ctx.accounts.buffer.is_some() {
+        // extension data can be specified through a buffer account or
+        // instruction args, but not both
+        require!(
+            args.extension.is_some() != ctx.accounts.buffer.is_some(),
+            ProgramError::InvalidInstructionData,
+            "only specify instruction args or buffer account"
+        );
+
+        let extension_type = if let Some(buffer) = ctx.accounts.buffer {
+            require!(
+                buffer.owner() == program_id,
+                ProgramError::IllegalOwner,
+                "buffer"
+            );
+
+            let extension_data = buffer.try_borrow_data()?;
+
+            require!(
+                extension_data.len() >= Asset::LEN + Extension::LEN,
+                AssetError::InvalidAccountLength,
+                "buffer"
+            );
+
+            require!(
+                extension_data[0] == Discriminator::Uninitialized.into(),
+                AssetError::AlreadyInitialized,
+                "buffer"
+            );
+
+            let (header, _) =
+                Asset::first_extension(&extension_data).ok_or(AssetError::ExtensionNotFound)?;
+
+            header.extension_type()
+        } else if let Some(args) = &args.extension {
+            args.extension_type
+        } else {
+            // sanity check: this should not happen since we already checked that we either
+            // have extension args or a buffer account
+            return Err(ProgramError::InvalidInstructionData);
+        };
+
         let mut offset = Asset::LEN;
         // extension details:
         //   - current length
@@ -119,7 +162,7 @@ pub fn process_update(
             let current = Extension::load(&account_data[offset..offset + Extension::LEN]);
 
             match current.try_extension_type() {
-                Ok(t) if t == args.extension_type => {
+                Ok(t) if t == extension_type => {
                     extension =
                         Some((current.length() as usize, current.boundary() as usize, true));
                     break;
@@ -135,30 +178,23 @@ pub fn process_update(
             (0, offset, false)
         };
 
-        // extension data can be specified through a buffer account or
-        // instruction args
-        let extension_length = if let Some(buffer) = ctx.accounts.buffer {
-            require!(
-                buffer.owner == program_id,
-                ProgramError::IllegalOwner,
-                "buffer"
-            );
-
-            let extension_data = (*buffer.data).borrow();
-
-            require!(
-                extension_data[0] == Discriminator::Uninitialized.into(),
-                AssetError::AlreadyInitialized,
-                "buffer"
-            );
-
+        let (extension_length, extension_data) = if let Some(buffer) = ctx.accounts.buffer {
+            let extension_data = buffer.try_borrow_data()?;
             let (header, _) =
                 Asset::first_extension(&extension_data).ok_or(AssetError::ExtensionNotFound)?;
 
             require!(
-                args.extension_type == header.extension_type(),
+                extension_type == header.extension_type(),
                 ProgramError::InvalidInstructionData,
                 "extension type mismatch"
+            );
+
+            require!(
+                buffer.data_len() >= header.boundary() as usize,
+                AssetError::ExtensionDataInvalid,
+                "invalid extension data (expected {} bytes, got {} bytes)",
+                header.boundary(),
+                buffer.data_len()
             );
 
             let header_length = header.length() as usize;
@@ -168,45 +204,68 @@ pub fn process_update(
             let start = offset + Extension::LEN;
             // validate the extension data
             validate(
-                args.extension_type,
-                &mut (*buffer.data).borrow_mut()[Asset::LEN..Asset::LEN + header_length],
+                extension_type,
+                &mut buffer.try_borrow_mut_data()?[Asset::LEN..Asset::LEN + header_length],
                 if update {
                     Some(&mut account_data[start..start + current_length])
                 } else {
                     None
                 },
-                ctx.accounts.authority.key,
+                ctx.accounts.authority.key(),
             )?;
 
             #[cfg(feature = "logging")]
             msg!("Updating extension from buffer account");
 
-            header_length
-        } else {
-            let length = if let Some(extension_data) = args.data.as_mut() {
+            (header_length, None)
+        } else if let Some(args) = args.extension {
+            let length = if let Some(mut extension_data) = args.data {
                 let start = offset + Extension::LEN;
                 // validate the extension data
                 validate(
-                    args.extension_type,
+                    extension_type,
                     extension_data.as_mut_slice(),
                     if update {
                         Some(&mut account_data[start..start + current_length])
                     } else {
                         None
                     },
-                    ctx.accounts.authority.key,
+                    ctx.accounts.authority.key(),
                 )?;
 
-                extension_data.len()
+                (extension_data.len(), Some(extension_data))
             } else {
                 // extension does not have any data
-                0
+                (0, None)
             };
 
             #[cfg(feature = "logging")]
             msg!("Updating extension from instruction data");
 
+            // sanity check: did we receive the correct extension length?
+            match length.0.cmp(&(args.length as usize)) {
+                Ordering::Less => {
+                    return err!(
+                        AssetError::ExtensionDataInvalid,
+                        "invalid extension data (expected {} bytes, got {} bytes)",
+                        args.length,
+                        length.0
+                    );
+                }
+                Ordering::Greater => {
+                    return err!(
+                        AssetError::ExtensionLengthInvalid,
+                        "extension length mismatch"
+                    );
+                }
+                Ordering::Equal => (),
+            }
+
             length
+        } else {
+            // sanity check: this should not happen since we already checked that we either
+            // have extension args or a buffer account
+            return Err(ProgramError::InvalidInstructionData);
         };
 
         // determine the new boundary of the extension and any required padding
@@ -224,11 +283,6 @@ pub fn process_update(
         let delta = updated_boundary as i32 - boundary as i32;
 
         if !update {
-            require!(
-                offset == account_data.len(),
-                ProgramError::InvalidAccountData,
-                "extension offset mismatch"
-            );
             // drop the borrow to resize the account
             drop(account_data);
 
@@ -240,7 +294,7 @@ pub fn process_update(
             )?;
 
             // reborrows the data after the realloc
-            account_data = (*ctx.accounts.asset.data).borrow_mut();
+            account_data = ctx.accounts.asset.try_borrow_mut_data()?;
         }
         // if the extension is being resized, then the account needs to be resized
         else if current_length != extension_length {
@@ -263,7 +317,7 @@ pub fn process_update(
             }
 
             unsafe {
-                let ptr = ctx.accounts.asset.data.borrow_mut().as_mut_ptr();
+                let ptr = ctx.accounts.asset.unchecked_borrow_mut_data().as_mut_ptr();
                 let src_ptr = ptr.add(boundary);
                 let dest_ptr = ptr.add(updated_boundary);
                 // move the bytes after the extension to the new boundary
@@ -280,12 +334,12 @@ pub fn process_update(
             }
 
             // reborrows the data after the realloc
-            account_data = (*ctx.accounts.asset.data).borrow_mut();
+            account_data = ctx.accounts.asset.try_borrow_mut_data()?;
         }
 
         let extension = Extension::load_mut(&mut account_data[offset..offset + Extension::LEN]);
 
-        extension.set_extension_type(args.extension_type);
+        extension.set_extension_type(extension_type);
         extension.set_length(extension_length as u32);
         extension.set_boundary(updated_boundary as u32);
 
@@ -304,7 +358,7 @@ pub fn process_update(
             let offset = offset + Extension::LEN;
 
             if let Some(buffer) = ctx.accounts.buffer {
-                let extension_data = (*buffer.data).borrow();
+                let extension_data = buffer.try_borrow_data()?;
                 let slice = Asset::LEN + Extension::LEN;
 
                 sol_memcpy(
@@ -312,7 +366,7 @@ pub fn process_update(
                     &extension_data[slice..slice + extension_length],
                     extension_length,
                 );
-            } else if let Some(extension_data) = args.data {
+            } else if let Some(extension_data) = extension_data {
                 sol_memcpy(
                     &mut account_data[offset..],
                     &extension_data,

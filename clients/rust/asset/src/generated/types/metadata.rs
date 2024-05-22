@@ -15,4 +15,5 @@ pub struct Metadata {
     pub symbol: U8PrefixString,
     pub description: U8PrefixString,
     pub uri: U8PrefixString,
+    pub image_uri: U8PrefixString,
 }

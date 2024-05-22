@@ -1,5 +1,6 @@
 import { publicKey } from '@metaplex-foundation/umi';
 
+export * from './allocate';
 export * from './approve';
 export * from './burn';
 export * from './constraints';
@@ -14,6 +15,7 @@ export * from './lock';
 export * from './mint';
 export * from './plugin';
 export * from './remove';
+export * from './resize';
 export * from './revoke';
 export * from './transfer';
 export * from './ungroup';

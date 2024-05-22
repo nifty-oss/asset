@@ -36,7 +36,7 @@ export type RevokeInstructionAccounts = {
   /** Asset account */
   asset: PublicKey | Pda;
   /** Current owner of the asset or delegate */
-  signer: Signer;
+  signer?: Signer;
 };
 
 // Data.
@@ -68,7 +68,7 @@ export type RevokeInstructionArgs = RevokeInstructionDataArgs;
 
 // Instruction.
 export function revoke(
-  context: Pick<Context, 'programs'>,
+  context: Pick<Context, 'identity' | 'programs'>,
   input: RevokeInstructionAccounts & RevokeInstructionArgs
 ): TransactionBuilder {
   // Program ID.
@@ -93,6 +93,11 @@ export function revoke(
 
   // Arguments.
   const resolvedArgs: RevokeInstructionArgs = { ...input };
+
+  // Default values.
+  if (!resolvedAccounts.signer.value) {
+    resolvedAccounts.signer.value = context.identity;
+  }
 
   // Accounts in order.
   const orderedAccounts: ResolvedAccount[] = Object.values(

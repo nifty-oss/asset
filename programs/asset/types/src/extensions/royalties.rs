@@ -1,6 +1,7 @@
 use std::ops::Deref;
 
 use crate::constraints::{Constraint, ConstraintBuilder, FromBytes};
+use crate::error::Error;
 
 use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle};
 
@@ -50,7 +51,30 @@ impl<'a> ExtensionDataMut<'a> for RoyaltiesMut<'a> {
     }
 }
 
-impl Lifecycle for RoyaltiesMut<'_> {}
+impl Lifecycle for RoyaltiesMut<'_> {
+    fn on_create(
+        &mut self,
+        _authority: Option<&solana_program::pubkey::Pubkey>,
+    ) -> Result<(), Error> {
+        if *self.basis_points > 10000 {
+            return Err(Error::InvalidRoyaltyBasisPoints);
+        }
+
+        Ok(())
+    }
+
+    fn on_update(
+        &mut self,
+        other: &mut Self,
+        _authority: Option<&solana_program::pubkey::Pubkey>,
+    ) -> Result<(), Error> {
+        if *other.basis_points > 10000 {
+            return Err(Error::InvalidRoyaltyBasisPoints);
+        }
+
+        Ok(())
+    }
+}
 
 #[derive(Default)]
 pub struct RoyaltiesBuilder(Vec<u8>);

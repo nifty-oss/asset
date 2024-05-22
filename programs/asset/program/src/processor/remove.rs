@@ -11,7 +11,7 @@ use solana_program::{
 use crate::{
     err,
     error::AssetError,
-    instruction::accounts::{Context, RemoveAccounts},
+    instruction::accounts::{Context, Remove},
     processor::resize,
     require,
 };
@@ -27,24 +27,24 @@ use crate::{
 #[inline(always)]
 pub fn process_remove(
     program_id: &Pubkey,
-    ctx: Context<RemoveAccounts>,
+    ctx: Context<Remove>,
     extension_type: ExtensionType,
 ) -> ProgramResult {
     // account validation
 
     require!(
-        ctx.accounts.authority.is_signer,
+        ctx.accounts.authority.is_signer(),
         ProgramError::MissingRequiredSignature,
         "authority"
     );
 
     require!(
-        ctx.accounts.asset.owner == program_id,
+        ctx.accounts.asset.owner() == program_id,
         ProgramError::IllegalOwner,
         "asset"
     );
 
-    let mut account_data = (*ctx.accounts.asset.data).borrow_mut();
+    let mut account_data = ctx.accounts.asset.try_borrow_mut_data()?;
 
     require!(
         account_data.len() >= Asset::LEN && account_data[0] == Discriminator::Asset.into(),
@@ -55,7 +55,7 @@ pub fn process_remove(
     let asset = Asset::load_mut(&mut account_data);
 
     require!(
-        asset.authority == *ctx.accounts.authority.key,
+        asset.authority == *ctx.accounts.authority.key(),
         AssetError::InvalidAuthority,
         "authority"
     );
@@ -118,7 +118,7 @@ pub fn process_remove(
 
     let bytes_to_move = ctx.accounts.asset.data_len().saturating_sub(boundary);
     unsafe {
-        let ptr = ctx.accounts.asset.data.borrow_mut().as_mut_ptr();
+        let ptr = ctx.accounts.asset.unchecked_borrow_mut_data().as_mut_ptr();
         let src_ptr = ptr.add(boundary);
         let dest_ptr = ptr.add(offset);
 

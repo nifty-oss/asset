@@ -28,6 +28,9 @@ use crate::extensions::{Extension, ExtensionData, ExtensionDataMut, ExtensionTyp
 /// Maximum length of a name.
 pub const MAX_NAME_LENGTH: usize = 35;
 
+/// Default extension count.
+pub const DEFAULT_EXTENSION_COUNT: usize = 9;
+
 /// `Asset` account (header) information.
 #[repr(C)]
 #[derive(Clone, Copy, Pod, Zeroable)]
@@ -149,7 +152,7 @@ impl Asset {
     /// the list of recognized extensions.
     pub fn get_extensions(data: &[u8]) -> Vec<ExtensionType> {
         let mut cursor = Asset::LEN;
-        let mut extensions = Vec::new();
+        let mut extensions = Vec::with_capacity(DEFAULT_EXTENSION_COUNT);
 
         while (cursor + Extension::LEN) <= data.len() {
             let extension = Extension::load(&data[cursor..cursor + Extension::LEN]);
@@ -188,8 +191,8 @@ impl Asset {
     /// Returns the last extension of the account.
     ///
     /// This function will return a tuple containing the extension type and the
-    /// offset of the extension data. If the account does not contain any extension,
-    /// `None` is returned.
+    /// offset of the extension data. If the account does not contain any extension or
+    /// if it contains an unrecognized extension type, `None` is returned.
     pub fn last_extension(data: &[u8]) -> Option<(&Extension, usize)> {
         let mut cursor = Asset::LEN;
         let mut last = None;
@@ -197,12 +200,13 @@ impl Asset {
         while (cursor + Extension::LEN) <= data.len() {
             let extension = Extension::load(&data[cursor..]);
 
-            if let Ok(ExtensionType::None) = extension.try_extension_type() {
-                return last;
+            match extension.try_extension_type() {
+                Ok(ExtensionType::None) | Err(_) => return last,
+                _ => {
+                    last = Some((extension, cursor + Extension::LEN));
+                    cursor = extension.boundary() as usize;
+                }
             }
-
-            last = Some((extension, cursor + Extension::LEN));
-            cursor = extension.boundary() as usize;
         }
 
         last

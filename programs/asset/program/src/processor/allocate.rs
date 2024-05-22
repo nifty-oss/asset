@@ -1,18 +1,18 @@
 use nifty_asset_types::{
-    extensions::{on_create, Extension},
+    extensions::Extension,
     podded::ZeroCopy,
     state::{Asset, Discriminator},
 };
+use nitrate::program::system;
 use solana_program::{
-    entrypoint::ProgramResult, msg, program::invoke, program_error::ProgramError,
-    program_memory::sol_memcpy, pubkey::Pubkey, rent::Rent, system_instruction, system_program,
-    sysvar::Sysvar,
+    entrypoint::ProgramResult, msg, program_error::ProgramError, program_memory::sol_memcpy,
+    pubkey::Pubkey, rent::Rent, system_program, sysvar::Sysvar,
 };
 
 use crate::{
     error::AssetError,
     instruction::{
-        accounts::{AllocateAccounts, Context},
+        accounts::{Allocate, Context},
         AllocateInput,
     },
     processor::resize,
@@ -29,13 +29,13 @@ use crate::{
 #[inline(always)]
 pub fn process_allocate(
     program_id: &Pubkey,
-    ctx: Context<AllocateAccounts>,
+    ctx: Context<Allocate>,
     args: AllocateInput,
 ) -> ProgramResult {
     // account validation
 
     require!(
-        ctx.accounts.asset.is_signer,
+        ctx.accounts.asset.is_signer(),
         ProgramError::MissingRequiredSignature,
         "asset"
     );
@@ -46,7 +46,7 @@ pub fn process_allocate(
         (false, Asset::LEN)
     } else {
         require!(
-            ctx.accounts.asset.owner == program_id,
+            ctx.accounts.asset.owner() == program_id,
             ProgramError::IllegalOwner,
             "asset"
         );
@@ -57,7 +57,7 @@ pub fn process_allocate(
             "asset"
         );
 
-        let data = (*ctx.accounts.asset.data).borrow();
+        let data = ctx.accounts.asset.try_borrow_data()?;
 
         // make sure that the asset is not already initialized
         require!(
@@ -103,7 +103,13 @@ pub fn process_allocate(
                 args.extension.extension_type
             );
         }
-        (args.extension.length - data.len() as u32, data)
+        (
+            args.extension
+                .length
+                .checked_sub(data.len() as u32)
+                .ok_or(AssetError::ExtensionLengthInvalid)?,
+            data,
+        )
     } else {
         (args.extension.length, &[])
     };
@@ -117,26 +123,6 @@ pub fn process_allocate(
             length
         );
     } else {
-        let asset_data = (*ctx.accounts.asset.data).borrow();
-        let (extension, offset) =
-            Asset::last_extension(&asset_data).ok_or(AssetError::ExtensionNotFound)?;
-
-        let extension_type = extension.extension_type();
-        let length = extension.length() as usize;
-
-        drop(asset_data);
-
-        // validate the extension data
-        let asset_data = &mut (*ctx.accounts.asset.data).borrow_mut();
-        on_create(
-            extension_type,
-            &mut asset_data[offset..offset + length],
-            None,
-        )
-        .map_err(|error| {
-            msg!("[ERROR] {}", error);
-            AssetError::ExtensionDataInvalid
-        })?;
         #[cfg(feature = "logging")]
         msg!(
             "Extension [{:?}] initialized",
@@ -148,7 +134,7 @@ pub fn process_allocate(
 }
 
 #[inline(always)]
-fn create_account(ctx: &Context<AllocateAccounts>, space: usize) -> ProgramResult {
+fn create_account(ctx: &Context<Allocate>, space: usize) -> ProgramResult {
     let payer = {
         require!(
             ctx.accounts.payer.is_some(),
@@ -160,7 +146,7 @@ fn create_account(ctx: &Context<AllocateAccounts>, space: usize) -> ProgramResul
     };
 
     require!(
-        payer.is_signer,
+        payer.is_signer(),
         ProgramError::MissingRequiredSignature,
         "payer"
     );
@@ -176,26 +162,25 @@ fn create_account(ctx: &Context<AllocateAccounts>, space: usize) -> ProgramResul
     };
 
     require!(
-        system_program.key == &system_program::ID,
+        system_program.key() == &system_program::ID,
         ProgramError::IncorrectProgramId,
         "system_program"
     );
 
-    invoke(
-        &system_instruction::create_account(
-            payer.key,
-            ctx.accounts.asset.key,
-            Rent::get()?.minimum_balance(space),
-            space as u64,
-            &crate::ID,
-        ),
-        &[payer.clone(), ctx.accounts.asset.clone()],
-    )
+    system::create_account(
+        payer,
+        ctx.accounts.asset,
+        Rent::get()?.minimum_balance(space),
+        space as u64,
+        &crate::ID,
+    );
+
+    Ok(())
 }
 
 #[inline(always)]
 fn save_extension_data(
-    ctx: &Context<AllocateAccounts>,
+    ctx: &Context<Allocate>,
     args: &crate::instruction::ExtensionInput,
     exists: bool,
     offset: usize,
@@ -235,7 +220,7 @@ fn save_extension_data(
         )?;
     }
 
-    let asset_data = &mut (*ctx.accounts.asset.data).borrow_mut();
+    let asset_data = &mut ctx.accounts.asset.try_borrow_mut_data()?;
     let extension = Extension::load_mut(&mut asset_data[offset..offset + Extension::LEN]);
 
     extension.set_extension_type(args.extension_type);

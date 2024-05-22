@@ -8,6 +8,7 @@
 
 export * from './attributes';
 export * from './blob';
+export * from './bucket';
 export * from './creator';
 export * from './creators';
 export * from './delegate';
@@ -25,4 +26,6 @@ export * from './metadata';
 export * from './proxy';
 export * from './standard';
 export * from './state';
+export * from './strategy';
 export * from './trait';
+export * from './type';

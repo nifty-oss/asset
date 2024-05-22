@@ -1,6 +1,7 @@
 use nifty_asset_interface::{
     accounts::TransferAccounts,
     extensions::{Attributes, AttributesBuilder, BlobBuilder, ExtensionBuilder},
+    fetch_proxy_data,
     instructions::{TransferCpiBuilder, UpdateCpiBuilder},
     state::Asset,
     types::ExtensionInput,
@@ -11,11 +12,7 @@ use solana_program::{
     pubkey::Pubkey, sysvar::Sysvar,
 };
 
-use crate::{
-    fetch_signer_and_authority,
-    processor::{CONTENT_TYPE, IMAGE},
-    require,
-};
+use crate::processor::{CONTENT_TYPE, IMAGE};
 
 pub fn process_transfer<'a>(
     _program_id: &Pubkey,
@@ -24,7 +21,13 @@ pub fn process_transfer<'a>(
     // account validation happends on the CPI
 
     let data = (*ctx.accounts.asset.data).borrow();
-    fetch_signer_and_authority!(signer, _authority, nifty_asset_program, ctx, &data);
+    fetch_proxy_data!(
+        &data,
+        signer,
+        _authority,
+        nifty_asset_program,
+        ctx.remaining_accounts
+    );
 
     // update the transfers "counter"
 

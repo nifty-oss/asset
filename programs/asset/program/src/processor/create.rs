@@ -1,17 +1,19 @@
 use nifty_asset_types::{
     extensions::{on_create, Extension, ExtensionType, Proxy},
     podded::ZeroCopy,
-    state::{Asset, Discriminator, Standard},
+    state::{Asset, Discriminator, Standard, DEFAULT_EXTENSION_COUNT},
 };
+use nitrate::program::system;
 use solana_program::{
-    entrypoint::ProgramResult, msg, program::invoke, program_error::ProgramError, pubkey::Pubkey,
-    rent::Rent, system_instruction, system_program, sysvar::Sysvar,
+    entrypoint::ProgramResult, msg, program_error::ProgramError, pubkey::Pubkey, rent::Rent,
+    system_program, sysvar::Sysvar,
 };
 
 use crate::{
+    err,
     error::AssetError,
     instruction::{
-        accounts::{AllocateAccounts, Context, CreateAccounts, GroupAccounts},
+        accounts::{Allocate, Context, Create, Group},
         AllocateInput, MetadataInput,
     },
     require,
@@ -30,13 +32,13 @@ use crate::{
 ///   6. `[optional]` system_program
 pub fn process_create(
     program_id: &Pubkey,
-    ctx: Context<CreateAccounts>,
+    ctx: Context<Create>,
     args: MetadataInput,
 ) -> ProgramResult {
     // account validation
 
     require!(
-        ctx.accounts.asset.is_signer,
+        ctx.accounts.asset.is_signer(),
         ProgramError::MissingRequiredSignature,
         "asset"
     );
@@ -53,7 +55,7 @@ pub fn process_create(
         };
 
         require!(
-            payer.is_signer,
+            payer.is_signer(),
             ProgramError::MissingRequiredSignature,
             "payer"
         );
@@ -69,7 +71,7 @@ pub fn process_create(
         };
 
         require!(
-            system_program.key == &system_program::ID,
+            system_program.key() == &system_program::ID,
             ProgramError::IncorrectProgramId,
             "system_program"
         );
@@ -93,19 +95,16 @@ pub fn process_create(
                 0
             };
 
-        invoke(
-            &system_instruction::create_account(
-                payer.key,
-                ctx.accounts.asset.key,
-                Rent::get()?.minimum_balance(space),
-                (space) as u64,
-                program_id,
-            ),
-            &[payer.clone(), ctx.accounts.asset.clone()],
-        )?;
+        system::create_account(
+            payer,
+            ctx.accounts.asset,
+            Rent::get()?.minimum_balance(space),
+            (space) as u64,
+            program_id,
+        );
     } else {
         require!(
-            ctx.accounts.asset.owner == program_id,
+            ctx.accounts.asset.owner() == program_id,
             ProgramError::IllegalOwner,
             "asset"
         );
@@ -116,7 +115,7 @@ pub fn process_create(
             "asset"
         );
 
-        let data = &mut (*ctx.accounts.asset.data).borrow_mut();
+        let data = &mut ctx.accounts.asset.try_borrow_mut_data()?;
 
         // make sure that the asset is not already initialized since the
         // account might have been created adding extensions
@@ -125,22 +124,6 @@ pub fn process_create(
             AssetError::AlreadyInitialized,
             "asset"
         );
-
-        // validates that the last extension is complete
-        if let Some((extension, offset)) = Asset::last_extension(data) {
-            let extension_type = extension.extension_type();
-            let length = extension.length() as usize;
-
-            on_create(
-                extension_type,
-                &mut data[offset..offset + length],
-                Some(ctx.accounts.authority.key),
-            )
-            .map_err(|error| {
-                msg!("[ERROR] {}", error);
-                AssetError::ExtensionDataInvalid
-            })?;
-        }
     }
 
     // process extensions (if there are any)
@@ -150,12 +133,11 @@ pub fn process_create(
             super::allocate::process_allocate(
                 program_id,
                 Context {
-                    accounts: AllocateAccounts {
+                    accounts: Allocate {
                         asset: ctx.accounts.asset,
                         payer: ctx.accounts.payer,
                         system_program: ctx.accounts.system_program,
                     },
-                    remaining_accounts: ctx.remaining_accounts,
                 },
                 AllocateInput {
                     extension: extensions.swap_remove(0),
@@ -164,17 +146,69 @@ pub fn process_create(
         }
     }
 
-    let mut data = (*ctx.accounts.asset.data).borrow_mut();
-    let asset = Asset::load_mut(&mut data);
+    // validate the asset extension data (if there is any)
+
+    let mut extensions = Vec::with_capacity(DEFAULT_EXTENSION_COUNT);
+    let mut offset = Asset::LEN;
+
+    let mut data = ctx.accounts.asset.try_borrow_mut_data()?;
+    let (asset, mut extension_data) = data.split_at_mut(offset);
+
+    while Extension::LEN <= extension_data.len() {
+        let (header, remainder) = extension_data.split_at_mut(Extension::LEN);
+        // load the extension header
+        let extension = Extension::load(header);
+
+        match extension.try_extension_type() {
+            Ok(ExtensionType::None) => {
+                break;
+            }
+            Ok(t) => {
+                extensions.push(t);
+            }
+            Err(_) => {
+                return err!(AssetError::ExtensionDataInvalid, "invalid extension type");
+            }
+        }
+
+        // adjust the offset for the extension data slice
+        let adjusted = extension.boundary() as usize - (Extension::LEN + offset);
+        offset = extension.boundary() as usize;
+
+        if remainder.len() < adjusted {
+            return err!(
+                AssetError::ExtensionDataInvalid,
+                "Invalid extension data (expected {} bytes, got {} bytes)",
+                adjusted,
+                remainder.len()
+            );
+        }
+
+        let (current, remainder) = remainder.split_at_mut(adjusted);
+
+        on_create(
+            extension.extension_type(),
+            &mut current[..extension.length() as usize],
+            Some(ctx.accounts.authority.key()),
+        )
+        .map_err(|error| {
+            msg!("[ERROR] {}", error);
+            AssetError::ExtensionDataInvalid
+        })?;
+
+        extension_data = remainder;
+    }
+
+    // creates the asset
+
+    let asset = Asset::load_mut(asset);
 
     asset.discriminator = Discriminator::Asset;
     asset.standard = args.standard;
     asset.mutable = args.mutable.into();
-    asset.owner = *ctx.accounts.owner.key;
-    asset.authority = *ctx.accounts.authority.key;
+    asset.owner = *ctx.accounts.owner.key();
+    asset.authority = *ctx.accounts.authority.key();
     asset.name = args.name.into();
-
-    let extensions = Asset::get_extensions(&data);
 
     // make sure that a managed asset is created with the manager
     // extension; and vice versa, a non-managed asset is created
@@ -208,7 +242,7 @@ pub fn process_create(
             Pubkey::create_program_address(&[proxy.seeds.as_ref(), &[*proxy.bump]], proxy.program)?;
 
         require!(
-            derived_key == *ctx.accounts.asset.key,
+            derived_key == *ctx.accounts.asset.key(),
             ProgramError::InvalidSeeds,
             "Proxied asset account does not match derived key"
         );
@@ -220,6 +254,7 @@ pub fn process_create(
         );
     }
 
+    #[cfg(feature = "logging")]
     if !extensions.is_empty() {
         msg!("Asset created with {:?} extension(s)", extensions);
     }
@@ -228,12 +263,13 @@ pub fn process_create(
 
     // process the group (if there is one)
     if let Some(group) = ctx.accounts.group {
+        #[cfg(feature = "logging")]
         msg!("Setting group");
 
         super::group::process_group(
             program_id,
             Context {
-                accounts: GroupAccounts {
+                accounts: Group {
                     authority: ctx
                         .accounts
                         .group_authority
@@ -241,7 +277,6 @@ pub fn process_create(
                     asset: ctx.accounts.asset,
                     group,
                 },
-                remaining_accounts: ctx.remaining_accounts,
             },
         )?;
     }

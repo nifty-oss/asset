@@ -38,7 +38,7 @@ test('it can verify a creator', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: creator.publicKey,
             verified: false,
@@ -60,7 +60,7 @@ test('it can verify a creator', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: creator.publicKey,
             verified: true,
@@ -104,7 +104,7 @@ test('it can verify multiple creators', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: creator1.publicKey,
             verified: false,
@@ -131,7 +131,7 @@ test('it can verify multiple creators', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: creator1.publicKey,
             verified: true,
@@ -158,7 +158,7 @@ test('it can verify multiple creators', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: creator1.publicKey,
             verified: true,
@@ -201,7 +201,7 @@ test('it cannot verify a wrong creator', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: creator,
             verified: false,
@@ -228,7 +228,7 @@ test('it cannot verify a wrong creator', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: creator,
             verified: false,

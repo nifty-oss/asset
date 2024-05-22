@@ -1,9 +1,9 @@
 use nifty_asset_interface::{
-    accounts::UpdateAccounts, instructions::UpdateCpiBuilder, UpdateInput,
+    accounts::UpdateAccounts, fetch_proxy_data, instructions::UpdateCpiBuilder, UpdateInput,
 };
 use solana_program::{entrypoint::ProgramResult, msg, program_error::ProgramError, pubkey::Pubkey};
 
-use crate::{fetch_signer_and_authority, require};
+use crate::require;
 
 pub fn process_update<'a>(
     _program_id: &Pubkey,
@@ -14,7 +14,13 @@ pub fn process_update<'a>(
     // have the authority to perform the update
 
     let data = (*ctx.accounts.asset.data).borrow();
-    fetch_signer_and_authority!(signer, authority, nifty_asset_program, ctx, &data);
+    fetch_proxy_data!(
+        &data,
+        signer,
+        authority,
+        nifty_asset_program,
+        ctx.remaining_accounts
+    );
 
     require!(
         ctx.accounts.authority.is_signer,

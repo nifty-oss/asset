@@ -36,7 +36,7 @@ export type ApproveInstructionAccounts = {
   /** Asset account */
   asset: PublicKey | Pda;
   /** The owner of the asset */
-  owner: Signer;
+  owner?: Signer;
   /** The delegate account */
   delegate: PublicKey | Pda;
 };
@@ -70,7 +70,7 @@ export type ApproveInstructionArgs = ApproveInstructionDataArgs;
 
 // Instruction.
 export function approve(
-  context: Pick<Context, 'programs'>,
+  context: Pick<Context, 'identity' | 'programs'>,
   input: ApproveInstructionAccounts & ApproveInstructionArgs
 ): TransactionBuilder {
   // Program ID.
@@ -100,6 +100,11 @@ export function approve(
 
   // Arguments.
   const resolvedArgs: ApproveInstructionArgs = { ...input };
+
+  // Default values.
+  if (!resolvedAccounts.owner.value) {
+    resolvedAccounts.owner.value = context.identity;
+  }
 
   // Accounts in order.
   const orderedAccounts: ResolvedAccount[] = Object.values(

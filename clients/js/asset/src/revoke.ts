@@ -11,7 +11,7 @@ import {
 } from './generated/instructions/revoke';
 
 export function revoke(
-  context: Pick<Context, 'programs'>,
+  context: Pick<Context, 'identity' | 'programs'>,
   input: RevokeInstructionAccounts &
     RevokeInstructionArgs & { proxy?: PublicKey }
 ): TransactionBuilder {

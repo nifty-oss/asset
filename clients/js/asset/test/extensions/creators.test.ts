@@ -49,7 +49,7 @@ test('it can create a new asset with a creator', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: creator,
             verified: false,
@@ -96,7 +96,7 @@ test('it can create a new asset with the authority as a verified creator', async
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: authority.publicKey,
             verified: true,
@@ -151,7 +151,7 @@ test('it can create a new asset with multiple creators', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: expectedCreators,
+        values: expectedCreators,
       },
     ],
   });
@@ -167,11 +167,17 @@ test("it cannot create an asset with invalid creators' total share", async (t) =
     .fill(0)
     .map(() => ({ address: generateSigner(umi).publicKey, share: 10 }));
 
-  // And we try to initialize an asset with a creators extension.
-  const promise = initialize(umi, {
+  // And we initialize an asset with a creators extension.
+  await initialize(umi, {
     asset,
     payer: umi.identity,
     extension: creators(addresses),
+  }).sendAndConfirm(umi);
+
+  const promise = create(umi, {
+    asset,
+    payer: umi.identity,
+    name: 'Asset with creators',
   }).sendAndConfirm(umi);
 
   // Then we expect an error.
@@ -210,7 +216,7 @@ test('it maintain a creator verified status on update', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: creator1.publicKey,
             verified: false,
@@ -236,7 +242,7 @@ test('it maintain a creator verified status on update', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: creator1.publicKey,
             verified: true,
@@ -268,7 +274,7 @@ test('it maintain a creator verified status on update', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: creator1.publicKey,
             verified: true,
@@ -322,7 +328,7 @@ test('it cannot remove a verified creator on update', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: creator1.publicKey,
             verified: true,
@@ -380,7 +386,7 @@ test('it can remove an unverified creator on update', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: creator1.publicKey,
             verified: false,
@@ -408,7 +414,7 @@ test('it can remove an unverified creator on update', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: creator2.publicKey,
             verified: false,
@@ -451,7 +457,7 @@ test('it cannot update creators with invalid total share', async (t) => {
     extensions: [
       {
         type: ExtensionType.Creators,
-        creators: [
+        values: [
           {
             address: creator1.publicKey,
             verified: false,

@@ -33,7 +33,7 @@ impl Assertable for OwnedBy<'_> {
         let account = get_account!(self.account, context);
 
         Ok(
-            if self.owners.contains(account.owner) && !account.data_is_empty() {
+            if self.owners.contains(account.owner()) && !account.is_empty() {
                 Assertion::Pass
             } else {
                 Assertion::Failure

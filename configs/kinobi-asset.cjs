@@ -129,6 +129,8 @@ kinobi.update(
                   { name: "Royalties" },
                   { name: "Manager" },
                   { name: "Proxy" },
+                  { name: "Properties" },
+                  { name: "Bucket" },
                 ],
               },
             }),
@@ -174,7 +176,7 @@ kinobi.update(
               name: "attributes",
               type: k.structTypeNode([
                 k.structFieldTypeNode({
-                  name: "traits",
+                  name: "values",
                   type: k.arrayTypeNode(
                     k.definedTypeLinkNode("trait"),
                     k.remainderSizeNode()
@@ -187,7 +189,7 @@ kinobi.update(
               name: "trait",
               type: k.structTypeNode([
                 k.structFieldTypeNode({
-                  name: "traitType",
+                  name: "name",
                   type: k.stringTypeNode({
                     size: k.prefixedSizeNode(k.numberTypeNode("u8")),
                   }),
@@ -255,7 +257,7 @@ kinobi.update(
               name: "creators",
               type: k.structTypeNode([
                 k.structFieldTypeNode({
-                  name: "creators",
+                  name: "values",
                   type: k.arrayTypeNode(
                     k.definedTypeLinkNode("creator"),
                     k.remainderSizeNode()
@@ -299,6 +301,12 @@ kinobi.update(
                 }),
                 k.structFieldTypeNode({
                   name: "uri",
+                  type: k.stringTypeNode({
+                    size: k.prefixedSizeNode(k.numberTypeNode("u8")),
+                  }),
+                }),
+                k.structFieldTypeNode({
+                  name: "imageUri",
                   type: k.stringTypeNode({
                     size: k.prefixedSizeNode(k.numberTypeNode("u8")),
                   }),
@@ -358,6 +366,31 @@ kinobi.update(
                 }),
               ]),
             }),
+            // bucket
+            k.definedTypeNode({
+              name: "bucket",
+              type: k.structTypeNode([
+                k.structFieldTypeNode({
+                  name: "data",
+                  type: k.arrayTypeNode(
+                    k.numberTypeNode("u8"),
+                    k.remainderSizeNode()
+                  ),
+                }),
+              ]),
+            }),
+            // type (for properties extension)
+            k.definedTypeNodeFromIdl({
+              name: "type",
+              type: {
+                kind: "enum",
+                variants: [
+                  { name: "Text" },
+                  { name: "Number" },
+                  { name: "Boolean" },
+                ],
+              },
+            }),
           ],
         };
       },
@@ -381,9 +414,15 @@ kinobi.update(
         },
       },
     },
+    approve: {
+      accounts: {
+        owner: { defaultValue: k.identityValueNode() },
+      },
+    },
     create: {
       accounts: {
         owner: { defaultValue: k.identityValueNode() },
+        authority: { defaultValue: k.identityValueNode() },
         systemProgram: {
           defaultValue: k.conditionalValueNode({
             condition: k.accountValueNode("payer"),
@@ -400,8 +439,30 @@ kinobi.update(
         },
       },
     },
-    update: {
+    handover: {
       accounts: {
+        authority: { defaultValue: k.identityValueNode() },
+      },
+    },
+    group: {
+      accounts: {
+        authority: { defaultValue: k.identityValueNode() },
+      },
+    },
+    lock: {
+      accounts: {
+        signer: { defaultValue: k.identityValueNode() },
+      },
+    },
+    remove: {
+      accounts: {
+        authority: { defaultValue: k.identityValueNode() },
+        recipient: { defaultValue: k.identityValueNode() },
+      },
+    },
+    resize: {
+      accounts: {
+        authority: { defaultValue: k.identityValueNode() },
         systemProgram: {
           defaultValue: k.conditionalValueNode({
             condition: k.accountValueNode("payer"),
@@ -410,6 +471,50 @@ kinobi.update(
               "systemProgram"
             ),
           }),
+        },
+      },
+    },
+    revoke: {
+      accounts: {
+        signer: { defaultValue: k.identityValueNode() },
+      },
+    },
+    transfer: {
+      accounts: {
+        signer: { defaultValue: k.identityValueNode() },
+      },
+    },
+    ungroup: {
+      accounts: {
+        authority: { defaultValue: k.identityValueNode() },
+      },
+    },
+    unlock: {
+      accounts: {
+        signer: { defaultValue: k.identityValueNode() },
+      },
+    },
+    update: {
+      accounts: {
+        authority: { defaultValue: k.identityValueNode() },
+        systemProgram: {
+          defaultValue: k.conditionalValueNode({
+            condition: k.accountValueNode("payer"),
+            ifTrue: k.publicKeyValueNode(
+              "11111111111111111111111111111111",
+              "systemProgram"
+            ),
+          }),
+        },
+      },
+    },
+    write: {
+      accounts: {
+        systemProgram: {
+          defaultValue: k.publicKeyValueNode(
+            "11111111111111111111111111111111",
+            "systemProgram"
+          ),
         },
       },
     },
@@ -483,6 +588,7 @@ kinobi.accept(
         ".prettierrc.json"
       )),
       internalNodes: [
+        "allocate",
         "approve",
         "burn",
         "create",
@@ -490,6 +596,7 @@ kinobi.accept(
         "handover",
         "lock",
         "remove",
+        "resize",
         "revoke",
         "transfer",
         "ungroup",

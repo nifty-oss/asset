@@ -53,7 +53,7 @@ test('it can mint an asset with an extension', async (t) => {
     owner: owner.publicKey,
     payer: umi.identity,
     name: 'Digital Asset',
-    extensions: [attributes([{ traitType: 'head', value: 'hat' }])],
+    extensions: [attributes([{ name: 'head', value: 'hat' }])],
   }).sendAndConfirm(umi);
 
   // Then an asset was created with the correct data.
@@ -66,9 +66,9 @@ test('it can mint an asset with an extension', async (t) => {
     extensions: [
       {
         type: ExtensionType.Attributes,
-        traits: [
+        values: [
           {
-            traitType: 'head',
+            name: 'head',
             value: 'hat',
           },
         ],
@@ -99,13 +99,13 @@ test('it can mint a new asset with multiple extensions', async (t) => {
     name: 'SMB #1355 (test)',
     extensions: [
       attributes([
-        { traitType: 'Attributes Count', value: '2' },
-        { traitType: 'Type', value: 'Skeleton' },
-        { traitType: 'Clothes', value: 'Orange Jacket' },
-        { traitType: 'Ears', value: 'None' },
-        { traitType: 'Mouth', value: 'None' },
-        { traitType: 'Eyes', value: 'None' },
-        { traitType: 'Hat', value: 'Crown' },
+        { name: 'Attributes Count', value: '2' },
+        { name: 'Type', value: 'Skeleton' },
+        { name: 'Clothes', value: 'Orange Jacket' },
+        { name: 'Ears', value: 'None' },
+        { name: 'Mouth', value: 'None' },
+        { name: 'Eyes', value: 'None' },
+        { name: 'Hat', value: 'Crown' },
       ]),
       creators([
         {
