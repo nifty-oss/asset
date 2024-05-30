@@ -9,7 +9,6 @@ import {
   publicKey as publicKeySerializer,
   string,
 } from '@metaplex-foundation/umi/serializers';
-import { Asset, deserializeAsset } from '.';
 import {
   DelegateArgs,
   DiscriminatorArgs,
@@ -20,6 +19,10 @@ import {
   getStandardSerializer,
   getStateSerializer,
 } from './generated';
+import {
+  InternalAsset as Asset,
+  deserializeInternalAsset as deserializeAsset,
+} from './generated/accounts/internalAsset';
 import {
   NullablePublicKeyArgs,
   getNullablePublicKeySerializer,
