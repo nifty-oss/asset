@@ -5,6 +5,6 @@
 //! [https://github.com/metaplex-foundation/kinobi]
 //!
 
-pub(crate) mod r#asset;
+pub(crate) mod r#internal_asset;
 
-pub use self::r#asset::*;
+pub use self::r#internal_asset::*;

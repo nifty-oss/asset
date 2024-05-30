@@ -28,7 +28,7 @@ kinobi.update(
             ...node.accounts,
             // asset account
             k.accountNode({
-              name: "asset",
+              name: "internalAsset",
               data: k.structTypeNode([
                 k.structFieldTypeNode({
                   name: "discriminator",
@@ -605,10 +605,11 @@ kinobi.accept(
         "update",
         "verify",
         "write",
+        "internalAsset",
       ],
       customAccountData: [
         {
-          name: "asset",
+          name: "internalAsset",
           extract: true,
         },
       ],

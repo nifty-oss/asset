@@ -8,7 +8,8 @@ import {
   u8,
 } from '@metaplex-foundation/umi/serializers';
 import { TypedExtension, getExtension } from '.';
-import { Asset, ExtensionType, Type, getTypeSerializer } from '../generated';
+import { Asset } from '..';
+import { ExtensionType, Type, getTypeSerializer } from '../generated';
 
 type Property =
   | Omit<Text, 'type'>

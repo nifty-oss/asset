@@ -1,3 +1,3 @@
-export * from './assetAccountData';
+export * from './internalAssetAccountData';
 export * from './delegateRoles';
 export * from './nullablePublicKey';
