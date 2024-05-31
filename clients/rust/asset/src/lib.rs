@@ -3,10 +3,14 @@ mod hooked;
 mod impls;
 mod mint;
 
+use accounts::InternalAsset;
 pub use generated::programs::ASSET_ID as ID;
 pub use generated::*;
 pub use hooked::*;
 pub use mint::*;
+
+// Re-export the "internal" `Asset` type.
+pub type Asset = InternalAsset;
 
 // Re-export for downstream crates.
 pub mod solana_program {

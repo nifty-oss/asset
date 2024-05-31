@@ -1,6 +1,6 @@
 import { Serializer } from '@metaplex-foundation/umi/serializers';
+import { Asset } from '..';
 import {
-  Asset,
   Attributes,
   Blob,
   Bucket,

@@ -16,7 +16,7 @@ use solana_program::pubkey::Pubkey;
 
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Asset {
+pub struct InternalAsset {
     pub discriminator: Discriminator,
     pub state: State,
     pub standard: Standard,
@@ -37,7 +37,7 @@ pub struct Asset {
     pub name: [u8; 35],
 }
 
-impl Asset {
+impl InternalAsset {
     #[inline(always)]
     pub fn from_bytes(data: &[u8]) -> Result<Self, std::io::Error> {
         let mut data = data;
@@ -45,7 +45,7 @@ impl Asset {
     }
 }
 
-impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for Asset {
+impl<'a> TryFrom<&solana_program::account_info::AccountInfo<'a>> for InternalAsset {
     type Error = std::io::Error;
 
     fn try_from(

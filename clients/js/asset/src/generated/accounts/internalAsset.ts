@@ -25,14 +25,13 @@ import {
   string,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  AssetAccountData,
+  InternalAssetAccountData,
   NullablePublicKeyArgs,
-  getAssetAccountDataSerializer,
+  getInternalAssetAccountDataSerializer,
   getNullablePublicKeySerializer,
 } from '../../hooked';
 import {
   DelegateArgs,
-  Discriminator,
   DiscriminatorArgs,
   StandardArgs,
   StateArgs,
@@ -42,67 +41,76 @@ import {
   getStateSerializer,
 } from '../types';
 
-export type Asset = Account<AssetAccountData>;
+export type InternalAsset = Account<InternalAssetAccountData>;
 
-export function deserializeAsset(rawAccount: RpcAccount): Asset {
-  return deserializeAccount(rawAccount, getAssetAccountDataSerializer());
+export function deserializeInternalAsset(
+  rawAccount: RpcAccount
+): InternalAsset {
+  return deserializeAccount(
+    rawAccount,
+    getInternalAssetAccountDataSerializer()
+  );
 }
 
-export async function fetchAsset(
+export async function fetchInternalAsset(
   context: Pick<Context, 'rpc'>,
   publicKey: PublicKey | Pda,
   options?: RpcGetAccountOptions
-): Promise<Asset> {
+): Promise<InternalAsset> {
   const maybeAccount = await context.rpc.getAccount(
     toPublicKey(publicKey, false),
     options
   );
-  assertAccountExists(maybeAccount, 'Asset');
-  return deserializeAsset(maybeAccount);
+  assertAccountExists(maybeAccount, 'InternalAsset');
+  return deserializeInternalAsset(maybeAccount);
 }
 
-export async function safeFetchAsset(
+export async function safeFetchInternalAsset(
   context: Pick<Context, 'rpc'>,
   publicKey: PublicKey | Pda,
   options?: RpcGetAccountOptions
-): Promise<Asset | null> {
+): Promise<InternalAsset | null> {
   const maybeAccount = await context.rpc.getAccount(
     toPublicKey(publicKey, false),
     options
   );
-  return maybeAccount.exists ? deserializeAsset(maybeAccount) : null;
+  return maybeAccount.exists ? deserializeInternalAsset(maybeAccount) : null;
 }
 
-export async function fetchAllAsset(
+export async function fetchAllInternalAsset(
   context: Pick<Context, 'rpc'>,
   publicKeys: Array<PublicKey | Pda>,
   options?: RpcGetAccountsOptions
-): Promise<Asset[]> {
+): Promise<InternalAsset[]> {
   const maybeAccounts = await context.rpc.getAccounts(
     publicKeys.map((key) => toPublicKey(key, false)),
     options
   );
   return maybeAccounts.map((maybeAccount) => {
-    assertAccountExists(maybeAccount, 'Asset');
-    return deserializeAsset(maybeAccount);
+    assertAccountExists(maybeAccount, 'InternalAsset');
+    return deserializeInternalAsset(maybeAccount);
   });
 }
 
-export async function safeFetchAllAsset(
+export async function safeFetchAllInternalAsset(
   context: Pick<Context, 'rpc'>,
   publicKeys: Array<PublicKey | Pda>,
   options?: RpcGetAccountsOptions
-): Promise<Asset[]> {
+): Promise<InternalAsset[]> {
   const maybeAccounts = await context.rpc.getAccounts(
     publicKeys.map((key) => toPublicKey(key, false)),
     options
   );
   return maybeAccounts
     .filter((maybeAccount) => maybeAccount.exists)
-    .map((maybeAccount) => deserializeAsset(maybeAccount as RpcAccount));
+    .map((maybeAccount) =>
+      deserializeInternalAsset(maybeAccount as RpcAccount)
+    );
 }
 
-export function getAssetGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
+export function getInternalAssetGpaBuilder(
+  context: Pick<Context, 'rpc' | 'programs'>
+) {
   const programId = context.programs.getPublicKey(
     'asset',
     'AssetGtQBTSgm5s91d1RAQod5JmaZiJDxqsgtqrZud73'
@@ -129,6 +137,7 @@ export function getAssetGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
       delegate: [null, getDelegateSerializer()],
       name: [null, string({ size: 35 })],
     })
-    .deserializeUsing<Asset>((account) => deserializeAsset(account))
-    .whereField('discriminator', Discriminator.Asset);
+    .deserializeUsing<InternalAsset>((account) =>
+      deserializeInternalAsset(account)
+    );
 }

@@ -7,28 +7,31 @@ import {
   ExtensionType,
 } from '../generated';
 import {
-  AssetAccountData as BaseAssetAccountData,
-  AssetAccountDataArgs as BaseAssetAccountDataArgs,
-  getAssetAccountDataSerializer as getBaseAssetAccountDataSerializer,
-} from '../generated/types/assetAccountData';
+  InternalAssetAccountData as BaseInternalAssetAccountData,
+  InternalAssetAccountDataArgs as BaseInternalAssetAccountDataArgs,
+  getInternalAssetAccountDataSerializer as getBaseInternalAssetAccountDataSerializer,
+} from '../generated/types/internalAssetAccountData';
 import { getExtensionHeaderSerializer } from '../generated/types/extensionHeader';
 
-export type AssetAccountData = Omit<BaseAssetAccountData, 'delegate'> & {
-  delegate: (Omit<Delegate, 'roles'> & { roles: DelegateRole[] }) | null;
-  extensions: TypedExtension[];
-};
-
-export type AssetAccountDataArgs = Omit<
-  BaseAssetAccountDataArgs,
+export type InternalAssetAccountData = Omit<
+  BaseInternalAssetAccountData,
   'delegate'
 > & {
   delegate: (Omit<Delegate, 'roles'> & { roles: DelegateRole[] }) | null;
   extensions: TypedExtension[];
 };
 
-export const getAssetAccountDataSerializer = (): Serializer<
-  AssetAccountDataArgs,
-  AssetAccountData
+export type InternalAssetAccountDataArgs = Omit<
+  BaseInternalAssetAccountDataArgs,
+  'delegate'
+> & {
+  delegate: (Omit<Delegate, 'roles'> & { roles: DelegateRole[] }) | null;
+  extensions: TypedExtension[];
+};
+
+export const getInternalAssetAccountDataSerializer = (): Serializer<
+  InternalAssetAccountDataArgs,
+  InternalAssetAccountData
 > => ({
   description: 'AssetAccountData',
   fixedSize: null,
@@ -36,10 +39,13 @@ export const getAssetAccountDataSerializer = (): Serializer<
   serialize: () => {
     throw new Error('Operation not supported.');
   },
-  deserialize: (buffer: Uint8Array, offset = 0): [AssetAccountData, number] => {
+  deserialize: (
+    buffer: Uint8Array,
+    offset = 0
+  ): [InternalAssetAccountData, number] => {
     // Account.
     const [asset, assetOffset] =
-      getBaseAssetAccountDataSerializer().deserialize(buffer, offset);
+      getBaseInternalAssetAccountDataSerializer().deserialize(buffer, offset);
     if (asset.discriminator !== Discriminator.Asset) {
       throw new Error(
         `Expected an Asset account, got account discriminator: ${asset.discriminator}`

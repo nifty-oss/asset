@@ -10,7 +10,6 @@ import { PublicKey } from '@metaplex-foundation/umi';
 import {
   Serializer,
   bool,
-  mapSerializer,
   publicKey as publicKeySerializer,
   string,
   struct,
@@ -19,6 +18,7 @@ import {
   Delegate,
   DelegateArgs,
   Discriminator,
+  DiscriminatorArgs,
   Standard,
   StandardArgs,
   State,
@@ -34,7 +34,7 @@ import {
   getNullablePublicKeySerializer,
 } from '../../hooked';
 
-export type AssetAccountData = {
+export type InternalAssetAccountData = {
   discriminator: Discriminator;
   state: State;
   standard: Standard;
@@ -46,7 +46,8 @@ export type AssetAccountData = {
   name: string;
 };
 
-export type AssetAccountDataArgs = {
+export type InternalAssetAccountDataArgs = {
+  discriminator: DiscriminatorArgs;
   state: StateArgs;
   standard: StandardArgs;
   mutable: boolean;
@@ -57,25 +58,22 @@ export type AssetAccountDataArgs = {
   name: string;
 };
 
-export function getAssetAccountDataSerializer(): Serializer<
-  AssetAccountDataArgs,
-  AssetAccountData
+export function getInternalAssetAccountDataSerializer(): Serializer<
+  InternalAssetAccountDataArgs,
+  InternalAssetAccountData
 > {
-  return mapSerializer<AssetAccountDataArgs, any, AssetAccountData>(
-    struct<AssetAccountData>(
-      [
-        ['discriminator', getDiscriminatorSerializer()],
-        ['state', getStateSerializer()],
-        ['standard', getStandardSerializer()],
-        ['mutable', bool()],
-        ['owner', publicKeySerializer()],
-        ['group', getNullablePublicKeySerializer()],
-        ['authority', publicKeySerializer()],
-        ['delegate', getDelegateSerializer()],
-        ['name', string({ size: 35 })],
-      ],
-      { description: 'AssetAccountData' }
-    ),
-    (value) => ({ ...value, discriminator: Discriminator.Asset })
-  ) as Serializer<AssetAccountDataArgs, AssetAccountData>;
+  return struct<InternalAssetAccountData>(
+    [
+      ['discriminator', getDiscriminatorSerializer()],
+      ['state', getStateSerializer()],
+      ['standard', getStandardSerializer()],
+      ['mutable', bool()],
+      ['owner', publicKeySerializer()],
+      ['group', getNullablePublicKeySerializer()],
+      ['authority', publicKeySerializer()],
+      ['delegate', getDelegateSerializer()],
+      ['name', string({ size: 35 })],
+    ],
+    { description: 'InternalAssetAccountData' }
+  ) as Serializer<InternalAssetAccountDataArgs, InternalAssetAccountData>;
 }
