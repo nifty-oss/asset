@@ -10,11 +10,9 @@ import {
   string,
 } from '@metaplex-foundation/umi/serializers';
 import {
-  DelegateArgs,
   DiscriminatorArgs,
   StandardArgs,
   StateArgs,
-  getDelegateSerializer,
   getDiscriminatorSerializer,
   getStandardSerializer,
   getStateSerializer,
@@ -24,7 +22,9 @@ import {
   deserializeInternalAsset as deserializeAsset,
 } from './generated/accounts/internalAsset';
 import {
+  DelegateRolesArgs,
   NullablePublicKeyArgs,
+  getDelegateRolesSerializer,
   getNullablePublicKeySerializer,
 } from './hooked';
 
@@ -79,7 +79,8 @@ export function getAssetGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
       owner: PublicKey;
       group: NullablePublicKeyArgs;
       authority: PublicKey;
-      delegate: DelegateArgs;
+      delegate: NullablePublicKeyArgs;
+      roles: DelegateRolesArgs;
       name: string;
     }>({
       discriminator: [0, getDiscriminatorSerializer()],
@@ -89,7 +90,8 @@ export function getAssetGpaBuilder(context: Pick<Context, 'rpc' | 'programs'>) {
       owner: [4, publicKeySerializer()],
       group: [36, getNullablePublicKeySerializer()],
       authority: [68, publicKeySerializer()],
-      delegate: [100, getDelegateSerializer()],
+      delegate: [100, getNullablePublicKeySerializer()],
+      roles: [132, getDelegateRolesSerializer()],
       name: [133, string({ size: 35 })],
     })
     .deserializeUsing<Asset>((account) => deserializeAsset(account));
