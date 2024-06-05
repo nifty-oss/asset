@@ -23,5 +23,5 @@
     "@metaplex-foundation/amman": "^0.12.1",
     "typescript": "^5.3.3"
   },
-  "packageManager": "pnpm@8.9.0"
+  "packageManager": "pnpm@9.1.4"
 }
