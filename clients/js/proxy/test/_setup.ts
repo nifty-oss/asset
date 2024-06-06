@@ -10,3 +10,7 @@ export const STUB_KEY = Uint8Array.from([
   198, 193, 21, 158, 198, 203, 241, 229, 179, 162, 229, 129, 109, 151, 51, 135,
   240, 128, 114, 242, 103, 170, 154, 47, 218, 130, 218, 139, 45, 47,
 ]);
+
+export function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

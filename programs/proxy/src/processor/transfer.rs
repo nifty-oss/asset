@@ -1,6 +1,6 @@
 use nifty_asset_interface::{
     accounts::TransferAccounts,
-    extensions::{Attributes, AttributesBuilder, BlobBuilder, ExtensionBuilder},
+    extensions::{Attributes, AttributesBuilder, BlobBuilder, ExtensionBuilder, PropertiesBuilder},
     fetch_proxy_data,
     instructions::{TransferCpiBuilder, UpdateCpiBuilder},
     state::Asset,
@@ -88,6 +88,22 @@ pub fn process_transfer<'a>(
         .authority(ctx.accounts.asset)
         .extension(ExtensionInput {
             extension_type: ExtensionType::Blob,
+            length: data.len() as u32,
+            data: Some(data),
+        })
+        .invoke_signed(&[&signer])?;
+
+    // updates the properties (last tranferred)
+
+    let data = PropertiesBuilder::with_capacity(30)
+        .add_number("last_transferred", Clock::get()?.unix_timestamp as u64)
+        .data();
+
+    UpdateCpiBuilder::new(nifty_asset_program)
+        .asset(ctx.accounts.asset)
+        .authority(ctx.accounts.asset)
+        .extension(ExtensionInput {
+            extension_type: ExtensionType::Properties,
             length: data.len() as u32,
             data: Some(data),
         })
