@@ -1,10 +1,15 @@
 use nifty_asset_interface::{
-    extensions::{AttributesBuilder, BlobBuilder, ExtensionBuilder, ProxyBuilder},
+    extensions::{
+        AttributesBuilder, BlobBuilder, ExtensionBuilder, PropertiesBuilder, ProxyBuilder,
+    },
     instructions::CreateCpiBuilder,
     types::ExtensionInput,
     ExtensionType, Standard,
 };
-use solana_program::{entrypoint::ProgramResult, program_error::ProgramError, pubkey::Pubkey};
+use solana_program::{
+    clock::Clock, entrypoint::ProgramResult, program_error::ProgramError, pubkey::Pubkey,
+    sysvar::Sysvar,
+};
 
 use crate::{
     instruction::{
@@ -86,6 +91,15 @@ pub fn process_create(
         data: Some(data),
     };
 
+    let data = PropertiesBuilder::with_capacity(30)
+        .add_number("last_transferred", Clock::get()?.unix_timestamp as u64)
+        .data();
+    let properties = ExtensionInput {
+        extension_type: ExtensionType::Properties,
+        length: data.len() as u32,
+        data: Some(data),
+    };
+
     // creates the proxied asset
 
     CreateCpiBuilder::new(ctx.accounts.nifty_asset_program)
@@ -97,6 +111,6 @@ pub fn process_create(
         .system_program(ctx.accounts.system_program)
         .name(metadata.name)
         .standard(Standard::Proxied)
-        .extensions(vec![attributes, blob, proxy])
+        .extensions(vec![attributes, blob, proxy, properties])
         .invoke_signed(&[&signer])
 }
