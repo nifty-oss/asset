@@ -13,7 +13,7 @@ use borsh::BorshSerialize;
 pub struct Revoke {
     /// Asset account
     pub asset: solana_program::pubkey::Pubkey,
-    /// Current owner of the asset or delegate
+    /// Owner of the asset or current delegate
     pub signer: solana_program::pubkey::Pubkey,
 }
 
@@ -92,7 +92,7 @@ impl RevokeBuilder {
         self.asset = Some(asset);
         self
     }
-    /// Current owner of the asset or delegate
+    /// Owner of the asset or current delegate
     #[inline(always)]
     pub fn signer(&mut self, signer: solana_program::pubkey::Pubkey) -> &mut Self {
         self.signer = Some(signer);
@@ -142,7 +142,7 @@ impl RevokeBuilder {
 pub struct RevokeCpiAccounts<'a, 'b> {
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
-    /// Current owner of the asset or delegate
+    /// Owner of the asset or current delegate
     pub signer: &'b solana_program::account_info::AccountInfo<'a>,
 }
 
@@ -152,7 +152,7 @@ pub struct RevokeCpi<'a, 'b> {
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
     /// Asset account
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
-    /// Current owner of the asset or delegate
+    /// Owner of the asset or current delegate
     pub signer: &'b solana_program::account_info::AccountInfo<'a>,
     /// The arguments for the instruction.
     pub __args: RevokeInstructionArgs,
@@ -272,7 +272,7 @@ impl<'a, 'b> RevokeCpiBuilder<'a, 'b> {
         self.instruction.asset = Some(asset);
         self
     }
-    /// Current owner of the asset or delegate
+    /// Owner of the asset or current delegate
     #[inline(always)]
     pub fn signer(
         &mut self,

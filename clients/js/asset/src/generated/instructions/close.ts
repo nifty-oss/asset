@@ -28,7 +28,7 @@ import {
 
 // Accounts.
 export type CloseInstructionAccounts = {
-  /** The unitialized buffer account */
+  /** The uninitialized buffer account */
   buffer: Signer;
   /** The account receiving refunded rent */
   recipient: PublicKey | Pda;

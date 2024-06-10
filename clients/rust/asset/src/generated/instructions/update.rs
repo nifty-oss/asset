@@ -15,7 +15,7 @@ pub struct Update {
     pub asset: solana_program::pubkey::Pubkey,
     /// The authority of the asset
     pub authority: solana_program::pubkey::Pubkey,
-    /// Extension (asset) buffer account
+    /// Extension buffer (uninitialized asset) account
     pub buffer: Option<solana_program::pubkey::Pubkey>,
     /// The asset defining the group, if applicable
     pub group: Option<solana_program::pubkey::Pubkey>,
@@ -156,7 +156,7 @@ impl UpdateBuilder {
         self
     }
     /// `[optional account]`
-    /// Extension (asset) buffer account
+    /// Extension buffer (uninitialized asset) account
     #[inline(always)]
     pub fn buffer(&mut self, buffer: Option<solana_program::pubkey::Pubkey>) -> &mut Self {
         self.buffer = buffer;
@@ -248,7 +248,7 @@ pub struct UpdateCpiAccounts<'a, 'b> {
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// The authority of the asset
     pub authority: &'b solana_program::account_info::AccountInfo<'a>,
-    /// Extension (asset) buffer account
+    /// Extension buffer (uninitialized asset) account
     pub buffer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The asset defining the group, if applicable
     pub group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
@@ -266,7 +266,7 @@ pub struct UpdateCpi<'a, 'b> {
     pub asset: &'b solana_program::account_info::AccountInfo<'a>,
     /// The authority of the asset
     pub authority: &'b solana_program::account_info::AccountInfo<'a>,
-    /// Extension (asset) buffer account
+    /// Extension buffer (uninitialized asset) account
     pub buffer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The asset defining the group, if applicable
     pub group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
@@ -470,7 +470,7 @@ impl<'a, 'b> UpdateCpiBuilder<'a, 'b> {
         self
     }
     /// `[optional account]`
-    /// Extension (asset) buffer account
+    /// Extension buffer (uninitialized asset) account
     #[inline(always)]
     pub fn buffer(
         &mut self,
