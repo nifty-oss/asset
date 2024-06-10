@@ -92,7 +92,7 @@ pub fn process_create(
     };
 
     let data = PropertiesBuilder::with_capacity(30)
-        .add_number("last_transferred", Clock::get()?.unix_timestamp as u64)
+        .add::<u64>("last_transferred", Clock::get()?.unix_timestamp as u64)
         .data();
     let properties = ExtensionInput {
         extension_type: ExtensionType::Properties,
