@@ -2,7 +2,7 @@
 resolver = "2"
 members = [
   "clients/rust/asset",
-  "clients/rust/bridge",
+  "clients/rust/bridge", "include-idl",
   "programs/asset/interface",
   "programs/asset/program",
   "programs/asset/types",

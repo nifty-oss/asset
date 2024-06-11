@@ -339,6 +339,7 @@ version = "0.6.0"
 dependencies = [
  "borsh 0.10.3",
  "bytemuck",
+ "include-idl",
  "nifty-asset-types",
  "nitrate",
  "num-derive 0.3.3",
@@ -1782,6 +1783,13 @@ dependencies = [
  "sized-chunks",
  "typenum",
  "version_check",
+]
+
+[[package]]
+name = "include-idl"
+version = "0.1.0"
+dependencies = [
+ "flate2",
 ]
 
 [[package]]
