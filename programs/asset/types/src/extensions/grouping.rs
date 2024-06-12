@@ -10,6 +10,9 @@ use crate::{error::Error, state::NullablePubkey};
 
 use super::{ExtensionBuilder, ExtensionData, ExtensionDataMut, ExtensionType, Lifecycle};
 
+/// Empty string used for backwards compatibility with metadata extension.
+const EMPTY: [u8; 32] = [0u8; 32];
+
 /// Extension to define a group of assets.
 ///
 /// Assets that are intented to be use as group "markers" must have this extension
@@ -36,10 +39,17 @@ impl<'a> ExtensionData<'a> for Grouping<'a> {
     fn from_bytes(bytes: &'a [u8]) -> Self {
         let (size, rest) = bytes.split_at(std::mem::size_of::<u64>());
         let (max_size, delegate) = rest.split_at(std::mem::size_of::<u64>());
+
         Self {
             size: bytemuck::from_bytes(size),
             max_size: bytemuck::from_bytes(max_size),
-            delegate: bytemuck::from_bytes(delegate),
+            // backwards compatibility for grouping extension: if there are not enough
+            // bytes to read the delegate, we assume it is empty
+            delegate: bytemuck::from_bytes(if delegate.len() < EMPTY.len() {
+                &EMPTY
+            } else {
+                delegate
+            }),
         }
     }
 
@@ -72,10 +82,17 @@ impl<'a> ExtensionDataMut<'a> for GroupingMut<'a> {
     fn from_bytes_mut(bytes: &'a mut [u8]) -> Self {
         let (size, rest) = bytes.split_at_mut(std::mem::size_of::<u64>());
         let (max_size, delegate) = rest.split_at_mut(std::mem::size_of::<u64>());
+
         Self {
             size: bytemuck::from_bytes_mut(size),
             max_size: bytemuck::from_bytes_mut(max_size),
-            delegate: bytemuck::from_bytes_mut(delegate),
+            // backwards compatibility for grouping extension: if there are not enough
+            // bytes to read the delegate, we assume it is empty
+            delegate: bytemuck::from_bytes_mut(if delegate.len() < EMPTY.len() {
+                unsafe { (&EMPTY as *const [u8] as *mut [u8]).as_mut().unwrap() }
+            } else {
+                delegate
+            }),
         }
     }
 }
