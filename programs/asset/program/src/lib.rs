@@ -21,7 +21,7 @@ use include_idl::include_idl;
 use solana_security_txt::security_txt;
 
 #[cfg(not(feature = "no-entrypoint"))]
-include_idl!(concat!("../../../../idls", "/idl.json.zip"));
+include_idl!(concat!(env!("OUT_DIR"), "/idl.json.zip"));
 
 #[cfg(not(feature = "no-entrypoint"))]
 security_txt! {
