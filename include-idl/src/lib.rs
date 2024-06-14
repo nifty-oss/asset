@@ -5,7 +5,7 @@ pub use shrink::compress_idl;
 #[macro_export]
 macro_rules! include_idl {
     () => {
-        #[cfg(not(feature = "no-entrypoint"))]
+        #[cfg(target_arch = "bpf")]
         #[link_section = ".solana.idl"]
         #[allow(dead_code)]
         #[no_mangle]

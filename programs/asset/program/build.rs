@@ -6,10 +6,8 @@ use include_idl::compress_idl;
 
 fn main() {
     // Run shank to generate the IDL
-    let _output = Command::new("shank")
-        .arg("idl")
-        .arg("-o")
-        .arg("../../../idls")
+    let _output = Command::new("pnpm")
+        .arg("generate:idls")
         .output()
         .expect("Failed to run shank");
 
