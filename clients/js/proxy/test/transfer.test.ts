@@ -9,15 +9,17 @@ import {
   ExtensionType,
   Standard,
   State,
+  Type,
   fetchAsset,
   getExtension,
+  getProperty,
   transfer,
 } from '@nifty-oss/asset';
 import { Keypair } from '@solana/web3.js';
 import test from 'ava';
 import { create } from '../src';
 import { findProxiedAssetPda } from '../src/pda';
-import { STUB_KEY, createUmi } from './_setup';
+import { STUB_KEY, createUmi, sleep } from './_setup';
 
 test('it cannot transfer a non-signer proxied asset', async (t) => {
   // Given a Umi instance and a new signer.
@@ -114,6 +116,12 @@ test('it can execute custom logic on transfer', async (t) => {
   const initial = attributes?.values[0].value;
   t.true(parseInt(initial!) === 0);
 
+  // initial value for the last transferred timestamp
+  const timestamp = getProperty(asset, 'last_transferred', Type.Number)!.value;
+
+  // We wait for a second to ensure the timestamp is different.
+  await sleep(1000);
+
   const recipient = generateSigner(umi).publicKey;
   const proxy = getExtension(asset, ExtensionType.Proxy);
   // And we transfer the proxied asset through the proxy program (using
@@ -139,6 +147,14 @@ test('it can execute custom logic on transfer', async (t) => {
   const current = parseInt(attributes?.values[0].value!);
   t.true(current === 1);
   t.assert(parseInt(initial!) < current);
+
+  // And the last transferred timestamp is updated.
+  const lastTransferred = getProperty(
+    asset,
+    'last_transferred',
+    Type.Number
+  )!.value;
+  t.assert(timestamp < lastTransferred);
 });
 
 test('it can transfer the proxy asset multiple times', async (t) => {

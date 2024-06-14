@@ -1,6 +1,6 @@
 [package]
 name = "asset-program"
-version = "0.6.0"
+version = "0.6.1"
 authors = ["nifty-oss maintainers <maintainers@nifty-oss.org>"]
 edition = "2021"
 readme = "./README.md"
