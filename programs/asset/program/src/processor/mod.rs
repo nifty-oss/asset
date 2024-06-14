@@ -176,7 +176,7 @@ fn validate_access<'a>(
 
         if account_info.owner() == program_id
             && !account_info.data_is_empty()
-            && data[STANDARD_INDEX] == Standard::Proxied.into()
+            && data[STANDARD_INDEX] == u8::from(Standard::Proxied)
         {
             require!(
                 account_info.is_signer(),
@@ -191,8 +191,8 @@ fn validate_access<'a>(
         // only considers accounts owned by the program and non-empty
         if account_info.owner() == program_id && !account_info.data_is_empty() {
             let data = account_info.try_borrow_data()?;
-            if data[DISCRIMINATOR_INDEX] == Discriminator::Asset.into()
-                && data[STATE_INDEX] == State::Locked.into()
+            if data[DISCRIMINATOR_INDEX] == u8::from(Discriminator::Asset)
+                && data[STATE_INDEX] == u8::from(State::Locked)
             {
                 // any locked asset can be used to determine if the
                 // instruction is allowed

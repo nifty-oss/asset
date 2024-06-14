@@ -60,7 +60,7 @@ pub fn process_update(
     let mut account_data = ctx.accounts.asset.try_borrow_mut_data()?;
 
     require!(
-        account_data.len() >= Asset::LEN && account_data[0] == Discriminator::Asset.into(),
+        account_data.len() >= Asset::LEN && account_data[0] == u8::from(Discriminator::Asset),
         AssetError::Uninitialized,
         "asset"
     );
@@ -134,7 +134,7 @@ pub fn process_update(
             );
 
             require!(
-                extension_data[0] == Discriminator::Uninitialized.into(),
+                extension_data[0] == u8::from(Discriminator::Uninitialized),
                 AssetError::AlreadyInitialized,
                 "buffer"
             );

@@ -35,7 +35,7 @@ pub fn process_verify(program_id: &Pubkey, ctx: Context<Verify>) -> ProgramResul
     let mut data = ctx.accounts.asset.try_borrow_mut_data()?;
 
     require!(
-        data.len() >= Asset::LEN && data[0] == Discriminator::Asset.into(),
+        data.len() >= Asset::LEN && data[0] == u8::from(Discriminator::Asset),
         AssetError::Uninitialized,
         "asset"
     );

@@ -120,7 +120,7 @@ pub fn process_create(
         // make sure that the asset is not already initialized since the
         // account might have been created adding extensions
         require!(
-            data[0] == Discriminator::Uninitialized.into(),
+            data[0] == u8::from(Discriminator::Uninitialized),
             AssetError::AlreadyInitialized,
             "asset"
         );

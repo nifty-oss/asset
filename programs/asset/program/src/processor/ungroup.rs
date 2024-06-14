@@ -43,7 +43,7 @@ pub fn process_ungroup(program_id: &Pubkey, ctx: Context<Ungroup>) -> ProgramRes
     let mut asset_data = ctx.accounts.asset.try_borrow_mut_data()?;
 
     require!(
-        asset_data.len() >= Asset::LEN && asset_data[0] == Discriminator::Asset.into(),
+        asset_data.len() >= Asset::LEN && asset_data[0] == u8::from(Discriminator::Asset),
         AssetError::Uninitialized,
         "asset"
     );
@@ -51,7 +51,7 @@ pub fn process_ungroup(program_id: &Pubkey, ctx: Context<Ungroup>) -> ProgramRes
     let mut group_data = ctx.accounts.group.try_borrow_mut_data()?;
 
     require!(
-        group_data.len() >= Asset::LEN && group_data[0] == Discriminator::Asset.into(),
+        group_data.len() >= Asset::LEN && group_data[0] == u8::from(Discriminator::Asset),
         AssetError::Uninitialized,
         "asset"
     );

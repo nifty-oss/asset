@@ -39,7 +39,7 @@ pub fn process_burn(program_id: &Pubkey, ctx: Context<Burn>) -> ProgramResult {
 
     // Must be an initialized asset.
     require!(
-        data.len() >= Asset::LEN && data[0] == Discriminator::Asset.into(),
+        data.len() >= Asset::LEN && data[0] == u8::from(Discriminator::Asset),
         AssetError::Uninitialized,
         "asset"
     );
