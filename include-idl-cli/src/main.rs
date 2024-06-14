@@ -38,7 +38,7 @@ pub fn main() -> Result<()> {
 }
 
 pub fn parse_idl_from_program_binary(buffer: &[u8]) -> Result<Value> {
-    let elf = Elf::parse(&buffer)?;
+    let elf = Elf::parse(buffer)?;
 
     // Iterate over section headers and print information
     for sh in &elf.section_headers {

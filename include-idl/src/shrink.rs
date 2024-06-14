@@ -7,7 +7,7 @@ use std::{
 use flate2::{write::ZlibEncoder, Compression};
 
 pub fn compress_idl(idl_path: &PathBuf, dest_path: &PathBuf) {
-    let mut idl_json = File::open(&idl_path).unwrap();
+    let mut idl_json = File::open(idl_path).unwrap();
     let mut json_contents = String::new();
     idl_json
         .read_to_string(&mut json_contents)
