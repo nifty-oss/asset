@@ -28,4 +28,4 @@ thiserror = "^1.0"
 include-idl = { path = "../../../include-idl" }
 
 [build-dependencies]
-include-idl = { path = "../../../include-idl" }
+include-idl = { path = "../../../include-idl", features = ["shrink"] }

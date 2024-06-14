@@ -1,6 +1,11 @@
+mod parse;
 mod shrink;
 
+#[cfg(feature = "shrink")]
 pub use shrink::compress_idl;
+
+#[cfg(feature = "parse")]
+pub use parse::parse_idl_from_program_binary;
 
 #[macro_export]
 macro_rules! include_idl {

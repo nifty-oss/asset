@@ -1,11 +1,14 @@
+#[cfg(feature = "shrink")]
 use std::{
     fs::File,
     io::{Read, Write},
     path::PathBuf,
 };
 
+#[cfg(feature = "shrink")]
 use flate2::{write::ZlibEncoder, Compression};
 
+#[cfg(feature = "shrink")]
 pub fn compress_idl(idl_path: &PathBuf, dest_path: &PathBuf) {
     let mut idl_json = File::open(idl_path).unwrap();
     let mut json_contents = String::new();

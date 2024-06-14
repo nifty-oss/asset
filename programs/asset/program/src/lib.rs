@@ -16,6 +16,7 @@ pub use solana_program;
 
 #[cfg(not(feature = "no-entrypoint"))]
 use include_idl::include_idl;
+
 #[cfg(not(feature = "no-entrypoint"))]
 use solana_security_txt::security_txt;
 

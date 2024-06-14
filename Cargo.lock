@@ -1902,6 +1902,8 @@ name = "include-idl"
 version = "0.1.0"
 dependencies = [
  "flate2",
+ "goblin 0.8.2",
+ "serde_json",
 ]
 
 [[package]]
@@ -1909,9 +1911,8 @@ name = "include-idl-cli"
 version = "0.1.0"
 dependencies = [
  "clap 4.5.7",
- "flate2",
  "goblin 0.8.2",
- "serde_json",
+ "include-idl",
 ]
 
 [[package]]
