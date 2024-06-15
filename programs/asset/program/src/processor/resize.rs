@@ -41,7 +41,7 @@ pub fn process_resize(program_id: &Pubkey, ctx: Context<Resize>, args: Strategy)
     let account_data = ctx.accounts.asset.try_borrow_data()?;
 
     require!(
-        account_data.len() >= Asset::LEN && account_data[0] == Discriminator::Asset.into(),
+        account_data.len() >= Asset::LEN && account_data[0] == u8::from(Discriminator::Asset),
         AssetError::Uninitialized,
         "asset"
     );

@@ -49,7 +49,7 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<Transfer>) -> ProgramR
 
     // Must be an initialized asset.
     require!(
-        data.len() >= Asset::LEN && data[0] == Discriminator::Asset.into(),
+        data.len() >= Asset::LEN && data[0] == u8::from(Discriminator::Asset),
         AssetError::Uninitialized,
         "asset"
     );
@@ -122,7 +122,7 @@ pub fn process_transfer(program_id: &Pubkey, ctx: Context<Transfer>) -> ProgramR
 
             // Group asset account must be initialized.
             require!(
-                group_data[0] == Discriminator::Asset.into(),
+                group_data[0] == u8::from(Discriminator::Asset),
                 AssetError::InvalidGroup,
                 "group account is not initialized"
             );

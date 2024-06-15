@@ -61,7 +61,7 @@ pub fn process_allocate(
 
         // make sure that the asset is not already initialized
         require!(
-            data[0] == Discriminator::Uninitialized.into(),
+            data[0] == u8::from(Discriminator::Uninitialized),
             AssetError::AlreadyInitialized,
             "asset"
         );

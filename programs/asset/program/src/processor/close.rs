@@ -34,7 +34,7 @@ pub fn process_close(program_id: &Pubkey, ctx: Context<Close>) -> ProgramResult 
     if !data.is_empty() {
         // make sure that the asset is uninitialized
         require!(
-            data[0] == Discriminator::Uninitialized.into(),
+            data[0] == u8::from(Discriminator::Uninitialized),
             AssetError::AlreadyInitialized,
             "buffer"
         );

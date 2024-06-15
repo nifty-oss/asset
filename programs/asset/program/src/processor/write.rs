@@ -66,7 +66,7 @@ pub(crate) fn process_write(
 
     // make sure that the asset is not already initialized
     require!(
-        asset_data[0] == Discriminator::Uninitialized.into(),
+        asset_data[0] == u8::from(Discriminator::Uninitialized),
         AssetError::AlreadyInitialized,
         "asset"
     );

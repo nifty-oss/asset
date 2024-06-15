@@ -34,6 +34,13 @@ jobs:
           version: ${{ env.SOLANA_VERSION }}
           cache: ${{ env.CACHE }}
 
+      - name: Install Node.js
+        uses: nifty-oss/actions/install-node-with-pnpm@v1
+        with:
+            version: ${{ env.NODE_VERSION }}
+            cache: ${{ env.CACHE }}
+            dependencies: true
+
       - name: Cache program dependencies
         if: env.CACHE == 'true'
         uses: nifty-oss/actions/buildjet-cache-crate@v1

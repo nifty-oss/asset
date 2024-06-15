@@ -6,6 +6,7 @@ edition = "2021"
 readme = "./README.md"
 license-file = "Apache-2.0"
 publish = false
+build = "build.rs"
 
 [lib]
 crate-type = ["cdylib", "lib"]
@@ -24,3 +25,7 @@ num-traits = "^0.2"
 solana-security-txt = "1.1.1"
 solana-program = "~1.16"
 thiserror = "^1.0"
+include-idl = { path = "../../../include-idl" }
+
+[build-dependencies]
+include-idl = { path = "../../../include-idl", features = ["shrink"] }
