@@ -11,7 +11,10 @@ pub use shrink::compress_idl;
 #[macro_export]
 macro_rules! include_idl {
     ($s:expr) => {
-        #[cfg_attr(target_arch = "sbf", link_section = ".solana.idl")]
+        #[cfg_attr(
+            any(target_arch = "sbf", target_arch = "bpf"),
+            link_section = ".solana.idl"
+        )]
         #[allow(dead_code)]
         #[no_mangle]
         pub static IDL_BYTES: &[u8] = include_bytes!($s);
