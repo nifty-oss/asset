@@ -1,12 +1,17 @@
-const path = require("path");
-const k = require("@metaplex-foundation/kinobi");
+const anchorIdl = require("@kinobi-so/nodes-from-anchor");
+const jsRenderer = require("@kinobi-so/renderers-js-umi");
+const k = require("kinobi");
 
 // Paths.
+const path = require("path");
 const clientDir = path.join(__dirname, "..", "clients");
 const idlDir = path.join(__dirname, "..", "idls");
 
 // Instanciate Kinobi.
-const kinobi = k.createFromIdls([path.join(idlDir, "proxy_program.json")]);
+const idl = anchorIdl.rootNodeFromAnchor(
+  require(path.join(idlDir, "proxy_program.json"))
+);
+const kinobi = k.createFromRoot(idl);
 
 // Update programs.
 kinobi.update(
@@ -53,7 +58,7 @@ kinobi.update(
 
 // Render JavaScript.
 kinobi.accept(
-  k.renderJavaScriptVisitor(
+  jsRenderer.renderVisitor(
     path.join(clientDir, "js", "proxy", "src", "generated"),
     {
       prettier: require(path.join(
@@ -65,18 +70,3 @@ kinobi.accept(
     }
   )
 );
-
-/*
-kinobi.accept(k.consoleLogVisitor(k.getDebugStringVisitor({ indent: true })));
-
-// Render Rust.
-kinobi.accept(
-  k.renderRustVisitor(
-    path.join(clientDir, "rust", "bridge", "src", "generated"),
-    {
-      formatCode: true,
-      crateFolder: path.join(clientDir, "rust", "bridge"),
-    }
-  )
-);
-*/
