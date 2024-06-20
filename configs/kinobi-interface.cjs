@@ -1,14 +1,17 @@
-const path = require("path");
-const k = require("@metaplex-foundation/kinobi");
+const anchorIdl = require("@kinobi-so/nodes-from-anchor");
+const rustRendered = require("@kinobi-so/renderers-rust");
+const k = require("kinobi");
 
 // Paths.
+const path = require("path");
 const programDir = path.join(__dirname, "..", "programs");
 const idlDir = path.join(__dirname, "..", "idls");
 
 // Instanciate Kinobi.
-const kinobi = k.createFromIdls([
-  path.join(idlDir, "nifty_asset_interface.json"),
-]);
+const idl = anchorIdl.rootNodeFromAnchor(
+  require(path.join(idlDir, "nifty_asset_interface.json"))
+);
+const kinobi = k.createFromRoot(idl);
 
 // Update programs.
 kinobi.update(
@@ -29,51 +32,42 @@ kinobi.update(
           definedTypes: [
             ...node.definedTypes,
             // standard
-            k.definedTypeNodeFromIdl({
+            k.definedTypeNode({
               name: "standard",
-              type: {
-                kind: "enum",
-                variants: [
-                  { name: "NonFungible" },
-                  { name: "Managed" },
-                  { name: "Soulbound" },
-                  { name: "Proxied" },
-                ],
-              },
+              type: k.enumTypeNode([
+                k.enumEmptyVariantTypeNode("NonFungible"),
+                k.enumEmptyVariantTypeNode("Managed"),
+                k.enumEmptyVariantTypeNode("Soulbound"),
+                k.enumEmptyVariantTypeNode("Proxied"),
+              ]),
             }),
             // delegate role
-            k.definedTypeNodeFromIdl({
+            k.definedTypeNode({
               name: "delegateRole",
-              type: {
-                kind: "enum",
-                variants: [
-                  { name: "None" },
-                  { name: "Transfer" },
-                  { name: "Lock" },
-                  { name: "Burn" },
-                ],
-              },
+              type: k.enumTypeNode([
+                k.enumEmptyVariantTypeNode("None"),
+                k.enumEmptyVariantTypeNode("Transfer"),
+                k.enumEmptyVariantTypeNode("Lock"),
+                k.enumEmptyVariantTypeNode("Burn"),
+              ]),
             }),
             // extension type
-            k.definedTypeNodeFromIdl({
+            k.definedTypeNode({
               name: "extensionType",
-              type: {
-                kind: "enum",
-                variants: [
-                  { name: "None" },
-                  { name: "Attributes" },
-                  { name: "Blob" },
-                  { name: "Creators" },
-                  { name: "Links" },
-                  { name: "Metadata" },
-                  { name: "Grouping" },
-                  { name: "Royalties" },
-                  { name: "Manager" },
-                  { name: "Proxy" },
-                  { name: "Properties" },
-                  { name: "Bucket" },
-                ],
-              },
+              type: k.enumTypeNode([
+                k.enumEmptyVariantTypeNode("None"),
+                k.enumEmptyVariantTypeNode("Attributes"),
+                k.enumEmptyVariantTypeNode("Blob"),
+                k.enumEmptyVariantTypeNode("Creators"),
+                k.enumEmptyVariantTypeNode("Links"),
+                k.enumEmptyVariantTypeNode("Metadata"),
+                k.enumEmptyVariantTypeNode("Grouping"),
+                k.enumEmptyVariantTypeNode("Royalties"),
+                k.enumEmptyVariantTypeNode("Manager"),
+                k.enumEmptyVariantTypeNode("Proxy"),
+                k.enumEmptyVariantTypeNode("Properties"),
+                k.enumEmptyVariantTypeNode("Bucket"),
+              ]),
             }),
           ],
         };
@@ -254,7 +248,7 @@ kinobi.update(
 
 // Render Rust.
 kinobi.accept(
-  k.renderRustVisitor(
+  rustRendered.renderVisitor(
     path.join(programDir, "asset", "interface", "src", "generated"),
     {
       formatCode: true,
