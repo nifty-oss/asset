@@ -1,12 +1,18 @@
-const path = require("path");
-const k = require("@metaplex-foundation/kinobi");
+const anchorIdl = require("@kinobi-so/nodes-from-anchor");
+const jsRenderer = require("@kinobi-so/renderers-js-umi");
+const rustRendered = require("@kinobi-so/renderers-rust");
+const k = require("kinobi");
 
 // Paths.
+const path = require("path");
 const clientDir = path.join(__dirname, "..", "clients");
 const idlDir = path.join(__dirname, "..", "idls");
 
 // Instanciate Kinobi.
-const kinobi = k.createFromIdls([path.join(idlDir, "bridge_program.json")]);
+const idl = anchorIdl.rootNodeFromAnchor(
+  require(path.join(idlDir, "bridge_program.json"))
+);
+const kinobi = k.createFromRoot(idl);
 
 // Update programs.
 kinobi.update(
@@ -64,7 +70,8 @@ kinobi.update(
   k.updateAccountsVisitor({
     vault: {
       seeds: [
-        k.constantPdaSeedNodeFromString("vault"),
+        
+        k.constantPdaSeedNodeFromString("utf8", "vault"),
         k.variablePdaSeedNode(
           "mint",
           k.publicKeyTypeNode(),
@@ -231,7 +238,7 @@ kinobi.update(
 
 // Render JavaScript.
 kinobi.accept(
-  k.renderJavaScriptVisitor(
+  jsRenderer.renderVisitor(
     path.join(clientDir, "js", "bridge", "src", "generated"),
     {
       prettier: require(path.join(
@@ -250,7 +257,7 @@ kinobi.accept(
 
 // Render Rust.
 kinobi.accept(
-  k.renderRustVisitor(
+  rustRendered.renderVisitor(
     path.join(clientDir, "rust", "bridge", "src", "generated"),
     {
       formatCode: true,
