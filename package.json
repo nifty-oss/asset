@@ -18,9 +18,12 @@
     "validator:stop": "amman stop"
   },
   "devDependencies": {
-    "@metaplex-foundation/kinobi": "^0.17.7",
-    "@metaplex-foundation/shank-js": "^0.1.7",
+    "@kinobi-so/nodes-from-anchor": "^0.20.6",
+    "@kinobi-so/renderers-js-umi": "^0.20.6",
+    "@kinobi-so/renderers-rust": "^0.20.10",
     "@metaplex-foundation/amman": "^0.12.1",
+    "@metaplex-foundation/shank-js": "^0.1.7",
+    "kinobi": "^0.20.4",
     "typescript": "^5.3.3"
   },
   "packageManager": "pnpm@9.1.4"

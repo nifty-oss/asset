@@ -326,7 +326,7 @@ pub fn mint(args: MintIxArgs) -> Result<Vec<Instruction>, MintError> {
 
         let ix_args = AllocateInstructionArgs {
             extension: ExtensionInput {
-                extension_type: extension.extension_type.clone(),
+                extension_type: extension.extension_type,
                 length: extension.data.len() as u32,
                 data: Some(
                     extension.data[..std::cmp::min(extension_data_len, MAX_ALLOCATE_DATA_SIZE)]

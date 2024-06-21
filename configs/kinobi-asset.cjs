@@ -1,12 +1,18 @@
-const path = require("path");
-const k = require("@metaplex-foundation/kinobi");
+const anchorIdl = require("@kinobi-so/nodes-from-anchor");
+const jsRenderer = require("@kinobi-so/renderers-js-umi");
+const rustRenderer = require("@kinobi-so/renderers-rust");
+const k = require("kinobi");
 
 // Paths.
+const path = require("path");
 const clientDir = path.join(__dirname, "..", "clients");
 const idlDir = path.join(__dirname, "..", "idls");
 
 // Instanciate Kinobi.
-const kinobi = k.createFromIdls([path.join(idlDir, "asset_program.json")]);
+const idl = anchorIdl.rootNodeFromAnchor(
+  require(path.join(idlDir, "asset_program.json"))
+);
+const kinobi = k.createFromRoot(idl);
 
 // Update programs.
 kinobi.update(
@@ -64,7 +70,7 @@ kinobi.update(
                 }),
                 k.structFieldTypeNode({
                   name: "name",
-                  type: k.stringTypeNode({ size: k.fixedSizeNode(35) }),
+                  type: k.fixedSizeTypeNode(k.stringTypeNode("utf8"), 35),
                 }),
               ]),
             }),
@@ -72,67 +78,58 @@ kinobi.update(
           definedTypes: [
             ...node.definedTypes,
             // discriminator
-            k.definedTypeNodeFromIdl({
+            k.definedTypeNode({
               name: "discriminator",
-              type: {
-                kind: "enum",
-                variants: [{ name: "Uninitialized" }, { name: "Asset" }],
-              },
+              type: k.enumTypeNode([
+                k.enumEmptyVariantTypeNode("Uninitialized"),
+                k.enumEmptyVariantTypeNode("Asset"),
+              ]),
             }),
             // standard
-            k.definedTypeNodeFromIdl({
+            k.definedTypeNode({
               name: "standard",
-              type: {
-                kind: "enum",
-                variants: [
-                  { name: "NonFungible" },
-                  { name: "Managed" },
-                  { name: "Soulbound" },
-                  { name: "Proxied" },
-                ],
-              },
+              type: k.enumTypeNode([
+                k.enumEmptyVariantTypeNode("NonFungible"),
+                k.enumEmptyVariantTypeNode("Managed"),
+                k.enumEmptyVariantTypeNode("Soulbound"),
+                k.enumEmptyVariantTypeNode("Proxied"),
+              ]),
             }),
             // state
-            k.definedTypeNodeFromIdl({
+            k.definedTypeNode({
               name: "state",
-              type: {
-                kind: "enum",
-                variants: [{ name: "Unlocked" }, { name: "Locked" }],
-              },
+              type: k.enumTypeNode([
+                k.enumEmptyVariantTypeNode("Unlocked"),
+                k.enumEmptyVariantTypeNode("Locked"),
+              ]),
             }),
             // delegate role
-            k.definedTypeNodeFromIdl({
+            k.definedTypeNode({
               name: "delegateRole",
-              type: {
-                kind: "enum",
-                variants: [
-                  { name: "None" },
-                  { name: "Transfer" },
-                  { name: "Lock" },
-                  { name: "Burn" },
-                ],
-              },
+              type: k.enumTypeNode([
+                k.enumEmptyVariantTypeNode("None"),
+                k.enumEmptyVariantTypeNode("Transfer"),
+                k.enumEmptyVariantTypeNode("Lock"),
+                k.enumEmptyVariantTypeNode("Burn"),
+              ]),
             }),
             // extension type
-            k.definedTypeNodeFromIdl({
+            k.definedTypeNode({
               name: "extensionType",
-              type: {
-                kind: "enum",
-                variants: [
-                  { name: "None" },
-                  { name: "Attributes" },
-                  { name: "Blob" },
-                  { name: "Creators" },
-                  { name: "Links" },
-                  { name: "Metadata" },
-                  { name: "Grouping" },
-                  { name: "Royalties" },
-                  { name: "Manager" },
-                  { name: "Proxy" },
-                  { name: "Properties" },
-                  { name: "Bucket" },
-                ],
-              },
+              type: k.enumTypeNode([
+                k.enumEmptyVariantTypeNode("None"),
+                k.enumEmptyVariantTypeNode("Attributes"),
+                k.enumEmptyVariantTypeNode("Blob"),
+                k.enumEmptyVariantTypeNode("Creators"),
+                k.enumEmptyVariantTypeNode("Links"),
+                k.enumEmptyVariantTypeNode("Metadata"),
+                k.enumEmptyVariantTypeNode("Grouping"),
+                k.enumEmptyVariantTypeNode("Royalties"),
+                k.enumEmptyVariantTypeNode("Manager"),
+                k.enumEmptyVariantTypeNode("Proxy"),
+                k.enumEmptyVariantTypeNode("Properties"),
+                k.enumEmptyVariantTypeNode("Bucket"),
+              ]),
             }),
             // delegate
             k.definedTypeNode({
@@ -179,7 +176,7 @@ kinobi.update(
                   name: "values",
                   type: k.arrayTypeNode(
                     k.definedTypeLinkNode("trait"),
-                    k.remainderSizeNode()
+                    k.remainderCountNode()
                   ),
                 }),
               ]),
@@ -190,15 +187,17 @@ kinobi.update(
               type: k.structTypeNode([
                 k.structFieldTypeNode({
                   name: "name",
-                  type: k.stringTypeNode({
-                    size: k.prefixedSizeNode(k.numberTypeNode("u8")),
-                  }),
+                  type: k.sizePrefixTypeNode(
+                    k.stringTypeNode("utf8"),
+                    k.numberTypeNode("u8")
+                  ),
                 }),
                 k.structFieldTypeNode({
                   name: "value",
-                  type: k.stringTypeNode({
-                    size: k.prefixedSizeNode(k.numberTypeNode("u8")),
-                  }),
+                  type: k.sizePrefixTypeNode(
+                    k.stringTypeNode("utf8"),
+                    k.numberTypeNode("u8")
+                  ),
                 }),
               ]),
             }),
@@ -208,15 +207,16 @@ kinobi.update(
               type: k.structTypeNode([
                 k.structFieldTypeNode({
                   name: "contentType",
-                  type: k.stringTypeNode({
-                    size: k.prefixedSizeNode(k.numberTypeNode("u8")),
-                  }),
+                  type: k.sizePrefixTypeNode(
+                    k.stringTypeNode("utf8"),
+                    k.numberTypeNode("u8")
+                  ),
                 }),
                 k.structFieldTypeNode({
                   name: "data",
                   type: k.arrayTypeNode(
                     k.numberTypeNode("u8"),
-                    k.remainderSizeNode()
+                    k.remainderCountNode()
                   ),
                 }),
               ]),
@@ -229,7 +229,7 @@ kinobi.update(
                   name: "values",
                   type: k.arrayTypeNode(
                     k.definedTypeLinkNode("link"),
-                    k.remainderSizeNode()
+                    k.remainderCountNode()
                   ),
                 }),
               ]),
@@ -240,15 +240,17 @@ kinobi.update(
               type: k.structTypeNode([
                 k.structFieldTypeNode({
                   name: "name",
-                  type: k.stringTypeNode({
-                    size: k.prefixedSizeNode(k.numberTypeNode("u8")),
-                  }),
+                  type: k.sizePrefixTypeNode(
+                    k.stringTypeNode("utf8"),
+                    k.numberTypeNode("u8")
+                  ),
                 }),
                 k.structFieldTypeNode({
                   name: "uri",
-                  type: k.stringTypeNode({
-                    size: k.prefixedSizeNode(k.numberTypeNode("u8")),
-                  }),
+                  type: k.sizePrefixTypeNode(
+                    k.stringTypeNode("utf8"),
+                    k.numberTypeNode("u8")
+                  ),
                 }),
               ]),
             }),
@@ -260,7 +262,7 @@ kinobi.update(
                   name: "values",
                   type: k.arrayTypeNode(
                     k.definedTypeLinkNode("creator"),
-                    k.remainderSizeNode()
+                    k.remainderCountNode()
                   ),
                 }),
               ]),
@@ -289,27 +291,31 @@ kinobi.update(
               type: k.structTypeNode([
                 k.structFieldTypeNode({
                   name: "symbol",
-                  type: k.stringTypeNode({
-                    size: k.prefixedSizeNode(k.numberTypeNode("u8")),
-                  }),
+                  type: k.sizePrefixTypeNode(
+                    k.stringTypeNode("utf8"),
+                    k.numberTypeNode("u8")
+                  ),
                 }),
                 k.structFieldTypeNode({
                   name: "description",
-                  type: k.stringTypeNode({
-                    size: k.prefixedSizeNode(k.numberTypeNode("u8")),
-                  }),
+                  type: k.sizePrefixTypeNode(
+                    k.stringTypeNode("utf8"),
+                    k.numberTypeNode("u8")
+                  ),
                 }),
                 k.structFieldTypeNode({
                   name: "uri",
-                  type: k.stringTypeNode({
-                    size: k.prefixedSizeNode(k.numberTypeNode("u8")),
-                  }),
+                  type: k.sizePrefixTypeNode(
+                    k.stringTypeNode("utf8"),
+                    k.numberTypeNode("u8")
+                  ),
                 }),
                 k.structFieldTypeNode({
                   name: "imageUri",
-                  type: k.stringTypeNode({
-                    size: k.prefixedSizeNode(k.numberTypeNode("u8")),
-                  }),
+                  type: k.sizePrefixTypeNode(
+                    k.stringTypeNode("utf8"),
+                    k.numberTypeNode("u8")
+                  ),
                 }),
               ]),
             }),
@@ -353,7 +359,7 @@ kinobi.update(
                   name: "seeds",
                   type: k.arrayTypeNode(
                     k.numberTypeNode("u8"),
-                    k.fixedSizeNode(32)
+                    k.fixedCountNode(32)
                   ),
                 }),
                 k.structFieldTypeNode({
@@ -374,22 +380,19 @@ kinobi.update(
                   name: "data",
                   type: k.arrayTypeNode(
                     k.numberTypeNode("u8"),
-                    k.remainderSizeNode()
+                    k.remainderCountNode()
                   ),
                 }),
               ]),
             }),
             // type (for properties extension)
-            k.definedTypeNodeFromIdl({
+            k.definedTypeNode({
               name: "type",
-              type: {
-                kind: "enum",
-                variants: [
-                  { name: "Text" },
-                  { name: "Number" },
-                  { name: "Boolean" },
-                ],
-              },
+              type: k.enumTypeNode([
+                k.enumEmptyVariantTypeNode("Text"),
+                k.enumEmptyVariantTypeNode("Number"),
+                k.enumEmptyVariantTypeNode("Boolean"),
+              ]),
             }),
           ],
         };
@@ -578,15 +581,12 @@ kinobi.update(
 
 // Render JavaScript.
 kinobi.accept(
-  new k.renderJavaScriptVisitor(
+  jsRenderer.renderVisitor(
     path.join(clientDir, "js", "asset", "src", "generated"),
     {
-      prettier: require(path.join(
-        clientDir,
-        "js",
-        "asset",
-        ".prettierrc.json"
-      )),
+      prettier: require(
+        path.join(clientDir, "js", "asset", ".prettierrc.json")
+      ),
       internalNodes: [
         "allocate",
         "approve",
@@ -619,7 +619,7 @@ kinobi.accept(
 
 // Render Rust.
 kinobi.accept(
-  new k.renderRustVisitor(
+  rustRenderer.renderVisitor(
     path.join(clientDir, "rust", "asset", "src", "generated"),
     {
       formatCode: true,
