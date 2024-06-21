@@ -1,5 +1,5 @@
 const anchorIdl = require("@kinobi-so/nodes-from-anchor");
-const rustRendered = require("@kinobi-so/renderers-rust");
+const rustRenderer = require("@kinobi-so/renderers-rust");
 const k = require("kinobi");
 
 // Paths.
@@ -248,7 +248,7 @@ kinobi.update(
 
 // Render Rust.
 kinobi.accept(
-  rustRendered.renderVisitor(
+  rustRenderer.renderVisitor(
     path.join(programDir, "asset", "interface", "src", "generated"),
     {
       formatCode: true,
