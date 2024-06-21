@@ -70,7 +70,6 @@ kinobi.update(
   k.updateAccountsVisitor({
     vault: {
       seeds: [
-        
         k.constantPdaSeedNodeFromString("utf8", "vault"),
         k.variablePdaSeedNode(
           "mint",
@@ -241,12 +240,9 @@ kinobi.accept(
   jsRenderer.renderVisitor(
     path.join(clientDir, "js", "bridge", "src", "generated"),
     {
-      prettier: require(path.join(
-        clientDir,
-        "js",
-        "bridge",
-        ".prettierrc.json"
-      )),
+      prettier: require(
+        path.join(clientDir, "js", "bridge", ".prettierrc.json")
+      ),
       dependencyMap: {
         mplTokenMetadata: "@metaplex-foundation/mpl-token-metadata",
         mplToolbox: "@metaplex-foundation/mpl-toolbox",

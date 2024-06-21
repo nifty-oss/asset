@@ -9,13 +9,13 @@ importers:
   .:
     devDependencies:
       '@kinobi-so/nodes-from-anchor':
-        specifier: ^0.20.1
+        specifier: ^0.20.6
         version: 0.20.6
       '@kinobi-so/renderers-js-umi':
-        specifier: ^0.20.2
-        version: 0.20.5(fastestsmallesttextencoderdecoder@1.0.22)
+        specifier: ^0.20.6
+        version: 0.20.6(fastestsmallesttextencoderdecoder@1.0.22)
       '@kinobi-so/renderers-rust':
-        specifier: ^0.20.3
+        specifier: ^0.20.10
         version: 0.20.10(fastestsmallesttextencoderdecoder@1.0.22)
       '@metaplex-foundation/amman':
         specifier: ^0.12.1
@@ -24,7 +24,7 @@ importers:
         specifier: ^0.1.7
         version: 0.1.7
       kinobi:
-        specifier: ^0.20.1
+        specifier: ^0.20.4
         version: 0.20.4
       typescript:
         specifier: ^5.3.3
@@ -58,8 +58,8 @@ packages:
   '@kinobi-so/renderers-core@0.20.4':
     resolution: {integrity: sha512-feb0Fsw7UIj14JZ2LmHYyosT07K/Jrs7CvNYD2YF4g6WQz9mmy1l8Fa+gpVtoDdSHvfXrgzv8193p0QkRRBWmA==}
 
-  '@kinobi-so/renderers-js-umi@0.20.5':
-    resolution: {integrity: sha512-3rP7q8kATrVOZAHvJra6ES9jB7QmDkrMyMFMaD4PBhL+GkIiRDbcL09xvVFAStTTuaeGNTjoVfa31Wd6TPnJVw==}
+  '@kinobi-so/renderers-js-umi@0.20.6':
+    resolution: {integrity: sha512-s7BN7Fa7VAr6tuTyLJVp6ceftFMqMRTopIAD4QyYGrJVoM+KLA0W7MpGo/pE61jRUCE24MZIJJjkX1qbuL4hfA==}
 
   '@kinobi-so/renderers-rust@0.20.10':
     resolution: {integrity: sha512-I4NINXbUJR3gPKoS/fNQ92YuCGFtKd+Ca+nxY+5qmVl9ctB3wIrFvUoNMq0eES8Xh6jyBtF73ocBFKBzFfn1NQ==}
@@ -863,7 +863,7 @@ snapshots:
       '@kinobi-so/nodes': 0.20.4
       '@kinobi-so/visitors-core': 0.20.4
 
-  '@kinobi-so/renderers-js-umi@0.20.5(fastestsmallesttextencoderdecoder@1.0.22)':
+  '@kinobi-so/renderers-js-umi@0.20.6(fastestsmallesttextencoderdecoder@1.0.22)':
     dependencies:
       '@kinobi-so/errors': 0.20.4
       '@kinobi-so/nodes': 0.20.4
