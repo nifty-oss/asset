@@ -1,4 +1,4 @@
-use std::{io::ErrorKind, path::PathBuf, str::FromStr};
+use std::path::PathBuf;
 
 // use goblin::error::Result;
 use include_idl::parse::{parse_idl_from_program_binary, IdlType};
