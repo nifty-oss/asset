@@ -20,7 +20,7 @@ pub struct Create {
     pub owner: solana_program::pubkey::Pubkey,
     /// Asset account of the group
     pub group: Option<solana_program::pubkey::Pubkey>,
-    /// Optional authority for minting assets into a group
+    /// Group authority for creating an asset into a group
     pub group_authority: Option<solana_program::pubkey::Pubkey>,
     /// The account paying for the storage fees
     pub payer: Option<solana_program::pubkey::Pubkey>,
@@ -190,7 +190,7 @@ impl CreateBuilder {
         self
     }
     /// `[optional account]`
-    /// Optional authority for minting assets into a group
+    /// Group authority for creating an asset into a group
     #[inline(always)]
     pub fn group_authority(
         &mut self,
@@ -289,7 +289,7 @@ pub struct CreateCpiAccounts<'a, 'b> {
     pub owner: &'b solana_program::account_info::AccountInfo<'a>,
     /// Asset account of the group
     pub group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    /// Optional authority for minting assets into a group
+    /// Group authority for creating an asset into a group
     pub group_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
@@ -309,7 +309,7 @@ pub struct CreateCpi<'a, 'b> {
     pub owner: &'b solana_program::account_info::AccountInfo<'a>,
     /// Asset account of the group
     pub group: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-    /// Optional authority for minting assets into a group
+    /// Group authority for creating an asset into a group
     pub group_authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
     /// The account paying for the storage fees
     pub payer: Option<&'b solana_program::account_info::AccountInfo<'a>>,
@@ -538,7 +538,7 @@ impl<'a, 'b> CreateCpiBuilder<'a, 'b> {
         self
     }
     /// `[optional account]`
-    /// Optional authority for minting assets into a group
+    /// Group authority for creating an asset into a group
     #[inline(always)]
     pub fn group_authority(
         &mut self,

@@ -302,6 +302,54 @@ impl Deref for Boolean<'_> {
     }
 }
 
+/// Trait representing a typed value for a `Property`.
+pub trait TypedValue {
+    /// Type of the value.
+    const TYPE: Type;
+
+    /// Write the value to a buffer.
+    fn write_to(&self, buffer: &mut Vec<u8>);
+}
+
+/// Implement `TypedValue` for the `String` type.
+impl TypedValue for String {
+    const TYPE: Type = Type::Text;
+
+    fn write_to(&self, buffer: &mut Vec<u8>) {
+        self.as_str().write_to(buffer);
+    }
+}
+
+/// Implement `TypedValue` for the `&str` type.
+impl TypedValue for &str {
+    const TYPE: Type = Type::Text;
+
+    fn write_to(&self, buffer: &mut Vec<u8>) {
+        let cursor = buffer.len();
+        buffer.append(&mut vec![0u8; self.len() + 1]);
+        let mut value_str = U8PrefixStrMut::new(&mut buffer[cursor..]);
+        value_str.copy_from_str(self);
+    }
+}
+
+/// Implement `TypedValue` for the `u64` type.
+impl TypedValue for u64 {
+    const TYPE: Type = Type::Number;
+
+    fn write_to(&self, buffer: &mut Vec<u8>) {
+        buffer.extend_from_slice(&self.to_le_bytes());
+    }
+}
+
+/// Implement `TypedValue` for the `bool` type.
+impl TypedValue for bool {
+    const TYPE: Type = Type::Boolean;
+
+    fn write_to(&self, buffer: &mut Vec<u8>) {
+        buffer.push(if *self { 1 } else { 0 });
+    }
+}
+
 /// Builder for an `Properties` extension.
 #[derive(Default)]
 pub struct PropertiesBuilder(Vec<u8>);
@@ -318,6 +366,7 @@ impl PropertiesBuilder {
     }
 
     /// Add a new string property to the extension.
+    #[deprecated(since = "0.6.1", note = "Please use `add` instead")]
     pub fn add_text(&mut self, name: &str, value: &str) -> &mut Self {
         // add the length of the name + prefix to the data buffer.
         let cursor = self.0.len();
@@ -338,6 +387,7 @@ impl PropertiesBuilder {
     }
 
     /// Add a new numeric property to the extension.
+    #[deprecated(since = "0.6.1", note = "Please use `add` instead")]
     pub fn add_number(&mut self, name: &str, value: u64) -> &mut Self {
         // add the length of the name + prefix to the data buffer.
         let cursor = self.0.len();
@@ -355,6 +405,7 @@ impl PropertiesBuilder {
     }
 
     /// Add a new boolean property to the extension.
+    #[deprecated(since = "0.6.1", note = "Please use `add` instead")]
     pub fn add_boolean(&mut self, name: &str, value: bool) -> &mut Self {
         // add the length of the name + prefix to the data buffer.
         let cursor = self.0.len();
@@ -367,6 +418,22 @@ impl PropertiesBuilder {
 
         // add the boolean value to the data buffer.
         self.0.push(if value { 1 } else { 0 });
+
+        self
+    }
+
+    /// Add a new boolean property to the extension.
+    pub fn add<T: TypedValue>(&mut self, name: &str, value: T) -> &mut Self {
+        // add the length of the name + prefix to the data buffer.
+        let cursor = self.0.len();
+        self.0.append(&mut vec![0u8; name.len() + 1]);
+        let mut name_str = U8PrefixStrMut::new(&mut self.0[cursor..]);
+        name_str.copy_from_str(name);
+
+        // add the value type
+        self.0.push(T::TYPE.into());
+        // add the value
+        value.write_to(&mut self.0);
 
         self
     }
@@ -400,9 +467,9 @@ mod tests {
     #[test]
     pub fn test_create_property() {
         let mut builder = PropertiesBuilder::default();
-        builder.add_text("name", "asset");
-        builder.add_number("version", 1);
-        builder.add_boolean("alpha", false);
+        builder.add::<&str>("name", "asset");
+        builder.add::<u64>("version", 1);
+        builder.add::<bool>("alpha", false);
         let properties = builder.build();
 
         assert_eq!(properties.values.len(), 3);
@@ -423,8 +490,8 @@ mod tests {
     #[test]
     pub fn test_remove_property() {
         let mut builder = PropertiesBuilder::default();
-        builder.add_text("name", "asset");
-        builder.add_number("version", 1);
+        builder.add::<&str>("name", "asset");
+        builder.add::<u64>("version", 1);
         let mut data = builder.data();
 
         let mut properties = PropertiesMut::from_bytes_mut(&mut data);

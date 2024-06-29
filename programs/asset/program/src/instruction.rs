@@ -12,7 +12,7 @@ pub enum Instruction {
     /// Closes an uninitialized asset (buffer) account.
     /// 
     /// You can only close the buffer account if it has not been used to create an asset.
-    #[account(0, signer, writable, name="buffer", desc = "The unitialized buffer account")]
+    #[account(0, signer, writable, name="buffer", desc = "The uninitialized buffer account")]
     #[account(1, writable, name="recipient", desc = "The account receiving refunded rent")]
     Close,
 
@@ -28,7 +28,7 @@ pub enum Instruction {
     #[account(1, optional_signer, name="authority", desc = "The authority of the asset")]
     #[account(2, name="owner", desc = "The owner of the asset")]
     #[account(3, optional, writable, name="group", desc = "Asset account of the group")]
-    #[account(4, optional, signer, name="group_authority", desc = "Optional authority for minting assets into a group")]
+    #[account(4, optional, signer, name="group_authority", desc = "Group authority for creating an asset into a group")]
     #[account(5, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
     #[account(6, optional, name="system_program", desc = "The system program")]
     Create(MetadataInput),
@@ -52,7 +52,7 @@ pub enum Instruction {
 
     /// Revokes a delegate.
     #[account(0, writable, name="asset", desc = "Asset account")]
-    #[account(1, signer, name="signer", desc = "Current owner of the asset or delegate")]
+    #[account(1, signer, name="signer", desc = "Owner of the asset or current delegate")]
     Revoke(DelegateInput),
 
     /// Transfers ownership of the aseet to a new public key.
@@ -75,7 +75,7 @@ pub enum Instruction {
     /// Updates an asset.
     #[account(0, writable, name="asset", desc = "Asset account")]
     #[account(1, signer, name="authority", desc = "The authority of the asset")]
-    #[account(2, optional, writable, name="buffer", desc = "Extension (asset) buffer account")]
+    #[account(2, optional, writable, name="buffer", desc = "Extension buffer (uninitialized asset) account")]
     #[account(3, optional, name="group", desc = "The asset defining the group, if applicable")]
     #[account(4, optional, signer, writable, name="payer", desc = "The account paying for the storage fees")]
     #[account(5, optional, name="system_program", desc = "The system program")]

@@ -29,8 +29,8 @@ async fn create() {
     // And an extension.
 
     let mut properties = PropertiesBuilder::default();
-    properties.add_text("name", "nifty");
-    properties.add_number("points", 0);
+    properties.add::<&str>("name", "nifty");
+    properties.add::<u64>("points", 0);
     let data = properties.data();
 
     // When we create a new asset.
@@ -102,9 +102,9 @@ async fn create_with_multiple() {
     metadata.set(Some("NIFTY"), None, None, None);
 
     let mut properties = PropertiesBuilder::default();
-    properties.add_text("name", "nifty");
-    properties.add_number("points", 0);
-    properties.add_boolean("active", true);
+    properties.add::<&str>("name", "nifty");
+    properties.add::<u64>("points", 0);
+    properties.add::<bool>("active", true);
 
     let mut attributes = AttributesBuilder::default();
     attributes.add("type", "solid");
