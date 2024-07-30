@@ -2,6 +2,7 @@ const anchorIdl = require("@kinobi-so/nodes-from-anchor");
 const jsRenderer = require("@kinobi-so/renderers-js-umi");
 const rustRenderer = require("@kinobi-so/renderers-rust");
 const k = require("kinobi");
+const { writeFileSync } = require("fs");
 
 // Paths.
 const path = require("path");
@@ -627,3 +628,5 @@ kinobi.accept(
     }
   )
 );
+
+writeFileSync(path.join(idlDir, "asset-program.kinobi.json"), kinobi.getJson());
