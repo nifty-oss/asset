@@ -10,7 +10,7 @@
           "isMut": true,
           "isSigner": true,
           "docs": [
-            "The unitialized buffer account"
+            "The uninitialized buffer account"
           ]
         },
         {
@@ -115,7 +115,7 @@
           "isSigner": true,
           "isOptional": true,
           "docs": [
-            "Optional authority for minting assets into a group"
+            "Group authority for creating an asset into a group"
           ]
         },
         {
@@ -276,7 +276,7 @@
           "isMut": false,
           "isSigner": true,
           "docs": [
-            "Current owner of the asset or delegate"
+            "Owner of the asset or current delegate"
           ]
         }
       ],
@@ -413,7 +413,7 @@
           "isSigner": false,
           "isOptional": true,
           "docs": [
-            "Extension (asset) buffer account"
+            "Extension buffer (uninitialized asset) account"
           ]
         },
         {

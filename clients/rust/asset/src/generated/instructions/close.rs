@@ -10,7 +10,7 @@ use borsh::BorshSerialize;
 
 /// Accounts.
 pub struct Close {
-    /// The unitialized buffer account
+    /// The uninitialized buffer account
     pub buffer: solana_program::pubkey::Pubkey,
     /// The account receiving refunded rent
     pub recipient: solana_program::pubkey::Pubkey,
@@ -79,7 +79,7 @@ impl CloseBuilder {
     pub fn new() -> Self {
         Self::default()
     }
-    /// The unitialized buffer account
+    /// The uninitialized buffer account
     #[inline(always)]
     pub fn buffer(&mut self, buffer: solana_program::pubkey::Pubkey) -> &mut Self {
         self.buffer = Some(buffer);
@@ -122,7 +122,7 @@ impl CloseBuilder {
 
 /// `close` CPI accounts.
 pub struct CloseCpiAccounts<'a, 'b> {
-    /// The unitialized buffer account
+    /// The uninitialized buffer account
     pub buffer: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account receiving refunded rent
     pub recipient: &'b solana_program::account_info::AccountInfo<'a>,
@@ -132,7 +132,7 @@ pub struct CloseCpiAccounts<'a, 'b> {
 pub struct CloseCpi<'a, 'b> {
     /// The program to invoke.
     pub __program: &'b solana_program::account_info::AccountInfo<'a>,
-    /// The unitialized buffer account
+    /// The uninitialized buffer account
     pub buffer: &'b solana_program::account_info::AccountInfo<'a>,
     /// The account receiving refunded rent
     pub recipient: &'b solana_program::account_info::AccountInfo<'a>,
@@ -242,7 +242,7 @@ impl<'a, 'b> CloseCpiBuilder<'a, 'b> {
         });
         Self { instruction }
     }
-    /// The unitialized buffer account
+    /// The uninitialized buffer account
     #[inline(always)]
     pub fn buffer(
         &mut self,

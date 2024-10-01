@@ -51,7 +51,7 @@ export type CreateInstructionAccounts = {
   owner?: PublicKey | Pda;
   /** Asset account of the group */
   group?: PublicKey | Pda;
-  /** Optional authority for minting assets into a group */
+  /** Group authority for creating an asset into a group */
   groupAuthority?: Signer;
   /** The account paying for the storage fees */
   payer?: Signer;

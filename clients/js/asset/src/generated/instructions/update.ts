@@ -43,7 +43,7 @@ export type UpdateInstructionAccounts = {
   asset: PublicKey | Pda;
   /** The authority of the asset */
   authority?: Signer;
-  /** Extension (asset) buffer account */
+  /** Extension buffer (uninitialized asset) account */
   buffer?: PublicKey | Pda;
   /** The asset defining the group, if applicable */
   group?: PublicKey | Pda;
