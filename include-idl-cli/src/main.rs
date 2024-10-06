@@ -17,7 +17,7 @@ enum Commands {
     Parse {
         /// Read IDL from a solana program binary
         path: PathBuf,
-        idl_type: IdlType
+        idl_type: IdlType,
     },
 }
 

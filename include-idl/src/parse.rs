@@ -1,14 +1,13 @@
 #[cfg(feature = "parse")]
 use {
-    flate2::bufread::ZlibDecoder, goblin::elf::Elf, serde_json::Value,
-    std::io::Read,
-std::fmt, std::str::FromStr
+    flate2::bufread::ZlibDecoder, goblin::elf::Elf, serde_json::Value, std::fmt, std::io::Read,
+    std::str::FromStr,
 };
 
 #[derive(Clone, Debug)]
 pub enum IdlType {
     Anchor,
-    Kinobi
+    Kinobi,
 }
 
 impl fmt::Display for IdlType {
@@ -27,7 +26,7 @@ impl FromStr for IdlType {
         match s.to_lowercase().as_str() {
             "anchor" => Ok(IdlType::Anchor),
             "kinobi" => Ok(IdlType::Kinobi),
-            _ => Err("Invalid IDL type")
+            _ => Err("Invalid IDL type"),
         }
     }
 }
@@ -35,11 +34,14 @@ impl FromStr for IdlType {
 fn get_section_name(idl_type: IdlType) -> String {
     match idl_type {
         IdlType::Anchor => ".solana.idl".to_string(),
-        IdlType::Kinobi => ".kinobi.idl".to_string()
+        IdlType::Kinobi => ".kinobi.idl".to_string(),
     }
 }
 
-pub fn parse_idl_from_program_binary(buffer: &[u8], idl_type: IdlType) -> goblin::error::Result<Value> {
+pub fn parse_idl_from_program_binary(
+    buffer: &[u8],
+    idl_type: IdlType,
+) -> goblin::error::Result<Value> {
     let elf = Elf::parse(buffer)?;
 
     let section_name = get_section_name(idl_type);
@@ -47,7 +49,7 @@ pub fn parse_idl_from_program_binary(buffer: &[u8], idl_type: IdlType) -> goblin
     // Iterate over section headers and print information
     for sh in &elf.section_headers {
         let name = elf.shdr_strtab.get_at(sh.sh_name).unwrap_or("<invalid>");
-        if name == &section_name {
+        if name == section_name {
             // Get offset of .solana.idl section data
             let offset = sh.sh_offset as usize;
 
