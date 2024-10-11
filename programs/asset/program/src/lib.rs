@@ -15,13 +15,13 @@ pub mod utils;
 pub use solana_program;
 
 #[cfg(not(feature = "no-entrypoint"))]
-use include_idl::include_idl;
+use include_idl::include_kinobi_idl;
 
 #[cfg(not(feature = "no-entrypoint"))]
 use solana_security_txt::security_txt;
 
 #[cfg(not(feature = "no-entrypoint"))]
-include_idl!(concat!(env!("OUT_DIR"), "/idl.json.zip"));
+include_kinobi_idl!(concat!(env!("OUT_DIR"), "/kinobi.idl.zip"));
 
 #[cfg(not(feature = "no-entrypoint"))]
 security_txt! {
