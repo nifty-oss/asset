@@ -4,17 +4,20 @@ use {
     std::str::FromStr,
 };
 
+/// Defines the IDL type.
 #[derive(Clone, Debug)]
 pub enum IdlType {
     Anchor,
+    Codama,
     Kinobi,
 }
 
 impl fmt::Display for IdlType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            IdlType::Anchor => write!(f, "Anchor"),
-            IdlType::Kinobi => write!(f, "Kinobi"),
+            IdlType::Anchor => write!(f, "anchor"),
+            IdlType::Codama => write!(f, "codama"),
+            IdlType::Kinobi => write!(f, "kinobi"),
         }
     }
 }
@@ -25,6 +28,7 @@ impl FromStr for IdlType {
     fn from_str(s: &str) -> Result<Self, &'static str> {
         match s.to_lowercase().as_str() {
             "anchor" => Ok(IdlType::Anchor),
+            "codama" => Ok(IdlType::Codama),
             "kinobi" => Ok(IdlType::Kinobi),
             _ => Err("Invalid IDL type"),
         }
@@ -34,6 +38,7 @@ impl FromStr for IdlType {
 fn get_section_name(idl_type: IdlType) -> String {
     match idl_type {
         IdlType::Anchor => ".solana.idl".to_string(),
+        IdlType::Codama => ".codama.idl".to_string(),
         IdlType::Kinobi => ".kinobi.idl".to_string(),
     }
 }
