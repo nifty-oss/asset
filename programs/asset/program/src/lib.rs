@@ -12,18 +12,12 @@ pub mod instruction;
 pub mod processor;
 pub mod utils;
 
+use include_idl::{include_idl, parse::IdlType};
 pub use solana_program;
-
-#[cfg(not(feature = "no-entrypoint"))]
-use include_idl::include_kinobi_idl;
-
-#[cfg(not(feature = "no-entrypoint"))]
 use solana_security_txt::security_txt;
 
-#[cfg(not(feature = "no-entrypoint"))]
-include_kinobi_idl!(concat!(env!("OUT_DIR"), "/kinobi.idl.zip"));
+include_idl!(IdlType::Codama, concat!(env!("OUT_DIR"), "/kinobi.idl.zip"));
 
-#[cfg(not(feature = "no-entrypoint"))]
 security_txt! {
     // Required fields
     name: "Nifty Asset",
