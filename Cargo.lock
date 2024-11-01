@@ -388,12 +388,12 @@ version = "0.6.1"
 dependencies = [
  "borsh 0.10.3",
  "bytemuck",
- "include-idl",
  "nifty-asset-types",
  "nitrate",
  "num-derive 0.3.3",
  "num-traits",
  "shank",
+ "solana-include-idl",
  "solana-program",
  "solana-security-txt",
  "thiserror",
@@ -1898,21 +1898,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "include-idl"
-version = "0.1.0"
-dependencies = [
- "flate2",
- "goblin 0.8.2",
- "serde_json",
-]
-
-[[package]]
 name = "include-idl-cli"
 version = "0.1.0"
 dependencies = [
  "clap 4.5.7",
  "goblin 0.8.2",
- "include-idl",
+ "solana-include-idl",
 ]
 
 [[package]]
@@ -3960,6 +3951,15 @@ dependencies = [
  "quote 1.0.35",
  "rustc_version",
  "syn 2.0.52",
+]
+
+[[package]]
+name = "solana-include-idl"
+version = "0.1.0"
+dependencies = [
+ "flate2",
+ "goblin 0.8.2",
+ "serde_json",
 ]
 
 [[package]]

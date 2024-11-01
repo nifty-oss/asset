@@ -1,4 +1,4 @@
-# `include-idl`
+# `solana-include-idl`
 
 A collection of macro and helpers to manage IDLs stored on the program binary.
 

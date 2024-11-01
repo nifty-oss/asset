@@ -12,7 +12,7 @@ pub mod instruction;
 pub mod processor;
 pub mod utils;
 
-use include_idl::{include_idl, parse::IdlType};
+use solana_include_idl::{include_idl, parse::IdlType};
 pub use solana_program;
 use solana_security_txt::security_txt;
 
