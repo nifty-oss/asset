@@ -1,5 +1,5 @@
 use clap::{Error, Parser, Subcommand};
-use include_idl::parse::parse_idl_from_program_binary;
+use solana_include_idl::parse::parse_idl_from_program_binary;
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -11,8 +11,9 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Read IDL from a solana program binary.
     Parse {
-        /// Read IDL from a solana program binary
+        /// Path to the program binary.
         path: PathBuf,
     },
 }

@@ -25,7 +25,7 @@ num-traits = "^0.2"
 solana-security-txt = "1.1.1"
 solana-program = "~1.16"
 thiserror = "^1.0"
-include-idl = { path = "../../../include-idl" }
+solana-include-idl = { path = "../../../include-idl" }
 
 [build-dependencies]
-include-idl = { path = "../../../include-idl", features = ["shrink"] }
+solana-include-idl = { path = "../../../include-idl", features = ["shrink"] }

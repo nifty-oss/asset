@@ -2,7 +2,7 @@ use std::env;
 use std::path::PathBuf;
 use std::process::Command;
 
-use include_idl::compress_idl;
+use solana_include_idl::compress_idl;
 
 fn main() {
     // Run shank to generate the IDL
