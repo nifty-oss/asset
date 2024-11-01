@@ -21,7 +21,7 @@ pub use shrink::compress_idl;
 ///
 /// This macro takes two arguments:
 ///
-/// - `type`: The type of the IDL file. This should be one of the variants of the [`IdlType``] enum.
+/// - `type`: The type of the IDL file. This should be one of the variants of the [`IdlType`] enum.
 /// - `file`: The path to the IDL file.
 ///
 /// # Example
@@ -29,6 +29,8 @@ pub use shrink::compress_idl;
 /// Include the following in your `lib.rs` file:
 ///
 /// ```ignore
+/// use include_idl::{include_idl, parse::IdlType};
+///
 /// include_idl!(IdlType::Codama, concat!(env!("OUT_DIR"), "/codama.idl.zip"));
 /// ```
 #[macro_export]

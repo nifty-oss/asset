@@ -1,11 +1,13 @@
 [package]
 name = "include-idl"
+description = "A collection of macro and helpers to manage IDL stored on the program binary"
 version = "0.1.0"
 edition = "2021"
+license-file = "Apache-2.0"
 
 [features]
-shrink = ["flate2"]
-parse = ["flate2", "goblin", "serde_json"]
+shrink = ["dep:flate2"]
+parse = ["dep:flate2", "dep:goblin", "dep:serde_json"]
 
 [dependencies]
 flate2 = { version = "1.0", optional = true }
