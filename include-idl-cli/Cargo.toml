@@ -3,7 +3,7 @@ name = "solana-include-idl-cli"
 description = "CLI to parse IDL files from a program binary"
 version = "0.1.0"
 edition = "2021"
-license-file = "Apache-2.0"
+license = "Apache-2.0"
 
 [dependencies]
 clap = { version = "4.5.7", features = ["derive"] }
