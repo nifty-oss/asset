@@ -629,4 +629,4 @@ kinobi.accept(
   )
 );
 
-writeFileSync(path.join(idlDir, "asset-program.kinobi.json"), kinobi.getJson());
+writeFileSync(path.join(idlDir, "asset-program.codama.json"), kinobi.getJson());

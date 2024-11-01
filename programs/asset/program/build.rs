@@ -9,19 +9,19 @@ fn main() {
     let _output = Command::new("pnpm")
         .arg("generate:idls")
         .output()
-        .expect("Failed to run shank");
+        .expect("Failed to run Shank");
 
     let _output = Command::new("pnpm")
         .arg("generate:clients")
         .output()
-        .expect("Failed to create the kinobi IDLs");
+        .expect("Failed to create the Codama IDLs");
 
     // Get the IDL path
-    let idl_path = PathBuf::from("../../../idls").join("asset-program.kinobi.json");
+    let idl_path = PathBuf::from("../../../idls").join("asset-program.codama.json");
 
     // Concat output path of compressed IDL
     let out_dir = env::var("OUT_DIR").unwrap();
-    let dest_path = PathBuf::from(out_dir).join("kinobi.idl.zip");
+    let dest_path = PathBuf::from(out_dir).join("codama.idl.zip");
 
     compress_idl(&idl_path, &dest_path);
 }
