@@ -13,7 +13,10 @@ pub const IDL_TYPE_SECTION: &str = ".idl.type";
 /// Name of the section containing the IDL data.
 pub const IDL_DATA_SECTION: &str = ".idl.data";
 
+/// `str` representation of the Anchor IDL type.
 const ANCHOR_IDL_TYPE: &str = "anchor";
+
+/// `str` representation of the Codama IDL type.
 const CODAMA_IDL_TYPE: &str = "codama";
 
 /// Defines the IDL type.
@@ -53,6 +56,7 @@ impl std::str::FromStr for IdlType {
     }
 }
 
+/// Parses the IDL data from the program binary.
 #[cfg(feature = "parse")]
 pub fn parse_idl_from_program_binary(buffer: &[u8]) -> goblin::error::Result<(IdlType, Value)> {
     let elf = Elf::parse(buffer)?;
@@ -97,6 +101,7 @@ pub fn parse_idl_from_program_binary(buffer: &[u8]) -> goblin::error::Result<(Id
     }
 }
 
+/// Retrieves the location and size of an ELF section data.
 #[cfg(feature = "parse")]
 #[inline(always)]
 fn get_section_data_offset(buffer: &[u8], offset: usize) -> (usize, usize) {

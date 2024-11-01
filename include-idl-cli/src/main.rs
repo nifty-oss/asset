@@ -1,9 +1,6 @@
-use std::path::PathBuf;
-
-// use goblin::error::Result;
-use include_idl::parse::parse_idl_from_program_binary;
-
 use clap::{Error, Parser, Subcommand};
+use include_idl::parse::parse_idl_from_program_binary;
+use std::path::PathBuf;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
