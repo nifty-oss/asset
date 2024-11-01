@@ -22,9 +22,9 @@ use include_idl::{include_idl, parse::IdlType};
 include_idl!(IdlType::Codama, concat!(env!("OUT_DIR"), "/codama.idl.zip"));
 ```
 
-In general, the macro is used in combination with a `build.rs` build script to compress the IDL file, reducing the space required on program binary.
+In general, the macro is used in combination with a `build.rs` build script to compress the IDL file, reducing the space required on the program binary.
 
-To specify a build script, add an `build = "build.rs"` entry on your `Cargo.toml` file under the `[package]` section. Below is a `build.rs` example file that compresses an existing IDL file.
+To specify a build script, add a `build = "build.rs"` entry to your `Cargo.toml` file under the `[package]` section. Below is a `build.rs` example file that compresses an existing IDL file.
 
 ```rust
 use std::env;
