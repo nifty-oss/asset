@@ -3,7 +3,7 @@ name = "solana-include-idl"
 description = "A collection of macro and helpers to manage IDL stored on the program binary"
 version = "0.1.0"
 edition = "2021"
-license-file = "Apache-2.0"
+license = "Apache-2.0"
 
 [features]
 shrink = ["dep:flate2"]
