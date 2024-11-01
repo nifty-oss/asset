@@ -1,5 +1,5 @@
 <h1 align="center">
-  <code>nifty asset</code>
+  <code>asset</code>
 </h1>
 <p align="center">
   <img width="400" alt="Nifty Asset" src="https://github.com/nifty-oss/asset/assets/729235/90513ea4-ce87-41b5-88a4-008991fc73a7" />
@@ -28,11 +28,11 @@
 - [License](#license)
 
 > [!WARNING]
-> `nifty asset` has not been formally audited – use in production at your own risk.
+> The `asset` program has not been formally audited – use in production at your own risk.
 
 ## Features
 
-The main goal of `nifty asset` is to provide an open-source, lightweight and composable non-fungible standard on Solana. This is achieved by:
+The main goal of `asset` is to provide an open-source, lightweight and composable non-fungible standard on Solana. This is achieved by:
 - Using a **single** account to represent a digital asset.
 - Storing as much or as little data on-chain using optional extensions.
 - Efficient zero-copy de-/serialization to minimize compute units utilization.
@@ -45,11 +45,11 @@ Majority of NFT standards on Solana are built on top of SPL Token, which is main
 
 Since different token standards will usually be defined in separate programs, the end result is a bloated (multiple accounts) standard – e.g., `mint`, `token` and (potentially) `metadata` accounts, in addition to SPL Token and Metadata programs. For most operations, all `5` accounts would be needed to interact with a non-fungible – and there are standards that the number of accounts is even higher.
 
-`nifty asset` takes a different approach and re-imagines how non-fungibles are represented on Solana. In essense, a non-fungible asset is a unique *slab* of bytes on the blockchain identified by an address and it has an specific owner. When you transfer the "ownership" of this slab of bytes, you are changing the owner information of it. The contents of a non-fungible is as flexible as possible, given that they are "just" a slab of bytes – all data can be on-chain, or it can have "pointers" to external resources.
+`asset` takes a different approach and re-imagines how non-fungibles are represented on Solana. In essense, a non-fungible asset is a unique *slab* of bytes on the blockchain identified by an address and it has an specific owner. When you transfer the "ownership" of this slab of bytes, you are changing the owner information of it. The contents of a non-fungible is as flexible as possible, given that they are "just" a slab of bytes – all data can be on-chain, or it can have "pointers" to external resources.
 
 ## Packages
 
-The packages below can be used to interact with `nifty asset` program.
+The packages below can be used to interact with `asset` program.
 
 ### JavaScript
 ```bash
@@ -90,9 +90,9 @@ for TypeScript tests.
 
 This project contains the following programs:
 
-- [Asset](./programs/asset/README.md) `AssetGtQBTSgm5s91d1RAQod5JmaZiJDxqsgtqrZud73`
+- [`asset`](./programs/asset/README.md) `AssetGtQBTSgm5s91d1RAQod5JmaZiJDxqsgtqrZud73`
 
-- [Bridge](./programs/bridge/README.md) `BridgezKrNugsZwTcyAMYba643Z93RzC2yN1Y24LwAkm`
+- [`bridge`](./programs/bridge/README.md) `BridgezKrNugsZwTcyAMYba643Z93RzC2yN1Y24LwAkm`
 
 You will need a Rust version compatible with BPF to compile the program, currently we recommend using Rust 1.68.0.
 
