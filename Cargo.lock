@@ -1898,15 +1898,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "include-idl-cli"
-version = "0.1.0"
-dependencies = [
- "clap 4.5.7",
- "goblin 0.8.2",
- "solana-include-idl",
-]
-
-[[package]]
 name = "index_list"
 version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3960,6 +3951,15 @@ dependencies = [
  "flate2",
  "goblin 0.8.2",
  "serde_json",
+]
+
+[[package]]
+name = "solana-include-idl-cli"
+version = "0.1.0"
+dependencies = [
+ "clap 4.5.7",
+ "goblin 0.8.2",
+ "solana-include-idl",
 ]
 
 [[package]]

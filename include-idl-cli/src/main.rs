@@ -11,8 +11,9 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Read IDL from a solana program binary.
     Parse {
-        /// Read IDL from a solana program binary
+        /// Path to the program binary.
         path: PathBuf,
     },
 }
